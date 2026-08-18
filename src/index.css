@@ -1,0 +1,185 @@
+@import "tailwindcss";
+@import "@fontsource/inter/400.css";
+@import "@fontsource/inter/500.css";
+@import "@fontsource/inter/600.css";
+@import "@fontsource/ibm-plex-mono/400.css";
+@import "@fontsource/ibm-plex-mono/500.css";
+
+/* ─── Custom Theme Tokens ───────────────────────────────────────────────────── */
+@theme {
+  --color-bg-base: #0A0A0C;
+  --color-bg-surface: #0F0F12;
+  --color-bg-raised: #141418;
+  --color-bg-hover: #1A1A20;
+  
+  --color-border-subtle: rgba(255,255,255,0.06);
+  --color-border-muted: rgba(255,255,255,0.09);
+  --color-border-visible: rgba(255,255,255,0.13);
+
+  --color-text-primary: #E8E8EE;
+  --color-text-secondary: #9494A0;
+  --color-text-muted: #5A5A65;
+  --color-text-dim: #38383F;
+
+  --color-accent: #5FA8D3;
+  --color-accent-dim: rgba(95,168,211,0.15);
+  --color-accent-border: rgba(95,168,211,0.3);
+
+  --color-status-active: #4ADE80;
+  --color-status-flagged: #F59E0B;
+  --color-status-closed: #4B5563;
+  --color-status-critical: #EF4444;
+
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', 'Courier New', monospace;
+}
+
+/* ─── Base Reset & Global ───────────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: #0A0A0C;
+  color: #E8E8EE;
+  font-family: 'Inter', system-ui, sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ─── Scrollbar ─────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.18); }
+
+/* ─── Utility classes ───────────────────────────────────────────────────────── */
+.font-mono { font-family: 'IBM Plex Mono', 'Courier New', monospace; }
+.font-sans { font-family: 'Inter', system-ui, sans-serif; }
+
+/* Label above data fields */
+.data-label {
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #5A5A65;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-weight: 500;
+}
+
+/* ─── Grid / Scanline Texture ───────────────────────────────────────────────── */
+.scanline-bg {
+  background-image: 
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(255, 255, 255, 0.012) 2px,
+      rgba(255, 255, 255, 0.012) 3px
+    );
+}
+
+.grid-bg {
+  background-image:
+    linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* ─── Table row transitions ─────────────────────────────────────────────────── */
+.case-row {
+  transition: background-color 80ms ease;
+  cursor: pointer;
+  border-left: 2px solid transparent;
+}
+.case-row:hover {
+  background-color: #1A1A20;
+}
+.case-row.priority-critical { border-left-color: #EF4444; }
+.case-row.priority-high     { border-left-color: #F59E0B; }
+.case-row.priority-medium   { border-left-color: #5FA8D3; }
+.case-row.priority-low      { border-left-color: #4B5563; }
+
+/* ─── Nav history ───────────────────────────────────────────────────────────── */
+.nav-entry {
+  transition: color 100ms ease, background-color 100ms ease;
+  cursor: pointer;
+}
+.nav-entry:hover {
+  background-color: rgba(255,255,255,0.04);
+}
+.nav-entry.active {
+  color: #5FA8D3;
+}
+.nav-entry.inactive {
+  color: #5A5A65;
+}
+.nav-entry.inactive:hover {
+  color: #9494A0;
+}
+
+/* ─── Input / Select ────────────────────────────────────────────────────────── */
+input, select {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.09);
+  color: #E8E8EE;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.8rem;
+  outline: none;
+  padding: 0.35rem 0.65rem;
+  border-radius: 2px;
+  transition: border-color 120ms ease;
+}
+input:focus, select:focus {
+  border-color: rgba(95,168,211,0.45);
+}
+input::placeholder { color: #5A5A65; }
+select option { background: #141418; color: #E8E8EE; }
+
+/* ─── Minimal Button ────────────────────────────────────────────────────────── */
+.btn-ghost {
+  border: 1px solid rgba(255,255,255,0.13);
+  color: #9494A0;
+  background: transparent;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.35rem 0.8rem;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: border-color 120ms ease, color 120ms ease, background-color 120ms ease;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-weight: 500;
+}
+.btn-ghost:hover {
+  border-color: rgba(255,255,255,0.22);
+  color: #E8E8EE;
+  background: rgba(255,255,255,0.04);
+}
+
+.btn-accent {
+  border: 1px solid rgba(95,168,211,0.35);
+  color: #5FA8D3;
+  background: rgba(95,168,211,0.06);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.35rem 0.8rem;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: border-color 120ms ease, color 120ms ease, background-color 120ms ease;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-weight: 500;
+}
+.btn-accent:hover {
+  border-color: rgba(95,168,211,0.6);
+  background: rgba(95,168,211,0.12);
+}
