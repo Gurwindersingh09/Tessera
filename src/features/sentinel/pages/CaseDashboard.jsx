@@ -19,9 +19,19 @@
  *   Both routes should be defined in your router.
  */
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSentinelStore } from '../store/useSentinelStore';
+
+/* ─── Live Clock Hook ────────────────────────────────────────────────────────── */
+function useLiveClock(intervalMs = 60_000) {
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), intervalMs);
+    return () => clearInterval(id);
+  }, [intervalMs]);
+  return now;
+}
 
 /* ─── Helpers ────────────────────────────────────────────────────────────────── */
 function fmtTimestamp(iso) {
@@ -33,7 +43,7 @@ function fmtTimestamp(iso) {
   if (diffH < 1)  return 'just now';
   if (diffH < 24) return `${diffH}h ago`;
   if (diffD < 7)  return `${diffD}d ago`;
-  return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: '2-digit' });
+  return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
 function fmtAbsDate(iso) {
@@ -102,6 +112,16 @@ function StatStrip({ cases }) {
 
 /* ─── Filter Bar ─────────────────────────────────────────────────────────────── */
 function FilterBar({ filters, setFilter, resetFilters, onNewCase }) {
+  const statusActive = filters.status !== 'all';
+  const dateActive   = filters.dateRange !== 'all';
+  const anyActive    = filters.search !== '' || statusActive || dateActive;
+
+  /* Accent border signals a filter is active */
+  const activeSelectStyle = {
+    borderColor: 'rgba(95,168,211,0.45)',
+    color: '#5FA8D3',
+  };
+
   return (
     <div style={{
       display: 'flex', alignItems: 'center', gap: 8,
@@ -111,20 +131,34 @@ function FilterBar({ filters, setFilter, resetFilters, onNewCase }) {
     }}>
       {/* Search input */}
       <div style={{ position: 'relative', flex: '1 1 200px', minWidth: 160 }}>
-        <span style={{ position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)', color: '#5A5A65', fontSize: 11 }}>⌕</span>
+        <span style={{
+          position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)',
+          color: filters.search ? '#5FA8D3' : '#5A5A65', fontSize: 11,
+          transition: 'color 120ms',
+        }}>⌕</span>
         <input
           id="case-search"
           type="text"
-          placeholder="Search case ID, title, investigator..."
+          placeholder="Search ID, title..."
           value={filters.search}
           onChange={e => setFilter('search', e.target.value)}
-          style={{ width: '100%', paddingLeft: 22 }}
+          style={{
+            width: '100%', paddingLeft: 22,
+            ...(filters.search ? { borderColor: 'rgba(95,168,211,0.45)' } : {}),
+          }}
           spellCheck={false}
+          aria-label="Search cases"
         />
       </div>
 
       {/* Status filter */}
-      <select id="filter-status" value={filters.status} onChange={e => setFilter('status', e.target.value)} style={{ minWidth: 110 }}>
+      <select
+        id="filter-status"
+        value={filters.status}
+        onChange={e => setFilter('status', e.target.value)}
+        style={{ minWidth: 110, ...(statusActive ? activeSelectStyle : {}) }}
+        aria-label="Filter by status"
+      >
         <option value="all">All Status</option>
         <option value="active">Active</option>
         <option value="flagged">Flagged</option>
@@ -132,17 +166,37 @@ function FilterBar({ filters, setFilter, resetFilters, onNewCase }) {
       </select>
 
       {/* Date range filter */}
-      <select id="filter-date" value={filters.dateRange} onChange={e => setFilter('dateRange', e.target.value)} style={{ minWidth: 120 }}>
+      <select
+        id="filter-date"
+        value={filters.dateRange}
+        onChange={e => setFilter('dateRange', e.target.value)}
+        style={{ minWidth: 120, ...(dateActive ? activeSelectStyle : {}) }}
+        aria-label="Filter by date range"
+      >
         <option value="all">All Time</option>
         <option value="7d">Last 7 days</option>
         <option value="30d">Last 30 days</option>
         <option value="90d">Last 90 days</option>
       </select>
 
-      <button className="btn-ghost" onClick={resetFilters} id="reset-filters">Reset</button>
+      {/* Reset — only shows accent style when filters are active */}
+      <button
+        className={anyActive ? 'btn-accent' : 'btn-ghost'}
+        onClick={resetFilters}
+        id="reset-filters"
+        aria-label="Reset all filters"
+        style={{ opacity: anyActive ? 1 : 0.5, transition: 'opacity 150ms' }}
+      >
+        Reset
+      </button>
       <div style={{ flex: 1 }} />
-      <button className="btn-accent" id="new-case-btn" onClick={onNewCase}
-        style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+      <button
+        className="btn-accent"
+        id="new-case-btn"
+        onClick={onNewCase}
+        aria-label="Create new case"
+        style={{ display: 'flex', alignItems: 'center', gap: 5 }}
+      >
         <span style={{ fontSize: 13, lineHeight: 1, marginTop: -1 }}>+</span>
         New Case
       </button>
@@ -196,28 +250,45 @@ const PRIORITY_BORDER = {
 
 function CaseRow({ caseData, onOpen }) {
   const [hovered, setHovered] = useState(false);
+  const [focused, setFocused] = useState(false);
   const borderColor = PRIORITY_BORDER[caseData.priority] ?? '#2D2D35';
+  const isHighlit = hovered || focused;
+
+  const handleKeyDown = useCallback((e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onOpen(caseData);
+    }
+  }, [caseData, onOpen]);
 
   return (
     <div
       className="case-row"
+      role="row"
+      tabIndex={0}
+      aria-label={`Open case ${caseData.id}: ${caseData.title}`}
       onClick={() => onOpen(caseData)}
+      onKeyDown={handleKeyDown}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      onFocus={() => setFocused(true)}
+      onBlur={() => setFocused(false)}
       style={{
         display: 'flex', alignItems: 'center',
         padding: '9px 20px',
         borderBottom: '1px solid rgba(255,255,255,0.04)',
-        background: hovered ? '#141418' : 'transparent',
-        borderLeft: `2px solid ${hovered ? borderColor : borderColor + '66'}`,
+        background: isHighlit ? '#141418' : 'transparent',
+        borderLeft: `2px solid ${isHighlit ? borderColor : borderColor + '66'}`,
         transition: 'background 80ms, border-left-color 80ms',
         cursor: 'pointer',
+        outline: focused ? `1px solid rgba(95,168,211,0.4)` : 'none',
+        outlineOffset: '-1px',
       }}
     >
       {/* Case ID */}
       <div style={COL.id}>
         <span style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 11, letterSpacing: '0.03em',
-          color: hovered ? '#5FA8D3' : '#9494A0', transition: 'color 80ms' }}>
+          color: isHighlit ? '#5FA8D3' : '#9494A0', transition: 'color 80ms' }}>
           {caseData.id}
         </span>
       </div>
@@ -225,7 +296,7 @@ function CaseRow({ caseData, onOpen }) {
       {/* Title + investigator inline */}
       <div style={COL.title}>
         <span style={{ fontSize: 12.5, fontWeight: 500, transition: 'color 80ms',
-          color: hovered ? '#E8E8EE' : '#C8C8D0' }}>
+          color: isHighlit ? '#E8E8EE' : '#C8C8D0' }}>
           {caseData.title}
         </span>
         {caseData.investigator && (
@@ -263,7 +334,7 @@ function CaseRow({ caseData, onOpen }) {
       {/* Open action */}
       <div style={COL.action}>
         <span style={{ fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 500,
-          transition: 'color 80ms', color: hovered ? '#5FA8D3' : '#38383F',
+          transition: 'color 80ms', color: isHighlit ? '#5FA8D3' : '#38383F',
           fontFamily: 'Inter, sans-serif' }}>
           Open →
         </span>
@@ -275,12 +346,18 @@ function CaseRow({ caseData, onOpen }) {
 /* ─── Empty State ────────────────────────────────────────────────────────────── */
 function EmptyState({ hasFilters }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 20px', gap: 12 }}>
-      <div style={{ width: 40, height: 40, border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#38383F', fontSize: 18 }}>
-        ⊘
-      </div>
-      <div style={{ color: '#5A5A65', fontSize: 12, textAlign: 'center' }}>
-        {hasFilters ? 'No cases match the current filters.' : 'No cases found.'}
+    <div role="status" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 20px', gap: 14 }}>
+      {/* Authored SVG — no unicode glyph substitutes */}
+      <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="1" y="1" width="34" height="34" rx="1" stroke="rgba(255,255,255,0.08)" strokeWidth="1"/>
+        <circle cx="18" cy="15" r="6" stroke="#38383F" strokeWidth="1.2"/>
+        <line x1="23" y1="20" x2="30" y2="27" stroke="#38383F" strokeWidth="1.2" strokeLinecap="square"/>
+        <line x1="10" y1="27" x2="26" y2="27" stroke="#38383F" strokeWidth="1" strokeDasharray="2 2"/>
+      </svg>
+      <div style={{ color: '#5A5A65', fontSize: 11.5, textAlign: 'center', letterSpacing: '0.02em', fontFamily: 'Inter, sans-serif' }}>
+        {hasFilters
+          ? (<>No cases match the current filters.<br/><span style={{ color: '#38383F', fontSize: 10.5 }}>Adjust or reset filters to see results.</span></>)
+          : 'No cases found.'}
       </div>
     </div>
   );
@@ -301,6 +378,7 @@ function EmptyState({ hasFilters }) {
 export default function CaseDashboard() {
   const navigate = useNavigate();
   const { cases, filters, setFilter, resetFilters, pushNavHistory } = useSentinelStore();
+  const clock = useLiveClock(60_000); // ticks every minute
 
   // Register this page in the nav history on mount
   useEffect(() => {
@@ -354,9 +432,12 @@ export default function CaseDashboard() {
             <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#4ADE80', display: 'inline-block', boxShadow: '0 0 6px #4ADE8066' }} />
             <span className="data-label">System Nominal</span>
           </div>
-          <div style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 10.5, color: '#38383F' }}>
-            {new Date().toUTCString().replace('GMT', 'UTC').slice(0, -4)}
-          </div>
+          <time
+            dateTime={clock.toISOString()}
+            style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 10.5, color: '#38383F' }}
+          >
+            {clock.toUTCString().replace('GMT', 'UTC').slice(0, -4)}
+          </time>
         </div>
       </header>
 
@@ -383,9 +464,14 @@ export default function CaseDashboard() {
       {/* ── Footer ── */}
       <div style={{ padding: '8px 20px', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <span style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 10.5, color: '#38383F' }}>
-          Showing {filteredCases.length} of {cases.length} cases
+          {filteredCases.length === cases.length
+            ? `${cases.length} cases`
+            : `${filteredCases.length} of ${cases.length} cases`
+          }
         </span>
-        <span className="data-label">Last sync: {fmtTimestamp(new Date().toISOString())}</span>
+        <span className="data-label" title={clock.toUTCString()}>
+          Updated {fmtTimestamp(clock.toISOString())}
+        </span>
       </div>
     </div>
   );
