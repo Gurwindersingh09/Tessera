@@ -7,19 +7,18 @@
 
 /* ─── Custom Theme Tokens ───────────────────────────────────────────────────── */
 @theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", "JetBrains Mono", ui-monospace, SFMono-Regular, Consolas, monospace;
+  
   --color-bg-base: #0A0A0C;
   --color-bg-surface: #0F0F12;
   --color-bg-raised: #141418;
   --color-bg-hover: #1A1A20;
   
-  --color-border-subtle: rgba(255,255,255,0.06);
-  --color-border-muted: rgba(255,255,255,0.09);
-  --color-border-visible: rgba(255,255,255,0.13);
-
-  --color-text-primary: #E8E8EE;
-  --color-text-secondary: #9494A0;
-  --color-text-muted: #5A5A65;
-  --color-text-dim: #38383F;
+  --color-space-gray: #090C15;
+  --color-neon-cyan: #00f0ff;
+  --color-warning-amber: #ffb000;
+  --color-alert-red: #ff2a2a;
 
   --color-accent: #5FA8D3;
   --color-accent-dim: rgba(95,168,211,0.15);
@@ -30,42 +29,88 @@
   --color-status-closed: #4B5563;
   --color-status-critical: #EF4444;
 
-  --font-sans: 'Inter', system-ui, sans-serif;
-  --font-mono: 'IBM Plex Mono', 'Courier New', monospace;
+  --animate-sweep: sweep 2s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  @keyframes sweep {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(200%); }
+  }
 }
 
-/* ─── Base Reset & Global ───────────────────────────────────────────────────── */
-*, *::before, *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+@layer base {
+  :root {
+    --background: 226 40% 6%; /* #090C15 */
+    --foreground: 0 0% 100%;
+    --card: 226 40% 6%;
+    --card-foreground: 0 0% 100%;
+    --popover: 226 40% 6%;
+    --popover-foreground: 0 0% 100%;
+    --primary: 184 100% 50%; /* #00f0ff */
+    --primary-foreground: 0 0% 0%;
+    --secondary: 215 28% 17%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 215 28% 17%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 184 100% 50%;
+    --accent-foreground: 0 0% 0%;
+    --destructive: 0 100% 58%; /* #ff2a2a */
+    --destructive-foreground: 0 0% 100%;
+    --border: 215 28% 17%;
+    --input: 215 28% 17%;
+    --ring: 184 100% 50%;
+    --radius: 0rem;
+  }
+
+  *, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    border-color: rgba(255,255,255,0.08);
+  }
+
+  html {
+    font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background-color: #090C15;
+    color: #E8E8EE;
+    font-family: 'Inter', system-ui, sans-serif;
+    min-height: 100vh;
+    overflow: hidden;
+  }
 }
 
-html {
-  font-size: 14px;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-body {
-  background-color: #0A0A0C;
-  color: #E8E8EE;
-  font-family: 'Inter', system-ui, sans-serif;
-  min-height: 100vh;
-  overflow-x: hidden;
-}
-
-/* ─── Scrollbar ─────────────────────────────────────────────────────────────── */
+/* ─── Scrollbars ─────────────────────────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.18); }
 
 /* ─── Utility classes ───────────────────────────────────────────────────────── */
-.font-mono { font-family: 'IBM Plex Mono', 'Courier New', monospace; }
+.font-mono { font-family: 'IBM Plex Mono', 'JetBrains Mono', monospace; }
 .font-sans { font-family: 'Inter', system-ui, sans-serif; }
 
-/* Label above data fields */
+.text-neon-cyan {
+  color: #00f0ff;
+  text-shadow: 0 0 8px rgba(0, 240, 255, 0.6);
+}
+.text-neon-amber {
+  color: #ffb000;
+  text-shadow: 0 0 8px rgba(255, 176, 0, 0.6);
+}
+.text-neon-red {
+  color: #ff2a2a;
+  text-shadow: 0 0 8px rgba(255, 42, 42, 0.6);
+}
+
+.glass-panel {
+  background-color: rgba(2, 6, 23, 0.8);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(30, 41, 59, 1);
+}
+
 .data-label {
   font-size: 0.65rem;
   letter-spacing: 0.12em;
@@ -75,7 +120,6 @@ body {
   font-weight: 500;
 }
 
-/* ─── Grid / Scanline Texture ───────────────────────────────────────────────── */
 .scanline-bg {
   background-image: 
     repeating-linear-gradient(
@@ -94,39 +138,27 @@ body {
   background-size: 40px 40px;
 }
 
-/* ─── Table row transitions ─────────────────────────────────────────────────── */
+/* Row & Nav Entries */
 .case-row {
   transition: background-color 80ms ease;
   cursor: pointer;
   border-left: 2px solid transparent;
 }
-.case-row:hover {
-  background-color: #1A1A20;
-}
+.case-row:hover { background-color: #1A1A20; }
 .case-row.priority-critical { border-left-color: #EF4444; }
 .case-row.priority-high     { border-left-color: #F59E0B; }
 .case-row.priority-medium   { border-left-color: #5FA8D3; }
 .case-row.priority-low      { border-left-color: #4B5563; }
 
-/* ─── Nav history ───────────────────────────────────────────────────────────── */
 .nav-entry {
   transition: color 100ms ease, background-color 100ms ease;
   cursor: pointer;
 }
-.nav-entry:hover {
-  background-color: rgba(255,255,255,0.04);
-}
-.nav-entry.active {
-  color: #5FA8D3;
-}
-.nav-entry.inactive {
-  color: #5A5A65;
-}
-.nav-entry.inactive:hover {
-  color: #9494A0;
-}
+.nav-entry:hover { background-color: rgba(255,255,255,0.04); }
+.nav-entry.active { color: #5FA8D3; }
+.nav-entry.inactive { color: #5A5A65; }
+.nav-entry.inactive:hover { color: #9494A0; }
 
-/* ─── Input / Select ────────────────────────────────────────────────────────── */
 input, select {
   background: transparent;
   border: 1px solid rgba(255,255,255,0.09);
@@ -138,13 +170,10 @@ input, select {
   border-radius: 2px;
   transition: border-color 120ms ease;
 }
-input:focus, select:focus {
-  border-color: rgba(95,168,211,0.45);
-}
+input:focus, select:focus { border-color: rgba(95,168,211,0.45); }
 input::placeholder { color: #5A5A65; }
 select option { background: #141418; color: #E8E8EE; }
 
-/* ─── Minimal Button ────────────────────────────────────────────────────────── */
 .btn-ghost {
   border: 1px solid rgba(255,255,255,0.13);
   color: #9494A0;

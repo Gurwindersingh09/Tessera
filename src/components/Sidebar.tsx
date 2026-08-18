@@ -1,34 +1,6 @@
-/**
- * @file Sidebar.jsx  (Sentinel feature)
- * @description
- * Expanding navigation-history sidebar for the Sentinel platform.
- *
- * WIRE-UP:
- *   Wrap your app layout with <Sidebar /> alongside <main>:
- *
- *   <div style={{ display: 'flex', height: '100vh' }}>
- *     <Sidebar />
- *     <main style={{ flex: 1 }}>
- *       <Routes>...</Routes>
- *     </main>
- *   </div>
- *
- * NAVIGATION HISTORY:
- *   The sidebar reads navigationHistory from useSentinelStore.
- *   Every page in the app should call pushNavHistory() in a useEffect:
- *
- *   const { pushNavHistory } = useSentinelStore();
- *   useEffect(() => {
- *     pushNavHistory({ id: 'my-page', label: 'My Page', path: '/my-page', depth: 0 });
- *   }, []);
- *
- * TOP NAV:
- *   Edit NAV_ITEMS below to match your actual routes.
- */
-
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useSentinelStore } from '../store/useSentinelStore';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { usePhishieldStore } from '../store/usePhishieldStore';
 
 /* ─── SVG Icons ─────────────────────────────────────────────────────────────── */
 const IconDashboard = () => (
@@ -64,8 +36,7 @@ const IconCases = () => (
   </svg>
 );
 
-/* ─── Logo Mark ─────────────────────────────────────────────────────────────── */
-const SentinelMark = () => (
+const PhishieldMark = () => (
   <div style={{
     width: 28, height: 28,
     border: '1.5px solid rgba(95,168,211,0.5)',
@@ -76,60 +47,62 @@ const SentinelMark = () => (
       color: '#5FA8D3', fontSize: 13,
       fontFamily: 'IBM Plex Mono, monospace',
       fontWeight: 500, letterSpacing: '-0.05em',
-    }}>S</span>
+    }}>P</span>
   </div>
 );
 
-/* ─── Top Nav Items ──────────────────────────────────────────────────────────── */
-// Edit paths here to match your router configuration.
 const NAV_ITEMS = [
-  { id: 'dashboard', label: 'Dashboard', path: '/',         icon: IconDashboard },
-  { id: 'search',    label: 'Search',    path: '/search',   icon: IconSearch },
-  { id: 'cases',     label: 'Cases',     path: '/cases',    icon: IconCases },
-  { id: 'settings',  label: 'Settings',  path: '/settings', icon: IconSettings },
+  { id: 'dashboard', label: 'Dashboard', path: '/dashboard', icon: IconDashboard },
+  { id: 'search',    label: 'Search',    path: '/search',    icon: IconSearch },
+  { id: 'cases',     label: 'Cases',     path: '/cases',     icon: IconCases },
+  { id: 'settings',  label: 'Settings',  path: '/settings',  icon: IconSettings },
 ];
 
-/* ─── Sidebar Component ──────────────────────────────────────────────────────── */
-export default function Sidebar() {
+export const Sidebar: React.FC = () => {
   const navigate = useNavigate();
-  const { navigationHistory, truncateNavAt, pushNavHistory } = useSentinelStore();
+  const location = useLocation();
+  const { navigationHistory, truncateNavAt, pushNavHistory } = usePhishieldStore();
 
-  const currentPath = navigationHistory.at(-1)?.path ?? '/';
+  const currentPath = location.pathname;
 
-  const handleNavClick = (item) => {
+  const handleNavClick = (item: typeof NAV_ITEMS[0]) => {
     pushNavHistory({ id: item.id, label: item.label, path: item.path, depth: 0 });
     navigate(item.path);
   };
 
-  const handleHistoryClick = (entry) => {
+  const handleHistoryClick = (entry: typeof navigationHistory[0]) => {
     truncateNavAt(entry.path);
     navigate(entry.path);
   };
 
   return (
     <aside
-      className="sentinel-panel"
+      className="phishield-panel"
       style={{
         width: 224, minWidth: 224,
         background: '#0A0A0C',
         borderRight: '1px solid rgba(255,255,255,0.06)',
         display: 'flex', flexDirection: 'column',
         height: '100vh', position: 'sticky', top: 0,
-        overflowY: 'auto', flexShrink: 0,
+        overflowY: 'auto', flexShrink: 0, zIndex: 30
       }}
     >
-      {/* ── Logo ── */}
-      <div style={{ padding: '18px 16px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: 10 }}>
-        <SentinelMark />
+      {/* Logo */}
+      <div 
+        onClick={() => navigate('/')} 
+        style={{ padding: '18px 16px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}
+        title="Return to Landing Page"
+      >
+        <PhishieldMark />
         <div>
           <div style={{ color: '#E8E8EE', fontSize: 12, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', fontFamily: 'Inter, sans-serif' }}>
-            Sentinel
+            Phishield
           </div>
-          <div className="data-label" style={{ marginTop: 1 }}>Investigative Analytics</div>
+          <div className="data-label" style={{ marginTop: 1 }}>Phishield Platform</div>
         </div>
       </div>
 
-      {/* ── Top Nav ── */}
+      {/* Top Nav */}
       <nav style={{ padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
         {NAV_ITEMS.map((item) => {
           const Icon = item.icon;
@@ -160,7 +133,7 @@ export default function Sidebar() {
         })}
       </nav>
 
-      {/* ── Navigation History Stack ── */}
+      {/* Navigation History Stack */}
       <div style={{ flex: 1, padding: '10px 0', overflowY: 'auto' }}>
         <div className="data-label" style={{ padding: '4px 16px 8px', borderBottom: '1px solid rgba(255,255,255,0.04)', marginBottom: 4 }}>
           Navigation History
@@ -184,7 +157,6 @@ export default function Sidebar() {
                 fontFamily: 'Inter, sans-serif',
               }}
             >
-              {/* Tree connector: horizontal bar */}
               {entry.depth > 0 && (
                 <span style={{
                   position: 'absolute',
@@ -195,7 +167,6 @@ export default function Sidebar() {
                   display: 'block',
                 }} />
               )}
-              {/* Tree connector: vertical bar */}
               {entry.depth > 0 && (
                 <span style={{
                   position: 'absolute',
@@ -214,7 +185,6 @@ export default function Sidebar() {
                 {entry.label}
               </span>
 
-              {/* Active indicator dot */}
               {isLast && (
                 <span style={{
                   marginLeft: 6, width: 4, height: 4,
@@ -227,7 +197,7 @@ export default function Sidebar() {
         })}
       </div>
 
-      {/* ── User Footer ── */}
+      {/* User Footer */}
       <div style={{
         padding: '12px 16px',
         borderTop: '1px solid rgba(255,255,255,0.06)',
@@ -240,15 +210,13 @@ export default function Sidebar() {
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 10, color: '#9494A0', fontWeight: 600, flexShrink: 0,
         }}>
-          {/* TODO: replace with your auth user's initials */}
           RO
         </div>
         <div>
-          {/* TODO: replace with your auth user's name / role */}
           <div style={{ fontSize: 11, color: '#E8E8EE', fontWeight: 500, fontFamily: 'Inter, sans-serif' }}>R. Okafor</div>
           <div className="data-label">Lead Investigator</div>
         </div>
       </div>
     </aside>
   );
-}
+};

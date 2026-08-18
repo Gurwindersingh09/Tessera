@@ -1,1 +1,5 @@
-/* App.css — intentionally empty; all styles are in index.css */
+/* App.css — Global app container styles */
+.custom-div-icon {
+  background: transparent;
+  border: none;
+}
