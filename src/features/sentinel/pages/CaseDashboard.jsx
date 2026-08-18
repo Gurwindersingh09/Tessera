@@ -101,7 +101,7 @@ function StatStrip({ cases }) {
 }
 
 /* ─── Filter Bar ─────────────────────────────────────────────────────────────── */
-function FilterBar({ filters, setFilter, resetFilters, onNewCase, investigators }) {
+function FilterBar({ filters, setFilter, resetFilters, onNewCase }) {
   return (
     <div style={{
       display: 'flex', alignItems: 'center', gap: 8,
@@ -129,12 +129,6 @@ function FilterBar({ filters, setFilter, resetFilters, onNewCase, investigators 
         <option value="active">Active</option>
         <option value="flagged">Flagged</option>
         <option value="closed">Closed</option>
-      </select>
-
-      {/* Investigator filter — dynamically populated from case data */}
-      <select id="filter-investigator" value={filters.investigator} onChange={e => setFilter('investigator', e.target.value)} style={{ minWidth: 130 }}>
-        <option value="all">All Investigators</option>
-        {investigators.map(inv => <option key={inv} value={inv}>{inv}</option>)}
       </select>
 
       {/* Date range filter */}
@@ -313,11 +307,6 @@ export default function CaseDashboard() {
     pushNavHistory({ id: 'dashboard', label: 'Dashboard', path: '/', depth: 0 });
   }, []);
 
-  const investigators = useMemo(
-    () => [...new Set(cases.map(c => c.investigator).filter(Boolean))].sort(),
-    [cases]
-  );
-
   const filteredCases = useMemo(() => {
     const now = new Date();
     return cases.filter(c => {
@@ -326,7 +315,7 @@ export default function CaseDashboard() {
         if (!c.id.toLowerCase().includes(q) && !c.title.toLowerCase().includes(q) && !c.investigator?.toLowerCase().includes(q)) return false;
       }
       if (filters.status !== 'all' && c.status !== filters.status) return false;
-      if (filters.investigator !== 'all' && c.investigator !== filters.investigator) return false;
+
       if (filters.dateRange !== 'all') {
         const days = parseInt(filters.dateRange);
         if (new Date(c.lastUpdated) < new Date(now - days * 86_400_000)) return false;
@@ -335,7 +324,7 @@ export default function CaseDashboard() {
     });
   }, [cases, filters]);
 
-  const hasFilters = filters.search !== '' || filters.status !== 'all' || filters.investigator !== 'all' || filters.dateRange !== 'all';
+  const hasFilters = filters.search !== '' || filters.status !== 'all' || filters.dateRange !== 'all';
 
   const handleOpenCase = (caseData) => {
     pushNavHistory({ id: `case-${caseData.id}`, label: `Case: ${caseData.title}`, path: `/case/${caseData.id}`, depth: 1 });
@@ -380,7 +369,6 @@ export default function CaseDashboard() {
         setFilter={setFilter}
         resetFilters={resetFilters}
         onNewCase={handleNewCase}
-        investigators={investigators}
       />
 
       {/* ── Case Table ── */}

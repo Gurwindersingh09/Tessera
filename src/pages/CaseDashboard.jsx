@@ -98,7 +98,7 @@ function StatStrip({ cases }) {
 }
 
 /* ─── Filter Bar ─────────────────────────────────────────────────────────────── */
-function FilterBar({ filters, setFilter, resetFilters, onNewCase, investigators }) {
+function FilterBar({ filters, setFilter, resetFilters, onNewCase }) {
   return (
     <div style={{
       display: 'flex',
@@ -140,19 +140,6 @@ function FilterBar({ filters, setFilter, resetFilters, onNewCase, investigators 
         <option value="active">Active</option>
         <option value="flagged">Flagged</option>
         <option value="closed">Closed</option>
-      </select>
-
-      {/* Investigator */}
-      <select
-        id="filter-investigator"
-        value={filters.investigator}
-        onChange={e => setFilter('investigator', e.target.value)}
-        style={{ minWidth: 130 }}
-      >
-        <option value="all">All Investigators</option>
-        {investigators.map(inv => (
-          <option key={inv} value={inv}>{inv}</option>
-        ))}
       </select>
 
       {/* Date Range */}
@@ -392,12 +379,6 @@ export default function CaseDashboard() {
     pushNavHistory({ id: 'dashboard', label: 'Dashboard', path: '/', depth: 0 });
   }, []);
 
-  // Unique investigators for filter dropdown
-  const investigators = useMemo(
-    () => [...new Set(cases.map(c => c.investigator).filter(Boolean))].sort(),
-    [cases]
-  );
-
   // Filtered cases
   const filteredCases = useMemo(() => {
     const now = new Date();
@@ -413,8 +394,6 @@ export default function CaseDashboard() {
       }
       // Status
       if (filters.status !== 'all' && c.status !== filters.status) return false;
-      // Investigator
-      if (filters.investigator !== 'all' && c.investigator !== filters.investigator) return false;
       // Date
       if (filters.dateRange !== 'all') {
         const days = parseInt(filters.dateRange);
@@ -428,7 +407,6 @@ export default function CaseDashboard() {
   const hasFilters =
     filters.search !== '' ||
     filters.status !== 'all' ||
-    filters.investigator !== 'all' ||
     filters.dateRange !== 'all';
 
   const handleOpenCase = (caseData) => {
@@ -507,7 +485,6 @@ export default function CaseDashboard() {
         setFilter={setFilter}
         resetFilters={resetFilters}
         onNewCase={handleNewCase}
-        investigators={investigators}
       />
 
       {/* ── Table ── */}
