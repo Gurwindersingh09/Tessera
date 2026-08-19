@@ -235,6 +235,22 @@
   background-color: #EDE5D8;
 }
 
+.case-menu-item {
+  transition: background-color 100ms ease, color 100ms ease;
+}
+.case-menu-item:hover {
+  background-color: #F3EDE4 !important;
+  color: #C4622D !important;
+}
+
+.case-menu-item-destructive {
+  transition: background-color 100ms ease, color 100ms ease;
+}
+.case-menu-item-destructive:hover {
+  background-color: #B5392415 !important;
+  color: #B53924 !important;
+}
+
 .case-row.priority-critical {
   border-left-color: #B53924;
 }

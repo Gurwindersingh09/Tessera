@@ -4,7 +4,22 @@ import { usePhishieldStore } from '../store/usePhishieldStore';
 import { useAnalyticsStore } from '../store/useAnalyticsStore';
 import { CaseItem } from '../types/schema';
 import { motion, useMotionValue, useTransform, animate, AnimatePresence } from 'framer-motion';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { 
+  ChevronDown, 
+  ChevronUp, 
+  Trash2, 
+  CheckSquare, 
+  Square, 
+  Activity, 
+  ShieldAlert, 
+  UserPlus, 
+  X,
+  RotateCcw,
+  Check
+} from 'lucide-react';
+import { CaseActionsMenu, INVESTIGATORS_LIST } from '../components/CaseActionsMenu';
+import { CaseDeleteModal } from '../components/CaseDeleteModal';
+import { ToastContainer, ToastMessage } from '../components/Toast';
 
 /* ─── Easing ─── */
 const EASE_SHARP: [number, number, number, number] = [0.4, 0, 0.2, 1];
@@ -36,9 +51,10 @@ function fmtAbsDate(iso: string) {
 
 /* ─── Status Config — warm tonal ─── */
 const STATUS_CONFIG: Record<string, { color: string; darkColor: string; label: string; pulse?: boolean }> = {
-  active:  { color: '#C4622D', darkColor: '#8C3D1A', label: 'Active' },
-  flagged: { color: '#B53924', darkColor: '#8A2517', label: 'Flagged', pulse: true },
-  closed:  { color: '#3D7A4A', darkColor: '#2B5A36', label: 'Closed' },
+  active:   { color: '#C4622D', darkColor: '#8C3D1A', label: 'Active' },
+  flagged:  { color: '#B53924', darkColor: '#8A2517', label: 'Flagged', pulse: true },
+  closed:   { color: '#3D7A4A', darkColor: '#2B5A36', label: 'Closed' },
+  archived: { color: '#7A6F63', darkColor: '#4A4340', label: 'Archived' },
 };
 
 function StatusCell({ status }: { status: string }) {
@@ -51,7 +67,9 @@ function StatusCell({ status }: { status: string }) {
         boxShadow: 'none',
         animation: cfg.pulse ? 'status-pulse 2.5s ease-in-out infinite' : 'none',
       }} />
-      <span style={{ fontSize: 11, color: '#7A6F63', letterSpacing: '0.02em' }}>{cfg.label}</span>
+      <span style={{ fontSize: 11, color: '#7A6F63', letterSpacing: '0.02em', textTransform: 'capitalize' }}>
+        {cfg.label}
+      </span>
     </span>
   );
 }
@@ -147,7 +165,7 @@ function StatStrip({ cases }: { cases: CaseItem[] }) {
       color: '#C4622D',
       trend: [8, 9, 10, 9, 11, 11, active],
       isUp: true,
-      isHeavy: true, // Visually heavier
+      isHeavy: true,
       dotColor: '#C4622D',
     },
     {
@@ -156,7 +174,7 @@ function StatStrip({ cases }: { cases: CaseItem[] }) {
       color: '#B53924',
       trend: [2, 3, 2, 4, 3, 5, flagged],
       isUp: true,
-      isHeavy: true, // Visually heavier
+      isHeavy: true,
       dotColor: '#B53924',
       pulse: true,
     },
@@ -221,8 +239,22 @@ function StatStrip({ cases }: { cases: CaseItem[] }) {
   );
 }
 
-/* ─── Priority Queue: 3 Compact Cards for Highest-Anomaly Active Cases with Compress/Expand ─── */
-function PriorityQueue({ cases, onOpen }: { cases: CaseItem[]; onOpen: (c: CaseItem) => void }) {
+/* ─── Priority Queue: 3 Compact Cards for Highest-Anomaly Active Cases with CaseActionsMenu ─── */
+function PriorityQueue({ 
+  cases, 
+  onOpen,
+  onStatusChange,
+  onPriorityChange,
+  onReassign,
+  onDeleteRequest,
+}: { 
+  cases: CaseItem[]; 
+  onOpen: (c: CaseItem) => void;
+  onStatusChange: (caseId: string, status: CaseItem['status']) => void;
+  onPriorityChange: (caseId: string, priority: CaseItem['priority']) => void;
+  onReassign: (caseId: string, investigator: string) => void;
+  onDeleteRequest: (caseData: CaseItem) => void;
+}) {
   const [collapsed, setCollapsed] = useState(false);
 
   const priorityCases = useMemo(() => {
@@ -340,17 +372,30 @@ function PriorityQueue({ cases, onOpen }: { cases: CaseItem[]; onOpen: (c: CaseI
                       {c.priority}
                     </span>
                   </div>
-                  <div
-                    title={`Assigned: ${c.investigator}`}
-                    style={{
-                      width: 22, height: 22, borderRadius: '50%',
-                      background: '#F3EDE4', border: '1px solid #DDD5CA',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: 9, fontWeight: 600, color: '#7A6F63',
-                      fontFamily: 'Inter, sans-serif',
-                    }}
-                  >
-                    {initials}
+                  
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <div
+                      title={`Assigned: ${c.investigator}`}
+                      style={{
+                        width: 22, height: 22, borderRadius: '50%',
+                        background: '#F3EDE4', border: '1px solid #DDD5CA',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: 9, fontWeight: 600, color: '#7A6F63',
+                        fontFamily: 'Inter, sans-serif',
+                      }}
+                    >
+                      {initials}
+                    </div>
+
+                    <CaseActionsMenu
+                      caseData={c}
+                      onStatusChange={onStatusChange}
+                      onPriorityChange={onPriorityChange}
+                      onReassign={onReassign}
+                      onDeleteRequest={onDeleteRequest}
+                      onOpenCase={onOpen}
+                      alignRight={true}
+                    />
                   </div>
                 </div>
 
@@ -402,8 +447,8 @@ function PriorityQueue({ cases, onOpen }: { cases: CaseItem[]; onOpen: (c: CaseI
                   <span style={{ width: 4, height: 4, borderRadius: '50%', background: '#B53924', flexShrink: 0 }} />
                   <span>
                     {c.anomalyCount >= 10
-                      ? `${c.anomalyCount} anomalies · Rapid transaction volume · Unreviewed 2d`
-                      : `${c.anomalyCount} anomalies · Pattern deviation flagged by system`}
+                      ? `${c.anomalyCount} anomalies · Rapid transaction volume`
+                      : `${c.anomalyCount} anomalies · Pattern deviation flagged`}
                   </span>
                 </div>
               </motion.div>
@@ -415,7 +460,12 @@ function PriorityQueue({ cases, onOpen }: { cases: CaseItem[]; onOpen: (c: CaseI
   );
 }
 
-function FilterBar({ filters, setFilter, resetFilters, onNewCase }: {
+function FilterBar({ 
+  filters, 
+  setFilter, 
+  resetFilters, 
+  onNewCase,
+}: {
   filters: any;
   setFilter: (key: any, val: string) => void;
   resetFilters: () => void;
@@ -441,7 +491,7 @@ function FilterBar({ filters, setFilter, resetFilters, onNewCase }: {
           transition: 'color 120ms',
         }}>⌕</span>
         <input
-          id="case-search" type="text" placeholder="Search ID, title..."
+          id="case-search" type="text" placeholder="Search ID, title, investigator..."
           value={filters.search} onChange={e => setFilter('search', e.target.value)}
           style={{ width: '100%', paddingLeft: 22, ...(filters.search ? { borderColor: '#C4622D' } : {}) }}
           spellCheck={false} aria-label="Search cases"
@@ -456,6 +506,7 @@ function FilterBar({ filters, setFilter, resetFilters, onNewCase }: {
         <option value="active">Active</option>
         <option value="flagged">Flagged</option>
         <option value="closed">Closed</option>
+        <option value="archived">Archived</option>
       </select>
 
       <select
@@ -486,25 +537,25 @@ function FilterBar({ filters, setFilter, resetFilters, onNewCase }: {
 }
 
 const COL = {
-  id:        { width: 100, flexShrink: 0 },
+  select:    { width: 34,  flexShrink: 0, textAlign: 'center' as const },
+  id:        { width: 95,  flexShrink: 0 },
   title:     { flex: 1, minWidth: 180 },
   status:    { width: 90,  flexShrink: 0 },
-  entities:  { width: 80,  flexShrink: 0, textAlign: 'right' as const },
-  anomalies: { width: 80,  flexShrink: 0, textAlign: 'right' as const },
-  updated:   { width: 100, flexShrink: 0, textAlign: 'right' as const },
-  action:    { width: 56,  flexShrink: 0, textAlign: 'center' as const },
+  entities:  { width: 75,  flexShrink: 0, textAlign: 'right' as const },
+  anomalies: { width: 75,  flexShrink: 0, textAlign: 'right' as const },
+  updated:   { width: 95,  flexShrink: 0, textAlign: 'right' as const },
+  action:    { width: 75,  flexShrink: 0, textAlign: 'right' as const },
 };
 
-function TableHeader() {
-  const headers = [
-    { key: 'id',        label: 'Case ID' },
-    { key: 'title',     label: 'Title' },
-    { key: 'status',    label: 'Status' },
-    { key: 'entities',  label: 'Entities' },
-    { key: 'anomalies', label: 'Anomalies' },
-    { key: 'updated',   label: 'Last Updated' },
-    { key: 'action',    label: '' },
-  ];
+function TableHeader({
+  allSelected,
+  someSelected,
+  onToggleSelectAll,
+}: {
+  allSelected: boolean;
+  someSelected: boolean;
+  onToggleSelectAll: () => void;
+}) {
   return (
     <div style={{
       display: 'flex', alignItems: 'center',
@@ -513,9 +564,35 @@ function TableHeader() {
       background: '#F3EDE4',
       position: 'sticky', top: 0, zIndex: 10,
     }}>
-      {headers.map(h => (
-        <div key={h.key} className="data-label" style={COL[h.key as keyof typeof COL]}>{h.label}</div>
-      ))}
+      <div style={COL.select}>
+        <button
+          type="button"
+          onClick={onToggleSelectAll}
+          title={allSelected ? "Deselect all" : "Select all"}
+          style={{
+            border: 'none', background: 'transparent', cursor: 'pointer', padding: 0,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#7A6F63'
+          }}
+        >
+          {allSelected ? (
+            <CheckSquare className="w-3.5 h-3.5 text-[#C4622D]" />
+          ) : someSelected ? (
+            <div style={{ width: 14, height: 14, border: '1.5px solid #C4622D', borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <span style={{ width: 8, height: 2, background: '#C4622D', borderRadius: 1 }} />
+            </div>
+          ) : (
+            <Square className="w-3.5 h-3.5 text-[#DDD5CA] hover:text-[#7A6F63]" />
+          )}
+        </button>
+      </div>
+
+      <div className="data-label" style={COL.id}>Case ID</div>
+      <div className="data-label" style={COL.title}>Title</div>
+      <div className="data-label" style={COL.status}>Status</div>
+      <div className="data-label" style={COL.entities}>Entities</div>
+      <div className="data-label" style={COL.anomalies}>Anomalies</div>
+      <div className="data-label" style={COL.updated}>Last Updated</div>
+      <div className="data-label" style={COL.action}>Actions</div>
     </div>
   );
 }
@@ -526,11 +603,42 @@ const rowVariants = {
   visible: (i: number) => ({
     opacity: 1,
     y: 0,
-    transition: { delay: i * 0.05, duration: 0.35, ease: EASE_SHARP },
+    transition: { delay: i * 0.04, duration: 0.3, ease: EASE_SHARP },
   }),
+  exit: {
+    opacity: 0,
+    height: 0,
+    paddingTop: 0,
+    paddingBottom: 0,
+    transition: { duration: 0.25, ease: EASE_SHARP },
+  },
 };
 
-function CaseRow({ caseData, onOpen, index, featured }: { caseData: CaseItem; onOpen: (c: CaseItem) => void; index: number; featured?: boolean }) {
+function CaseRow({ 
+  caseData, 
+  onOpen, 
+  index, 
+  featured,
+  isSelected,
+  onToggleSelect,
+  hasAnySelection,
+  onStatusChange,
+  onPriorityChange,
+  onReassign,
+  onDeleteRequest,
+}: { 
+  caseData: CaseItem; 
+  onOpen: (c: CaseItem) => void; 
+  index: number; 
+  featured?: boolean;
+  isSelected: boolean;
+  onToggleSelect: (id: string) => void;
+  hasAnySelection: boolean;
+  onStatusChange: (caseId: string, status: CaseItem['status']) => void;
+  onPriorityChange: (caseId: string, priority: CaseItem['priority']) => void;
+  onReassign: (caseId: string, investigator: string) => void;
+  onDeleteRequest: (caseData: CaseItem) => void;
+}) {
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
 
@@ -544,7 +652,7 @@ function CaseRow({ caseData, onOpen, index, featured }: { caseData: CaseItem; on
   };
 
   const borderColor = getBorderColor();
-  const isHighlit = hovered || focused;
+  const isHighlit = hovered || focused || isSelected;
   const isHighAnomaly = caseData.anomalyCount >= 10;
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
@@ -558,6 +666,7 @@ function CaseRow({ caseData, onOpen, index, featured }: { caseData: CaseItem; on
         variants={rowVariants}
         initial="hidden"
         animate="visible"
+        exit="exit"
         whileHover={{ y: -2, boxShadow: '0 4px 12px rgba(42,36,32,0.08)' }}
         role="row" tabIndex={0}
         aria-label={`Open featured case ${caseData.id}: ${caseData.title}`}
@@ -570,9 +679,9 @@ function CaseRow({ caseData, onOpen, index, featured }: { caseData: CaseItem; on
         style={{
           margin: '12px 16px',
           padding: '16px 20px',
-          background: '#FFFFFF',
-          border: `1px solid ${isHighlit ? '#E8B896' : '#DDD5CA'}`,
-          borderLeft: `3px solid ${borderColor}`,
+          background: isSelected ? '#FAF6F0' : '#FFFFFF',
+          border: `1px solid ${isSelected ? '#C4622D' : (isHighlit ? '#E8B896' : '#DDD5CA')}`,
+          borderLeft: `3.5px solid ${borderColor}`,
           borderRadius: 10,
           boxShadow: '0 1px 3px rgba(42,36,32,0.06), 0 1px 2px rgba(42,36,32,0.04)',
           cursor: 'pointer',
@@ -581,10 +690,26 @@ function CaseRow({ caseData, onOpen, index, featured }: { caseData: CaseItem; on
           display: 'flex',
           flexDirection: 'column',
           gap: 10,
+          position: 'relative',
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleSelect(caseData.id);
+              }}
+              style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center' }}
+            >
+              {isSelected ? (
+                <CheckSquare className="w-4 h-4 text-[#C4622D]" />
+              ) : (
+                <Square className="w-4 h-4 text-[#DDD5CA] hover:text-[#7A6F63]" />
+              )}
+            </button>
+
             <span style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 11, letterSpacing: '0.03em', color: '#C4622D', fontWeight: 600 }}>
               {caseData.id}
             </span>
@@ -596,10 +721,24 @@ function CaseRow({ caseData, onOpen, index, featured }: { caseData: CaseItem; on
               {caseData.priority} Priority
             </span>
           </div>
-          <span style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 10.5, color: '#7A6F63' }}>
-            {fmtTimestamp(caseData.lastUpdated)}
-          </span>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 10.5, color: '#7A6F63' }}>
+              {fmtTimestamp(caseData.lastUpdated)}
+            </span>
+
+            <CaseActionsMenu
+              caseData={caseData}
+              onStatusChange={onStatusChange}
+              onPriorityChange={onPriorityChange}
+              onReassign={onReassign}
+              onDeleteRequest={onDeleteRequest}
+              onOpenCase={onOpen}
+              alignRight={true}
+            />
+          </div>
         </div>
+
         <div>
           <span style={{ fontSize: 16, fontWeight: 600, color: '#2A2420', fontFamily: '"Fraunces", Georgia, serif' }}>
             {caseData.title}
@@ -610,6 +749,7 @@ function CaseRow({ caseData, onOpen, index, featured }: { caseData: CaseItem; on
             </span>
           )}
         </div>
+
         <div style={{ display: 'flex', gap: 16, fontSize: 11, color: '#7A6F63' }}>
           <span><span style={{ fontFamily: 'IBM Plex Mono, monospace', color: '#8C3D1A', fontWeight: 600 }}>{caseData.entityCount}</span> entities tracked</span>
           <span><span style={{ fontFamily: 'IBM Plex Mono, monospace', color: caseData.anomalyCount > 0 ? '#B53924' : '#3D7A4A', fontWeight: 600 }}>{caseData.anomalyCount}</span> anomalies detected</span>
@@ -618,8 +758,7 @@ function CaseRow({ caseData, onOpen, index, featured }: { caseData: CaseItem; on
     );
   }
 
-  // Row height varies slightly by anomaly severity: 10+ anomalies get more vertical padding and bolder weight
-  const rowVerticalPadding = isHighAnomaly ? '13px' : '8.5px';
+  const rowVerticalPadding = isHighAnomaly ? '12px' : '8px';
 
   return (
     <motion.div
@@ -627,6 +766,7 @@ function CaseRow({ caseData, onOpen, index, featured }: { caseData: CaseItem; on
       variants={rowVariants}
       initial="hidden"
       animate="visible"
+      exit="exit"
       whileHover={{ y: -1, boxShadow: '0 2px 8px rgba(42,36,32,0.06)' }}
       className="case-row"
       role="row" tabIndex={0}
@@ -641,14 +781,37 @@ function CaseRow({ caseData, onOpen, index, featured }: { caseData: CaseItem; on
         display: 'flex', alignItems: 'center',
         padding: `${rowVerticalPadding} 20px`,
         borderBottom: '1px solid #DDD5CA',
-        background: isHighlit ? '#EDE5D8' : (isHighAnomaly ? '#FFFDFB' : 'transparent'),
-        borderLeft: `3px solid ${borderColor}`,
-        transition: 'background 80ms, border-left-color 80ms, padding 150ms',
+        background: isSelected ? '#FAF6F0' : (isHighlit ? '#EDE5D8' : (isHighAnomaly ? '#FFFDFB' : 'transparent')),
+        borderLeft: `3.5px solid ${borderColor}`,
+        transition: 'background 80ms, border-left-color 80ms, padding 120ms',
         cursor: 'pointer',
         outline: focused ? '2px solid #C4622D' : 'none',
         outlineOffset: -1,
       }}
     >
+      {/* Checkbox */}
+      <div style={COL.select}>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleSelect(caseData.id);
+          }}
+          style={{
+            border: 'none', background: 'transparent', cursor: 'pointer', padding: 0,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            opacity: isSelected || hovered || hasAnySelection ? 1 : 0,
+            transition: 'opacity 120ms ease',
+          }}
+        >
+          {isSelected ? (
+            <CheckSquare className="w-3.5 h-3.5 text-[#C4622D]" />
+          ) : (
+            <Square className="w-3.5 h-3.5 text-[#DDD5CA] hover:text-[#7A6F63]" />
+          )}
+        </button>
+      </div>
+
       <div style={COL.id}>
         <span style={{
           fontFamily: 'IBM Plex Mono, monospace',
@@ -703,10 +866,28 @@ function CaseRow({ caseData, onOpen, index, featured }: { caseData: CaseItem; on
         </span>
       </div>
 
-      <div style={COL.action}>
-        <span style={{ fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 500, transition: 'color 80ms', color: isHighlit ? '#C4622D' : '#A89F93', fontFamily: 'Inter, sans-serif' }}>
-          Open →
-        </span>
+      {/* Actions: Kebab button + Open link visible on hover */}
+      <div style={{ ...COL.action, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 6 }}>
+        <div style={{ opacity: hovered || focused ? 1 : 0, transition: 'opacity 100ms ease' }}>
+          <span 
+            onClick={(e) => { e.stopPropagation(); onOpen(caseData); }}
+            style={{ fontSize: 9.5, letterSpacing: '0.06em', textTransform: 'uppercase', fontWeight: 600, color: '#C4622D', fontFamily: 'Inter, sans-serif' }}
+          >
+            Open →
+          </span>
+        </div>
+
+        <div style={{ opacity: hovered || focused ? 1 : 0.4, transition: 'opacity 100ms ease' }}>
+          <CaseActionsMenu
+            caseData={caseData}
+            onStatusChange={onStatusChange}
+            onPriorityChange={onPriorityChange}
+            onReassign={onReassign}
+            onDeleteRequest={onDeleteRequest}
+            onOpenCase={onOpen}
+            alignRight={true}
+          />
+        </div>
       </div>
     </motion.div>
   );
@@ -732,9 +913,48 @@ function EmptyState({ hasFilters }: { hasFilters: boolean }) {
 
 export const CaseDashboard: React.FC = () => {
   const navigate = useNavigate();
-  const { cases, filters, setFilter, resetFilters, pushNavHistory } = usePhishieldStore();
+  const { 
+    cases, 
+    filters, 
+    setFilter, 
+    resetFilters, 
+    pushNavHistory, 
+    updateCase, 
+    updateBulkCases,
+    deleteCase, 
+    deleteBulkCases,
+    restoreCase,
+    restoreBulkCases,
+  } = usePhishieldStore();
   const { setCaseId } = useAnalyticsStore();
   const clock = useLiveClock(60_000);
+
+  // Multi-selection state
+  const [selectedCaseIds, setSelectedCaseIds] = useState<Set<string>>(new Set());
+
+  // Delete modal state
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [caseToDelete, setCaseToDelete] = useState<CaseItem | null>(null);
+  const [bulkDeleteTarget, setBulkDeleteTarget] = useState<CaseItem[]>([]);
+
+  // Toast notifications state
+  const [toasts, setToasts] = useState<ToastMessage[]>([]);
+
+  const addToast = (toast: Omit<ToastMessage, 'id'>) => {
+    const id = `toast-${Date.now()}-${Math.random()}`;
+    const duration = toast.duration || (toast.onUndo ? 5500 : 3200);
+    const newToast: ToastMessage = { ...toast, id, duration };
+
+    setToasts(prev => [...prev, newToast]);
+
+    setTimeout(() => {
+      setToasts(prev => prev.filter(t => t.id !== id));
+    }, duration);
+  };
+
+  const removeToast = (id: string) => {
+    setToasts(prev => prev.filter(t => t.id !== id));
+  };
 
   useEffect(() => {
     pushNavHistory({ id: 'dashboard', label: 'Dashboard', path: '/dashboard', depth: 0 });
@@ -759,6 +979,29 @@ export const CaseDashboard: React.FC = () => {
 
   const hasFilters = filters.search !== '' || filters.status !== 'all' || filters.dateRange !== 'all';
 
+  const allFilteredSelected = filteredCases.length > 0 && filteredCases.every(c => selectedCaseIds.has(c.id));
+  const someFilteredSelected = filteredCases.some(c => selectedCaseIds.has(c.id)) && !allFilteredSelected;
+
+  const handleToggleSelect = (id: string) => {
+    setSelectedCaseIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const handleToggleSelectAll = () => {
+    if (allFilteredSelected) {
+      setSelectedCaseIds(new Set());
+    } else {
+      setSelectedCaseIds(new Set(filteredCases.map(c => c.id)));
+    }
+  };
+
   const handleOpenCase = (caseData: CaseItem) => {
     setCaseId(caseData.id);
     pushNavHistory({ id: `case-${caseData.id}`, label: `Case: ${caseData.title}`, path: `/case/${caseData.id}`, depth: 1 });
@@ -770,11 +1013,128 @@ export const CaseDashboard: React.FC = () => {
     navigate('/new-case');
   };
 
+  // Case Action Handlers
+  const handleStatusChange = (caseId: string, status: CaseItem['status']) => {
+    updateCase(caseId, { status });
+    addToast({
+      title: 'Case Status Updated',
+      description: `${caseId} status marked as ${status.toUpperCase()}.`,
+      type: 'success',
+    });
+  };
+
+  const handlePriorityChange = (caseId: string, priority: CaseItem['priority']) => {
+    updateCase(caseId, { priority });
+    addToast({
+      title: 'Priority Tier Changed',
+      description: `${caseId} updated to ${priority.toUpperCase()} priority.`,
+      type: 'info',
+    });
+  };
+
+  const handleReassign = (caseId: string, investigator: string) => {
+    updateCase(caseId, { investigator });
+    addToast({
+      title: 'Case Reassigned',
+      description: `${caseId} assigned to lead investigator ${investigator}.`,
+      type: 'success',
+    });
+  };
+
+  const handleDeleteRequest = (caseData: CaseItem) => {
+    setCaseToDelete(caseData);
+    setBulkDeleteTarget([]);
+    setDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (bulkDeleteTarget.length > 0) {
+      // Bulk Delete
+      const deletedItems = [...bulkDeleteTarget];
+      const deletedIds = deletedItems.map(c => c.id);
+      deleteBulkCases(deletedIds);
+      setSelectedCaseIds(new Set());
+
+      addToast({
+        title: 'Cases Deleted',
+        description: `${deletedItems.length} cases removed from workspace.`,
+        type: 'warning',
+        onUndo: () => {
+          restoreBulkCases(deletedItems);
+          addToast({ title: 'Cases Restored', description: `${deletedItems.length} cases restored.`, type: 'success' });
+        },
+        undoLabel: 'Undo',
+        duration: 5500,
+      });
+    } else if (caseToDelete) {
+      // Single Delete
+      const target = { ...caseToDelete };
+      const originalIdx = cases.findIndex(c => c.id === target.id);
+      deleteCase(target.id);
+      setSelectedCaseIds(prev => {
+        const next = new Set(prev);
+        next.delete(target.id);
+        return next;
+      });
+
+      addToast({
+        title: 'Case File Deleted',
+        description: `${target.id} — ${target.title} removed.`,
+        type: 'warning',
+        onUndo: () => {
+          restoreCase(target, originalIdx);
+          addToast({ title: 'Case Restored', description: `${target.id} restored to workspace.`, type: 'success' });
+        },
+        undoLabel: 'Undo',
+        duration: 5500,
+      });
+    }
+  };
+
+  // Bulk Actions
+  const handleBulkStatusChange = (status: CaseItem['status']) => {
+    const ids = Array.from(selectedCaseIds);
+    updateBulkCases(ids, { status });
+    addToast({
+      title: 'Bulk Status Updated',
+      description: `${ids.length} cases marked as ${status.toUpperCase()}.`,
+      type: 'success',
+    });
+  };
+
+  const handleBulkPriorityChange = (priority: CaseItem['priority']) => {
+    const ids = Array.from(selectedCaseIds);
+    updateBulkCases(ids, { priority });
+    addToast({
+      title: 'Bulk Priority Updated',
+      description: `${ids.length} cases set to ${priority.toUpperCase()} priority.`,
+      type: 'info',
+    });
+  };
+
+  const handleBulkReassign = (investigator: string) => {
+    const ids = Array.from(selectedCaseIds);
+    updateBulkCases(ids, { investigator });
+    addToast({
+      title: 'Bulk Reassigned',
+      description: `${ids.length} cases assigned to ${investigator}.`,
+      type: 'success',
+    });
+  };
+
+  const handleBulkDeleteRequest = () => {
+    const targetCases = cases.filter(c => selectedCaseIds.has(c.id));
+    setBulkDeleteTarget(targetCases);
+    setCaseToDelete(null);
+    setDeleteModalOpen(true);
+  };
+
   return (
     <div
       className="grain-texture"
-      style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100vh', overflowY: 'auto', background: '#FAF6F0' }}
+      style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100vh', overflowY: 'auto', background: '#FAF6F0', position: 'relative' }}
     >
+      {/* 1. Header */}
       <header style={{ padding: '18px 24px 14px', borderBottom: '1px solid #DDD5CA', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, position: 'relative', zIndex: 1 }}>
         <div>
           <div className="data-label" style={{ marginBottom: 4 }}>Phishield / Dashboard</div>
@@ -796,15 +1156,22 @@ export const CaseDashboard: React.FC = () => {
         </div>
       </header>
 
-      {/* 1. Rich Stats Strip with Sparklines & Visual Weights */}
+      {/* 2. Rich Stats Strip */}
       <StatStrip cases={cases} />
 
-      {/* 2. Priority Queue: 3 Compact Cards for Top Risk Cases */}
+      {/* 3. Priority Queue: 3 Compact Cards */}
       {!hasFilters && (
-        <PriorityQueue cases={cases} onOpen={handleOpenCase} />
+        <PriorityQueue 
+          cases={cases} 
+          onOpen={handleOpenCase}
+          onStatusChange={handleStatusChange}
+          onPriorityChange={handlePriorityChange}
+          onReassign={handleReassign}
+          onDeleteRequest={handleDeleteRequest}
+        />
       )}
 
-      {/* 3. Filter Bar */}
+      {/* 4. Filter Bar */}
       <FilterBar
         filters={filters}
         setFilter={setFilter}
@@ -812,24 +1179,39 @@ export const CaseDashboard: React.FC = () => {
         onNewCase={handleNewCase}
       />
 
-      {/* 4. Cases Table with Featured Hero Card & Varied Row Padding */}
+      {/* 5. Cases Table */}
       <div style={{ flex: 1, overflowY: 'auto', position: 'relative', zIndex: 1 }}>
-        <TableHeader />
-        {filteredCases.length === 0
-          ? <EmptyState hasFilters={hasFilters} />
-          : filteredCases.map((c, i) => (
+        <TableHeader 
+          allSelected={allFilteredSelected}
+          someSelected={someFilteredSelected}
+          onToggleSelectAll={handleToggleSelectAll}
+        />
+
+        <AnimatePresence mode="popLayout">
+          {filteredCases.length === 0 ? (
+            <EmptyState hasFilters={hasFilters} />
+          ) : (
+            filteredCases.map((c, i) => (
               <CaseRow
                 key={c.id}
                 caseData={c}
                 onOpen={handleOpenCase}
                 index={i}
                 featured={i === 0 && !hasFilters}
+                isSelected={selectedCaseIds.has(c.id)}
+                onToggleSelect={handleToggleSelect}
+                hasAnySelection={selectedCaseIds.size > 0}
+                onStatusChange={handleStatusChange}
+                onPriorityChange={handlePriorityChange}
+                onReassign={handleReassign}
+                onDeleteRequest={handleDeleteRequest}
               />
             ))
-        }
+          )}
+        </AnimatePresence>
       </div>
 
-      {/* 5. Footer */}
+      {/* 6. Footer */}
       <div style={{ padding: '8px 20px', borderTop: '1px solid #DDD5CA', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative', zIndex: 1, background: '#FAF6F0' }}>
         <span style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 10.5, color: '#7A6F63' }}>
           {filteredCases.length === cases.length
@@ -841,6 +1223,131 @@ export const CaseDashboard: React.FC = () => {
           Updated {fmtTimestamp(clock.toISOString())}
         </span>
       </div>
+
+      {/* 7. Floating Bulk Action Toolbar */}
+      <AnimatePresence>
+        {selectedCaseIds.size > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 24, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 24, scale: 0.96 }}
+            transition={{ duration: 0.25, ease: EASE_SHARP }}
+            style={{
+              position: 'fixed',
+              bottom: 24,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              zIndex: 800,
+              background: '#FFFFFF',
+              border: '1px solid #DDD5CA',
+              borderTop: '2px solid #C4622D',
+              borderRadius: 8,
+              padding: '8px 16px',
+              boxShadow: '0 8px 32px rgba(42, 36, 32, 0.18)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 12,
+              maxWidth: '90vw',
+              flexWrap: 'wrap',
+            }}
+          >
+            {/* Selection Count */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, paddingRight: 10, borderRight: '1px solid #DDD5CA' }}>
+              <span style={{
+                background: '#C4622D', color: '#FFFFFF',
+                fontSize: 10.5, fontFamily: 'IBM Plex Mono, monospace', fontWeight: 600,
+                padding: '2px 7px', borderRadius: 4,
+              }}>
+                {selectedCaseIds.size}
+              </span>
+              <span style={{ fontSize: 11.5, fontWeight: 600, color: '#2A2420', fontFamily: 'Inter, sans-serif' }}>
+                Selected
+              </span>
+            </div>
+
+            {/* Bulk Status */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              <span className="data-label" style={{ fontSize: '0.6rem' }}>Status:</span>
+              {(['active', 'flagged', 'closed'] as const).map(st => (
+                <button
+                  key={st}
+                  type="button"
+                  onClick={() => handleBulkStatusChange(st)}
+                  className="btn-ghost"
+                  style={{ padding: '3px 8px', fontSize: '9.5px', textTransform: 'capitalize' }}
+                >
+                  {st}
+                </button>
+              ))}
+            </div>
+
+            {/* Bulk Priority */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4, paddingLeft: 6, borderLeft: '1px solid #DDD5CA' }}>
+              <span className="data-label" style={{ fontSize: '0.6rem' }}>Priority:</span>
+              {(['critical', 'high', 'medium'] as const).map(pr => (
+                <button
+                  key={pr}
+                  type="button"
+                  onClick={() => handleBulkPriorityChange(pr)}
+                  className="btn-ghost"
+                  style={{ padding: '3px 8px', fontSize: '9.5px', textTransform: 'capitalize' }}
+                >
+                  {pr}
+                </button>
+              ))}
+            </div>
+
+            {/* Bulk Delete */}
+            <div style={{ paddingLeft: 6, borderLeft: '1px solid #DDD5CA' }}>
+              <button
+                type="button"
+                onClick={handleBulkDeleteRequest}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 5,
+                  background: '#B5392415', border: '1px solid #B5392440',
+                  color: '#B53924', borderRadius: 4, padding: '4px 10px',
+                  fontSize: 10.5, fontWeight: 600, cursor: 'pointer',
+                  fontFamily: 'Inter, sans-serif',
+                }}
+              >
+                <Trash2 className="w-3.5 h-3.5 text-[#B53924]" />
+                <span>Delete ({selectedCaseIds.size})</span>
+              </button>
+            </div>
+
+            {/* Deselect */}
+            <button
+              type="button"
+              onClick={() => setSelectedCaseIds(new Set())}
+              style={{
+                border: 'none', background: 'transparent',
+                color: '#7A6F63', cursor: 'pointer', padding: '4px',
+                display: 'flex', alignItems: 'center', gap: 3,
+                fontSize: 11,
+              }}
+              title="Deselect all"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* 8. Delete Confirmation Modal */}
+      <CaseDeleteModal
+        isOpen={deleteModalOpen}
+        targetCase={caseToDelete}
+        bulkCases={bulkDeleteTarget}
+        onClose={() => {
+          setDeleteModalOpen(false);
+          setCaseToDelete(null);
+          setBulkDeleteTarget([]);
+        }}
+        onConfirm={handleConfirmDelete}
+      />
+
+      {/* 9. Floating Toasts with Undo Support */}
+      <ToastContainer toasts={toasts} onDismiss={removeToast} />
     </div>
   );
 };

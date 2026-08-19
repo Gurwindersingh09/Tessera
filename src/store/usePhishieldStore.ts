@@ -13,6 +13,13 @@ interface FilterState {
 interface PhishieldState {
   cases: CaseItem[];
   addCase: (newCase: Omit<CaseItem, 'id' | 'lastUpdated'>) => void;
+  updateCase: (id: string, updates: Partial<CaseItem>) => void;
+  updateBulkCases: (ids: string[], updates: Partial<CaseItem>) => void;
+  deleteCase: (id: string) => void;
+  deleteBulkCases: (ids: string[]) => void;
+  restoreCase: (caseItem: CaseItem, index?: number) => void;
+  restoreBulkCases: (caseItems: CaseItem[]) => void;
+  
   navigationHistory: NavEntry[];
   pushNavHistory: (entry: NavEntry) => void;
   truncateNavAt: (path: string) => void;
@@ -39,6 +46,50 @@ export const usePhishieldStore = create<PhishieldState>()(
             },
             ...state.cases,
           ],
+        })),
+
+      updateCase: (id, updates) =>
+        set((state) => ({
+          cases: state.cases.map((c) =>
+            c.id === id
+              ? { ...c, ...updates, lastUpdated: new Date().toISOString() }
+              : c
+          ),
+        })),
+
+      updateBulkCases: (ids, updates) =>
+        set((state) => ({
+          cases: state.cases.map((c) =>
+            ids.includes(c.id)
+              ? { ...c, ...updates, lastUpdated: new Date().toISOString() }
+              : c
+          ),
+        })),
+
+      deleteCase: (id) =>
+        set((state) => ({
+          cases: state.cases.filter((c) => c.id !== id),
+        })),
+
+      deleteBulkCases: (ids) =>
+        set((state) => ({
+          cases: state.cases.filter((c) => !ids.includes(c.id)),
+        })),
+
+      restoreCase: (caseItem, index) =>
+        set((state) => {
+          const newCases = [...state.cases];
+          if (typeof index === 'number' && index >= 0 && index <= newCases.length) {
+            newCases.splice(index, 0, caseItem);
+          } else {
+            newCases.unshift(caseItem);
+          }
+          return { cases: newCases };
+        }),
+
+      restoreBulkCases: (caseItems) =>
+        set((state) => ({
+          cases: [...caseItems, ...state.cases],
         })),
 
       navigationHistory: [

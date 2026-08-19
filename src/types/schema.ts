@@ -1,7 +1,7 @@
 export interface CaseItem {
   id: string;
   title: string;
-  status: 'active' | 'flagged' | 'closed';
+  status: 'active' | 'flagged' | 'closed' | 'archived';
   entityCount: number;
   anomalyCount: number;
   lastUpdated: string;
