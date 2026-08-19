@@ -5,7 +5,8 @@ import { LandingPage } from './pages/LandingPage';
 import { CaseDashboard } from './pages/CaseDashboard';
 import { CaseDetail } from './pages/CaseDetail';
 import { NewCasePage } from './pages/NewCasePage';
-import { AnalyticsPage, AlertsPage, SettingsPage, SearchPage, CasesPage } from './pages/PlaceholderPages';
+import { AnalyticsPage } from './pages/AnalyticsPage';
+import { AlertsPage, SettingsPage, SearchPage, CasesPage } from './pages/PlaceholderPages';
 
 export function App() {
   const location = useLocation();
