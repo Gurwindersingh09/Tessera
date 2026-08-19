@@ -60,5 +60,4 @@ function PlaceholderPage({ title, path, description }: PlaceholderProps) {
 export const AnalyticsPage: React.FC = () => <PlaceholderPage title="Analytics" path="/analytics" description="Cross-case behavioral trends, temporal clusters, and risk velocity." />;
 export const AlertsPage: React.FC = () => <PlaceholderPage title="Alerts" path="/alerts" description="Automated anomaly notifications, threshold breaches, and urgent triggers." />;
 export const SettingsPage: React.FC = () => <PlaceholderPage title="Settings" path="/settings" description="System configuration, API integrations, and access credentials." />;
-export const SearchPage: React.FC = () => <PlaceholderPage title="Search" path="/search" />;
 export const CasesPage: React.FC = () => <PlaceholderPage title="Cases Registry" path="/cases" />;

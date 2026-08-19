@@ -8,7 +8,7 @@ import { NewCasePage } from './pages/NewCasePage';
 import { AnalyticsPage } from './pages/AnalyticsPage';
 import { AlertsPage } from './pages/AlertsPage';
 import { SettingsPage } from './pages/SettingsPage';
-import { SearchPage, CasesPage } from './pages/PlaceholderPages';
+import { CasesPage } from './pages/PlaceholderPages';
 import { ThemeProvider } from './context/ThemeContext';
 
 export function App() {
@@ -46,7 +46,6 @@ export function App() {
             <Route path="/analytics" element={<AnalyticsPage />} />
             <Route path="/alerts" element={<AlertsPage />} />
             <Route path="/settings" element={<SettingsPage />} />
-            <Route path="/search" element={<SearchPage />} />
             <Route path="/cases" element={<CasesPage />} />
           </Routes>
         </main>

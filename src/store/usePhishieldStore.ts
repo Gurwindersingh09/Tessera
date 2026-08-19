@@ -20,6 +20,9 @@ interface PhishieldState {
   restoreCase: (caseItem: CaseItem, index?: number) => void;
   restoreBulkCases: (caseItems: CaseItem[]) => void;
   
+  hasRequestedAccess: boolean;
+  setHasRequestedAccess: (hasRequested: boolean) => void;
+  
   navigationHistory: NavEntry[];
   pushNavHistory: (entry: NavEntry) => void;
   truncateNavAt: (path: string) => void;
@@ -34,6 +37,9 @@ interface PhishieldState {
 export const usePhishieldStore = create<PhishieldState>()(
   persist(
     (set) => ({
+      hasRequestedAccess: false,
+      setHasRequestedAccess: (hasRequested) => set({ hasRequestedAccess: hasRequested }),
+
       cases: SEED_CASES,
 
       addCase: (newCase) =>
@@ -149,6 +155,7 @@ export const usePhishieldStore = create<PhishieldState>()(
         cases: state.cases,
         navigationHistory: state.navigationHistory,
         sidebarCollapsed: state.sidebarCollapsed,
+        hasRequestedAccess: state.hasRequestedAccess,
       }),
     }
   )

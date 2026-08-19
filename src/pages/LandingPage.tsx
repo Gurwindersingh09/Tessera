@@ -6,8 +6,6 @@ import { motion, AnimatePresence, useScroll, useTransform, useMotionValue, anima
 import {
   X,
   Loader2,
-  Search,
-  Menu,
   ShieldCheck,
   FileClock,
   Lock,
@@ -19,6 +17,8 @@ import {
   ChevronDown
 } from 'lucide-react';
 import { tsParticles } from '@tsparticles/engine';
+import { usePhishieldStore } from '../store/usePhishieldStore';
+import { ToastContainer, ToastMessage } from '../components/Toast';
 
 const EASE_SHARP: [number, number, number, number] = [0.4, 0, 0.2, 1];
 
@@ -83,14 +83,57 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   posterUrl = defaultPosterUrl
 }) => {
   const navigate = useNavigate();
+  const { hasRequestedAccess, setHasRequestedAccess } = usePhishieldStore();
   const [init, setInit] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [mousePos, setMousePos] = useState({ x: -1000, y: -1000 });
   const [isScrolledPastHero, setIsScrolledPastHero] = useState(false);
+  const [launchTooltipVisible, setLaunchTooltipVisible] = useState(false);
+  const [footerTooltipVisible, setFooterTooltipVisible] = useState(false);
+  const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
   const heroRef = useRef<HTMLDivElement>(null);
   const { scrollY } = useScroll();
   const videoY = useTransform(scrollY, [0, 800], [0, 180]);
+
+  const addToast = (title: string, type: 'info' | 'success' | 'warning' | 'error' = 'info', description?: string) => {
+    const id = `toast-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`;
+    setToasts((prev) => [...prev, { id, title, description, type, duration: 4000 }]);
+  };
+
+  const removeToast = (id: string) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  };
+
+  const handleLogoClick = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    navigate('/');
+  };
+
+  const handleOpenRequestAccess = () => {
+    setDrawerOpen(true);
+  };
+
+  const handleRequestAccessSuccess = () => {
+    setHasRequestedAccess(true);
+    addToast('Access request submitted. You can now launch the platform.', 'success');
+  };
+
+  const handleLaunchPlatform = () => {
+    if (!hasRequestedAccess) {
+      addToast('Request access first to launch the platform.', 'warning');
+      return;
+    }
+    navigate('/dashboard');
+  };
+
+  const handleEnterWorkspace = () => {
+    if (!hasRequestedAccess) {
+      addToast('Request access first to launch the platform.', 'warning');
+      return;
+    }
+    navigate('/dashboard');
+  };
 
   useEffect(() => {
     loadSlim(tsParticles).then(() => {
@@ -131,10 +174,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [drawerOpen]);
 
-  const handleAccessGranted = () => {
-    navigate('/dashboard');
-  };
-
   return (
     <div className="relative min-h-[100dvh] w-full bg-[#FAF6F0] font-sans text-[#2A2420] selection:bg-[#F2D9C4] selection:text-[#6B2E12] overflow-x-hidden">
 
@@ -154,8 +193,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           }}
         >
           <div
-            onClick={() => navigate('/dashboard')}
+            onClick={handleLogoClick}
             className="flex items-center gap-3 cursor-pointer group"
+            title="Phishield Home"
           >
             <div style={{
               width: 28, height: 28, borderRadius: 6,
@@ -196,37 +236,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
           <div className="flex items-center gap-3">
             <button
-              onClick={() => navigate('/search')}
-              className="p-2 rounded-lg transition-colors"
-              style={{
-                color: isScrolledPastHero ? '#7A6F63' : '#FFFFFF',
-                backgroundColor: isScrolledPastHero ? 'transparent' : 'rgba(255, 255, 255, 0.08)',
-                border: isScrolledPastHero ? '1px solid #DDD5CA' : '1px solid rgba(255, 255, 255, 0.22)',
-                textShadow: isScrolledPastHero ? 'none' : '0 1px 4px rgba(0,0,0,0.3)',
-                transition: 'color 250ms ease, background-color 250ms ease, border-color 250ms ease',
-              }}
-              title="Search System"
-            >
-              <Search className="w-4 h-4" />
-            </button>
-
-            <button
-              onClick={() => navigate('/dashboard')}
-              className="p-2 rounded-lg transition-colors"
-              style={{
-                color: isScrolledPastHero ? '#7A6F63' : '#FFFFFF',
-                backgroundColor: isScrolledPastHero ? 'transparent' : 'rgba(255, 255, 255, 0.08)',
-                border: isScrolledPastHero ? '1px solid #DDD5CA' : '1px solid rgba(255, 255, 255, 0.22)',
-                textShadow: isScrolledPastHero ? 'none' : '0 1px 4px rgba(0,0,0,0.3)',
-                transition: 'color 250ms ease, background-color 250ms ease, border-color 250ms ease',
-              }}
-              title="Open Platform Workspace"
-            >
-              <Menu className="w-4 h-4" />
-            </button>
-
-            <button
-              onClick={() => setDrawerOpen(true)}
+              onClick={handleOpenRequestAccess}
               className="btn-accent"
               style={{ padding: '8px 16px', fontSize: '11px', borderRadius: 6 }}
             >
@@ -365,41 +375,78 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             transition={{ delay: 1.2, duration: 0.6, ease: EASE_SHARP }}
             className="mt-10 flex flex-wrap justify-center items-center gap-4"
           >
-            {/* Launch Platform Button: Warm tonal terracotta, solid rest state, deepens on hover */}
-            <motion.button
-              onClick={handleAccessGranted}
-              whileHover={{
-                scale: 1.02,
-                backgroundColor: '#8C3D1A',
-                boxShadow: '0 4px 14px rgba(140, 61, 26, 0.28)',
-              }}
-              whileTap={{ scale: 0.98 }}
-              style={{
-                border: '1.5px solid #C4622D',
-                background: '#C4622D',
-                color: '#FFFFFF',
-                boxShadow: '0 2px 8px rgba(196, 98, 45, 0.25)',
-                padding: '12px 28px',
-                fontSize: 12,
-                letterSpacing: '0.08em',
-                textTransform: 'uppercase',
-                fontWeight: 600,
-                borderRadius: 4,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-                transition: 'background-color 150ms ease, box-shadow 150ms ease',
-                fontFamily: 'Inter, sans-serif',
-              }}
-            >
-              <span>Launch Platform</span>
-              <ArrowRight className="w-4 h-4" />
-            </motion.button>
+            {/* Launch Platform Button: Gated by hasRequestedAccess */}
+            <div style={{ position: 'relative', display: 'inline-block' }}>
+              <motion.button
+                onClick={handleLaunchPlatform}
+                onMouseEnter={() => { if (!hasRequestedAccess) setLaunchTooltipVisible(true); }}
+                onMouseLeave={() => setLaunchTooltipVisible(false)}
+                whileHover={hasRequestedAccess ? {
+                  scale: 1.02,
+                  backgroundColor: '#8C3D1A',
+                  boxShadow: '0 4px 14px rgba(140, 61, 26, 0.28)',
+                } : {}}
+                whileTap={hasRequestedAccess ? { scale: 0.98 } : {}}
+                style={{
+                  border: hasRequestedAccess ? '1.5px solid #C4622D' : '1.5px solid #8F7E74',
+                  background: hasRequestedAccess ? '#C4622D' : '#6B6056',
+                  color: hasRequestedAccess ? '#FFFFFF' : '#DDD5CA',
+                  opacity: hasRequestedAccess ? 1 : 0.6,
+                  boxShadow: hasRequestedAccess ? '0 2px 8px rgba(196, 98, 45, 0.25)' : 'none',
+                  padding: '12px 28px',
+                  fontSize: 12,
+                  letterSpacing: '0.08em',
+                  textTransform: 'uppercase',
+                  fontWeight: 600,
+                  borderRadius: 4,
+                  cursor: hasRequestedAccess ? 'pointer' : 'not-allowed',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  transition: 'background-color 150ms ease, border-color 150ms ease, color 150ms ease, opacity 150ms ease, box-shadow 150ms ease',
+                  fontFamily: 'Inter, sans-serif',
+                }}
+                title={!hasRequestedAccess ? "Request access first to launch the platform." : undefined}
+              >
+                <span>Launch Platform</span>
+                <ArrowRight className="w-4 h-4" />
+              </motion.button>
+
+              <AnimatePresence>
+                {!hasRequestedAccess && launchTooltipVisible && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 4 }}
+                    transition={{ duration: 0.15 }}
+                    style={{
+                      position: 'absolute',
+                      bottom: 'calc(100% + 8px)',
+                      left: '50%',
+                      transform: 'translateX(-50%)',
+                      whiteSpace: 'nowrap',
+                      background: '#2A2420',
+                      color: '#FAF6F0',
+                      fontSize: 11,
+                      fontWeight: 500,
+                      padding: '5px 10px',
+                      borderRadius: 4,
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+                      border: '1px solid #7A6F63',
+                      pointerEvents: 'none',
+                      zIndex: 30,
+                      fontFamily: 'Inter, sans-serif',
+                    }}
+                  >
+                    Request access first to launch the platform.
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
 
             {/* Request Access Button */}
             <button
-              onClick={() => setDrawerOpen(true)}
+              onClick={handleOpenRequestAccess}
               className="btn-ghost"
               style={{
                 padding: '12px 26px',
@@ -632,17 +679,60 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
+            <div style={{ position: 'relative', display: 'inline-flex' }}>
+              <span
+                onClick={handleEnterWorkspace}
+                onMouseEnter={() => { if (!hasRequestedAccess) setFooterTooltipVisible(true); }}
+                onMouseLeave={() => setFooterTooltipVisible(false)}
+                style={{
+                  cursor: hasRequestedAccess ? 'pointer' : 'not-allowed',
+                  color: hasRequestedAccess ? '#C4622D' : '#A89F93',
+                  opacity: hasRequestedAccess ? 1 : 0.65,
+                  fontWeight: 500,
+                  transition: 'color 150ms ease, opacity 150ms ease',
+                }}
+                className={hasRequestedAccess ? 'hover:underline' : ''}
+                title={!hasRequestedAccess ? "Request access first to launch the platform." : undefined}
+              >
+                Enter Workspace →
+              </span>
+              <AnimatePresence>
+                {!hasRequestedAccess && footerTooltipVisible && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 2 }}
+                    transition={{ duration: 0.15 }}
+                    style={{
+                      position: 'absolute',
+                      bottom: 'calc(100% + 6px)',
+                      right: 0,
+                      whiteSpace: 'nowrap',
+                      background: '#2A2420',
+                      color: '#FAF6F0',
+                      fontSize: 10.5,
+                      fontWeight: 500,
+                      padding: '4px 8px',
+                      borderRadius: 4,
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+                      border: '1px solid #7A6F63',
+                      pointerEvents: 'none',
+                      zIndex: 30,
+                      fontFamily: 'Inter, sans-serif',
+                    }}
+                  >
+                    Request access first to launch the platform.
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
             <span
-              onClick={() => navigate('/dashboard')}
-              style={{ cursor: 'pointer', color: '#C4622D', fontWeight: 500 }}
-              className="hover:underline"
-            >
-              Enter Workspace →
-            </span>
-            <span
-              onClick={() => setDrawerOpen(true)}
-              style={{ cursor: 'pointer', color: '#7A6F63' }}
-              className="hover:underline"
+              style={{
+                cursor: 'default',
+                color: '#7A6F63',
+                userSelect: 'none',
+              }}
             >
               Agency Helpdesk
             </span>
@@ -653,9 +743,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       {/* ─── Request Access Drawer ───────────────────────────────────── */}
       <AnimatePresence>
         {drawerOpen && (
-          <GetStartedDrawer onClose={() => setDrawerOpen(false)} onLogin={handleAccessGranted} />
+          <GetStartedDrawer
+            onClose={() => setDrawerOpen(false)}
+            onRequestSuccess={handleRequestAccessSuccess}
+          />
         )}
       </AnimatePresence>
+
+      {/* ─── Toast Notifications ─────────────────────────────────────── */}
+      <ToastContainer toasts={toasts} onDismiss={removeToast} />
     </div>
   );
 };
@@ -724,7 +820,13 @@ const DecryptHeadline = ({ text }: { text: string }) => {
 };
 
 /* ─── Request Access Drawer with Warm Theme ──────────────────────────── */
-const GetStartedDrawer = ({ onClose, onLogin }: { onClose: () => void, onLogin: () => void }) => {
+const GetStartedDrawer = ({
+  onClose,
+  onRequestSuccess
+}: {
+  onClose: () => void;
+  onRequestSuccess: () => void;
+}) => {
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -733,8 +835,8 @@ const GetStartedDrawer = ({ onClose, onLogin }: { onClose: () => void, onLogin: 
     setTimeout(() => {
       setLoading(false);
       onClose();
-      setTimeout(onLogin, 350);
-    }, 1000);
+      onRequestSuccess();
+    }, 600);
   };
 
   const formFields = [
