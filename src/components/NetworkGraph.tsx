@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState, useMemo } from 'react';
 import ForceGraph2D, { ForceGraphMethods } from 'react-force-graph-2d';
 import { useAnalyticsStore } from '../store/useAnalyticsStore';
+import { useTheme } from '../context/ThemeContext';
 import { motion } from 'framer-motion';
 import { Plus, Minus, Maximize2, Info } from 'lucide-react';
 
@@ -9,9 +10,11 @@ const EASE_SHARP: [number, number, number, number] = [0.4, 0, 0.2, 1];
 export const NetworkGraph: React.FC = () => {
   const fgRef = useRef<ForceGraphMethods | null>(null);
   const { entities, edges, selectedEntityId, setSelectedEntityId, hoveredEntityId, setHoveredEntityId } = useAnalyticsStore();
+  const { theme } = useTheme();
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
-  const [showLegend, setShowLegend] = useState(true);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const isDark = theme === 'dark';
 
   useEffect(() => {
     const updateDimensions = () => {
@@ -51,7 +54,7 @@ export const NetworkGraph: React.FC = () => {
       case 'IMEI': return '#6B2E12';
       case 'BANK_ACCOUNT': return '#8C3D1A';
       case 'SOCIAL_HANDLE': return '#D4854A';
-      case 'PERSON': return '#2A2420';
+      case 'PERSON': return isDark ? '#EDEEF0' : '#2A2420';
       default: return '#A89F93';
     }
   };
@@ -83,13 +86,13 @@ export const NetworkGraph: React.FC = () => {
       ctx.shadowColor = color;
       ctx.shadowBlur = 10;
       ctx.fill();
-      ctx.strokeStyle = '#2A2420';
+      ctx.strokeStyle = isDark ? '#EDEEF0' : '#2A2420';
       ctx.lineWidth = 2.5 / globalScale;
       ctx.stroke();
       ctx.shadowBlur = 0;
     } else {
       ctx.fill();
-      ctx.strokeStyle = '#FFFFFF';
+      ctx.strokeStyle = isDark ? '#2A2C30' : '#FFFFFF';
       ctx.lineWidth = 1 / globalScale;
       ctx.stroke();
     }
@@ -99,7 +102,9 @@ export const NetworkGraph: React.FC = () => {
       ctx.font = `500 ${fontSize}px "IBM Plex Mono", monospace`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillStyle = isSelected ? '#2A2420' : '#7A6F63';
+      ctx.fillStyle = isSelected 
+        ? '#C4622D' 
+        : (isDark ? '#EDEEF0' : '#2A2420');
       ctx.fillText(node.label, node.x, node.y + size + 7 / globalScale);
     }
   };
@@ -129,7 +134,8 @@ export const NetworkGraph: React.FC = () => {
       initial={{ opacity: 0, scale: 0.98 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.4, ease: EASE_SHARP }}
-      className="absolute inset-0 bg-[#FAF6F0] overflow-hidden dot-pattern"
+      className="absolute inset-0 overflow-hidden dot-pattern"
+      style={{ background: 'var(--color-bg-base)' }}
       ref={containerRef}
     >
       {dimensions.width > 0 && (
@@ -142,7 +148,7 @@ export const NetworkGraph: React.FC = () => {
           linkColor={(link: any) => {
             if (link.type === 'CALLED') return '#C4622D';
             if (link.type === 'TRANSACTED_WITH') return '#8C3D1A';
-            return '#DDD5CA';
+            return isDark ? '#3A3C42' : '#DDD5CA';
           }}
           linkWidth={1.5}
           linkDirectionalArrowLength={4}
@@ -155,7 +161,7 @@ export const NetworkGraph: React.FC = () => {
             }
           }}
           onNodeHover={(node: any) => setHoveredEntityId(node ? node.id : null)}
-          backgroundColor="#FAF6F0"
+          backgroundColor={isDark ? '#0D0E10' : '#FAF6F0'}
         />
       )}
 
@@ -167,11 +173,11 @@ export const NetworkGraph: React.FC = () => {
         display: 'flex',
         flexDirection: 'column',
         gap: 4,
-        background: '#FFFFFF',
-        border: '1px solid #DDD5CA',
+        background: 'var(--color-bg-surface)',
+        border: '1px solid var(--color-border)',
         borderRadius: 6,
         padding: 3,
-        boxShadow: '0 2px 6px rgba(42,36,32,0.06)',
+        boxShadow: 'var(--shadow-dropdown)',
         zIndex: 20,
       }}>
         <button
@@ -186,14 +192,14 @@ export const NetworkGraph: React.FC = () => {
             justifyContent: 'center',
             border: 'none',
             background: 'transparent',
-            color: '#2A2420',
+            color: 'var(--color-text-primary)',
             cursor: 'pointer',
             borderRadius: 4,
           }}
-          onMouseEnter={e => { e.currentTarget.style.background = '#F3EDE4'; }}
+          onMouseEnter={e => { e.currentTarget.style.background = 'var(--color-bg-hover)'; }}
           onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
         >
-          <Plus className="w-3.5 h-3.5 text-[#2A2420]" />
+          <Plus className="w-3.5 h-3.5" />
         </button>
 
         <button
@@ -208,17 +214,17 @@ export const NetworkGraph: React.FC = () => {
             justifyContent: 'center',
             border: 'none',
             background: 'transparent',
-            color: '#2A2420',
+            color: 'var(--color-text-primary)',
             cursor: 'pointer',
             borderRadius: 4,
           }}
-          onMouseEnter={e => { e.currentTarget.style.background = '#F3EDE4'; }}
+          onMouseEnter={e => { e.currentTarget.style.background = 'var(--color-bg-hover)'; }}
           onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
         >
-          <Minus className="w-3.5 h-3.5 text-[#2A2420]" />
+          <Minus className="w-3.5 h-3.5" />
         </button>
 
-        <div style={{ height: 1, background: '#DDD5CA', margin: '2px 0' }} />
+        <div style={{ height: 1, background: 'var(--color-border)', margin: '2px 0' }} />
 
         <button
           type="button"
@@ -236,7 +242,7 @@ export const NetworkGraph: React.FC = () => {
             cursor: 'pointer',
             borderRadius: 4,
           }}
-          onMouseEnter={e => { e.currentTarget.style.background = '#F3EDE4'; }}
+          onMouseEnter={e => { e.currentTarget.style.background = 'var(--color-bg-hover)'; }}
           onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
         >
           <Maximize2 className="w-3.5 h-3.5 text-[#C4622D]" />
@@ -248,44 +254,45 @@ export const NetworkGraph: React.FC = () => {
         position: 'absolute',
         bottom: 12,
         left: 12,
-        background: '#FFFFFF',
-        border: '1px solid #DDD5CA',
+        background: 'var(--color-bg-surface)',
+        border: '1px solid var(--color-border)',
         borderRadius: 6,
         padding: '8px 12px',
-        boxShadow: '0 2px 8px rgba(42,36,32,0.06)',
+        boxShadow: 'var(--shadow-dropdown)',
         display: 'flex',
         flexDirection: 'column',
         gap: 6,
         zIndex: 20,
         minWidth: 175,
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #DDD5CA60', paddingBottom: 4 }}>
-          <div className="data-label" style={{ fontSize: '0.62rem', color: '#8C3D1A' }}>Entity Legend</div>
-          <Info className="w-3 h-3 text-[#A89F93]" />
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--color-border)', paddingBottom: 4 }}>
+          <div className="data-label" style={{ fontSize: '0.62rem', color: '#C4622D' }}>Entity Legend</div>
+          <Info className="w-3 h-3 text-[var(--color-text-muted)]" />
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '5px 12px', fontSize: 10 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#C4622D', display: 'inline-block' }} />
-            <span style={{ color: '#2A2420', fontFamily: 'Inter, sans-serif' }}>Phone (●)</span>
+            <span style={{ color: 'var(--color-text-primary)', fontFamily: 'Inter, sans-serif' }}>Phone (●)</span>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <span style={{ width: 8, height: 8, background: '#8C3D1A', display: 'inline-block' }} />
-            <span style={{ color: '#2A2420', fontFamily: 'Inter, sans-serif' }}>Bank (■)</span>
+            <span style={{ color: 'var(--color-text-primary)', fontFamily: 'Inter, sans-serif' }}>Bank (■)</span>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <span style={{ width: 8, height: 8, background: '#D4854A', transform: 'rotate(45deg)', display: 'inline-block' }} />
-            <span style={{ color: '#2A2420', fontFamily: 'Inter, sans-serif' }}>Social (◆)</span>
+            <span style={{ color: 'var(--color-text-primary)', fontFamily: 'Inter, sans-serif' }}>Social (◆)</span>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#2A2420', display: 'inline-block' }} />
-            <span style={{ color: '#2A2420', fontFamily: 'Inter, sans-serif' }}>Suspect (●)</span>
+            <span style={{ width: 8, height: 8, borderRadius: '50%', background: isDark ? '#EDEEF0' : '#2A2420', display: 'inline-block' }} />
+            <span style={{ color: 'var(--color-text-primary)', fontFamily: 'Inter, sans-serif' }}>Suspect (●)</span>
           </div>
         </div>
       </div>
     </motion.div>
   );
 };
+export default NetworkGraph;

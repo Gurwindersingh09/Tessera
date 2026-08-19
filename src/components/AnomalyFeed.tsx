@@ -10,6 +10,7 @@ const slideInVariants = {
   hidden: { opacity: 0, x: -20 },
   visible: (i: number) => ({
     opacity: 1,
+    y: 0,
     x: 0,
     transition: { delay: i * 0.06, duration: 0.35, ease: EASE_SHARP },
   }),
@@ -19,16 +20,22 @@ export const AnomalyFeed: React.FC = () => {
   const { anomalies, toggleSidebar } = useAnalyticsStore();
 
   return (
-    <div className="h-full flex flex-col bg-[#F3EDE4]">
+    <div className="h-full flex flex-col" style={{ background: 'var(--color-bg-surface)', color: 'var(--color-text-primary)' }}>
       {/* Header with collapse button */}
-      <div className="h-10 border-b border-[#DDD5CA] flex items-center justify-between px-3 shrink-0 bg-[#F3EDE4]">
-        <div className="flex items-center gap-2 text-[#2A2420] uppercase tracking-widest text-xs font-semibold">
+      <div 
+        className="h-10 flex items-center justify-between px-3 shrink-0"
+        style={{ borderBottom: '1px solid var(--color-border)', background: 'var(--color-bg-surface)' }}
+      >
+        <div className="flex items-center gap-2 uppercase tracking-widest text-xs font-semibold" style={{ color: 'var(--color-text-primary)' }}>
           <Activity className="w-4 h-4 text-[#D4854A]" />
           <span>Anomaly Feed</span>
         </div>
 
         <div className="flex items-center gap-2">
-          <div className="px-1.5 py-0.5 bg-[#FAF6F0] text-[#7A6F63] font-mono text-[10px] border border-[#DDD5CA] rounded">
+          <div 
+            className="px-1.5 py-0.5 font-mono text-[10px] rounded"
+            style={{ background: 'var(--color-bg-raised)', border: '1px solid var(--color-border)', color: 'var(--color-text-secondary)' }}
+          >
             {anomalies.length}
           </div>
 
@@ -38,7 +45,7 @@ export const AnomalyFeed: React.FC = () => {
             title="Compress Anomaly Feed"
             style={{
               border: 'none', background: 'transparent',
-              color: '#7A6F63', cursor: 'pointer', padding: 2,
+              color: 'var(--color-text-secondary)', cursor: 'pointer', padding: 2,
             }}
           >
             <PanelLeftClose className="w-3.5 h-3.5 hover:text-[#C4622D] transition-colors" />
@@ -62,3 +69,4 @@ export const AnomalyFeed: React.FC = () => {
     </div>
   );
 };
+export default AnomalyFeed;

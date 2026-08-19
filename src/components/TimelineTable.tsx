@@ -19,28 +19,28 @@ export const TimelineTable: React.FC = () => {
   const columns = useMemo(() => [
     columnHelper.accessor('timestamp', {
       header: 'TIMESTAMP',
-      cell: info => <span className="font-mono text-[#7A6F63] text-[10.5px]">{new Date(info.getValue()).toLocaleString()}</span>,
+      cell: info => <span style={{ fontFamily: 'IBM Plex Mono, monospace', color: 'var(--color-text-muted)', fontSize: 10.5 }}>{new Date(info.getValue()).toLocaleString()}</span>,
     }),
     columnHelper.accessor('event_type', {
       header: 'TYPE',
       cell: info => (
-        <span className="font-sans font-medium text-[#2A2420] text-[11px]">
+        <span style={{ fontFamily: 'Inter, sans-serif', fontWeight: 500, color: 'var(--color-text-primary)', fontSize: 11 }}>
           {info.getValue().replace(/_/g, ' ')}
         </span>
       ),
     }),
     columnHelper.accessor('entity_id', {
       header: 'ENTITY',
-      cell: info => <span className="font-mono text-[#C4622D] font-medium text-[11px]">{info.getValue()}</span>,
+      cell: info => <span style={{ fontFamily: 'IBM Plex Mono, monospace', color: '#C4622D', fontWeight: 500, fontSize: 11 }}>{info.getValue()}</span>,
     }),
     columnHelper.accessor('counterparty_id', {
       header: 'COUNTERPARTY',
-      cell: info => <span className="font-mono text-[#7A6F63] text-[10.5px]">{info.getValue() || '-'}</span>,
+      cell: info => <span style={{ fontFamily: 'IBM Plex Mono, monospace', color: 'var(--color-text-secondary)', fontSize: 10.5 }}>{info.getValue() || '-'}</span>,
     }),
     columnHelper.accessor('amount', {
       header: 'AMOUNT',
       cell: info => (
-        <span className="font-mono text-[#8C3D1A] font-semibold text-[11px]">
+        <span style={{ fontFamily: 'IBM Plex Mono, monospace', color: '#D4854A', fontWeight: 600, fontSize: 11 }}>
           {info.getValue() ? `₹${info.getValue()?.toLocaleString()}` : '-'}
         </span>
       ),
@@ -57,20 +57,27 @@ export const TimelineTable: React.FC = () => {
   });
 
   return (
-    <div className="h-full flex flex-col bg-[#FAF6F0]">
-      <div className="h-8 border-b border-[#DDD5CA] bg-[#F3EDE4] flex items-center justify-between px-4 shrink-0">
-        <span className="text-[10px] uppercase tracking-widest text-[#7A6F63] font-semibold">Event Timeline</span>
-        <span className="text-[9.5px] font-mono text-[#7A6F63]">{events.length} recorded events</span>
+    <div className="h-full flex flex-col" style={{ background: 'var(--color-bg-surface)', color: 'var(--color-text-primary)' }}>
+      <div 
+        className="h-8 flex items-center justify-between px-4 shrink-0"
+        style={{ borderBottom: '1px solid var(--color-border)', background: 'var(--color-bg-surface)' }}
+      >
+        <span className="text-[10px] uppercase tracking-widest font-semibold" style={{ color: 'var(--color-text-secondary)' }}>Event Timeline</span>
+        <span className="text-[9.5px] font-mono" style={{ color: 'var(--color-text-muted)' }}>{events.length} recorded events</span>
       </div>
       <div className="flex-1 overflow-auto">
         <table className="w-full text-left border-collapse text-[11px]">
-          <thead className="sticky top-0 bg-[#F3EDE4] z-10 border-b border-[#DDD5CA]">
+          <thead 
+            className="sticky top-0 z-10"
+            style={{ background: 'var(--color-bg-surface)', borderBottom: '1px solid var(--color-border)' }}
+          >
             {table.getHeaderGroups().map(headerGroup => (
               <tr key={headerGroup.id}>
                 {headerGroup.headers.map(header => (
                   <th 
                     key={header.id} 
-                    className="px-3.5 py-2 font-sans font-semibold tracking-widest text-[#A89F93] uppercase cursor-pointer hover:text-[#2A2420] transition-colors"
+                    className="px-3.5 py-2 font-sans font-semibold tracking-widest uppercase cursor-pointer transition-colors"
+                    style={{ color: 'var(--color-text-secondary)' }}
                     onClick={header.column.getToggleSortingHandler()}
                   >
                     {flexRender(header.column.columnDef.header, header.getContext())}
@@ -88,11 +95,21 @@ export const TimelineTable: React.FC = () => {
                 <tr 
                   key={row.id} 
                   onClick={() => setSelectedEntityId(row.original.entity_id)}
-                  className={`border-b border-[#DDD5CA]/50 cursor-pointer transition-colors group ${
-                    isSelected ? 'bg-[#F3EDE4]/80' : 'hover:bg-[#EDE5D8]/50'
-                  }`}
+                  className="cursor-pointer transition-colors group"
                   style={{
+                    borderBottom: '1px solid var(--color-border)',
+                    background: isSelected ? 'var(--color-bg-hover)' : 'transparent',
                     borderLeft: isSelected ? '3.5px solid #C4622D' : '3.5px solid transparent',
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isSelected) {
+                      e.currentTarget.style.background = 'var(--color-bg-hover)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isSelected) {
+                      e.currentTarget.style.background = 'transparent';
+                    }
                   }}
                 >
                   {row.getVisibleCells().map((cell) => (
@@ -109,3 +126,4 @@ export const TimelineTable: React.FC = () => {
     </div>
   );
 };
+export default TimelineTable;

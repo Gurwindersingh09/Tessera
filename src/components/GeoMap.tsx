@@ -3,8 +3,9 @@ import { MapContainer, TileLayer, Marker, Polyline, useMap } from 'react-leaflet
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useAnalyticsStore } from '../store/useAnalyticsStore';
+import { useTheme } from '../context/ThemeContext';
 
-const createEntityIcon = (type: string, isSelected: boolean) => {
+const createEntityIcon = (type: string, isSelected: boolean, isDark: boolean) => {
   let color = '#C4622D';
   let borderRadius = '50%';
 
@@ -15,9 +16,12 @@ const createEntityIcon = (type: string, isSelected: boolean) => {
     color = '#D4854A';
     borderRadius = '2px';
   } else if (type === 'PERSON') {
-    color = '#2A2420';
+    color = isDark ? '#EDEEF0' : '#2A2420';
     borderRadius = '50%';
   }
+
+  const markerBorder = isSelected ? '#FFFFFF' : (isDark ? '#17181B' : '#FAF6F0');
+  const shadowColor = isSelected ? 'rgba(196, 98, 45, 0.85)' : (isDark ? 'rgba(0, 0, 0, 0.6)' : 'rgba(42, 36, 32, 0.35)');
 
   return L.divIcon({
     className: 'custom-div-icon',
@@ -26,8 +30,8 @@ const createEntityIcon = (type: string, isSelected: boolean) => {
       width: ${isSelected ? '12px' : '8px'};
       height: ${isSelected ? '12px' : '8px'};
       border-radius: ${borderRadius};
-      box-shadow: 0 0 ${isSelected ? '10px' : '4px'} ${isSelected ? 'rgba(196, 98, 45, 0.7)' : 'rgba(42, 36, 32, 0.35)'};
-      border: 1.5px solid ${isSelected ? '#FFFFFF' : '#FAF6F0'};
+      box-shadow: 0 0 ${isSelected ? '10px' : '4px'} ${shadowColor};
+      border: 1.5px solid ${markerBorder};
       transform: ${type === 'SOCIAL_HANDLE' ? 'rotate(45deg)' : 'none'};
       transition: all 150ms ease;
     "></div>`,
@@ -57,6 +61,9 @@ const MapController = ({ selectedEntityId, events }: { selectedEntityId: string 
 
 export const GeoMap: React.FC = () => {
   const { events, selectedEntityId, setSelectedEntityId, entities } = useAnalyticsStore();
+  const { theme } = useTheme();
+
+  const isDark = theme === 'dark';
 
   const entityTypeMap = useMemo(() => {
     const map: Record<string, string> = {};
@@ -76,25 +83,42 @@ export const GeoMap: React.FC = () => {
     return { locations, pathsByEntity };
   }, [events]);
 
+  const tileLayerUrl = isDark 
+    ? "https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png"
+    : "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png";
+
   return (
-    <div className="h-full w-full relative bg-[#FAF6F0] z-0">
-      <div className="absolute top-0 left-0 w-full h-8 border-b border-[#DDD5CA] bg-[#F3EDE4] flex items-center justify-between px-4 shrink-0 z-10 pointer-events-none">
-        <span className="text-[10px] uppercase tracking-widest text-[#7A6F63] font-semibold">Geospatial Trajectory</span>
-        <span className="text-[9.5px] font-mono text-[#8C3D1A] font-medium">{mapData.locations.length} points plotted</span>
+    <div className="h-full w-full relative z-0" style={{ background: 'var(--color-bg-base)' }}>
+      {/* Header bar */}
+      <div 
+        className="absolute top-0 left-0 w-full h-8 flex items-center justify-between px-4 shrink-0 z-10 pointer-events-none"
+        style={{
+          borderBottom: '1px solid var(--color-border)',
+          background: 'var(--color-bg-surface)',
+        }}
+      >
+        <span className="text-[10px] uppercase tracking-widest font-semibold" style={{ color: 'var(--color-text-secondary)' }}>
+          Geospatial Trajectory
+        </span>
+        <span className="text-[9.5px] font-mono font-medium" style={{ color: '#C4622D' }}>
+          {mapData.locations.length} points plotted
+        </span>
       </div>
+
       <MapContainer 
+        key={theme}
         center={[28.6139, 77.2090]}
         zoom={11} 
         zoomControl={false}
-        className="w-full h-full bg-[#FAF6F0]"
+        className="w-full h-full"
         style={{
-          background: '#FAF6F0',
-          filter: 'sepia(0.24) saturate(0.92) contrast(1.04) brightness(0.98)',
+          background: isDark ? '#0D0E10' : '#FAF6F0',
+          filter: isDark ? 'contrast(1.05) brightness(0.95)' : 'sepia(0.24) saturate(0.92) contrast(1.04) brightness(0.98)',
         }}
       >
         <TileLayer
           attribution='&copy; <a href="https://carto.com/attributions">CARTO</a>'
-          url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+          url={tileLayerUrl}
         />
         
         <MapController selectedEntityId={selectedEntityId} events={events} />
@@ -110,7 +134,7 @@ export const GeoMap: React.FC = () => {
               positions={coords} 
               color={strokeColor} 
               weight={isSelected ? 2.5 : 1.5} 
-              opacity={isSelected ? 1 : 0.55}
+              opacity={isSelected ? 1 : 0.65}
               dashArray={isSelected ? "0" : "4, 4"}
             />
           );
@@ -124,7 +148,7 @@ export const GeoMap: React.FC = () => {
             <Marker 
               key={`marker-${idx}`}
               position={[loc.location!.lat, loc.location!.lng]}
-              icon={createEntityIcon(entityType, isSelected)}
+              icon={createEntityIcon(entityType, isSelected, isDark)}
               eventHandlers={{
                 click: () => setSelectedEntityId(loc.entity_id)
               }}
@@ -135,3 +159,4 @@ export const GeoMap: React.FC = () => {
     </div>
   );
 };
+export default GeoMap;

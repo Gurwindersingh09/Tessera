@@ -3,20 +3,46 @@ import { cn } from '../../lib/utils';
 import { AnomalyFlag } from '../../types/schema';
 
 export const StatusBadge: React.FC<{ severity: AnomalyFlag['severity']; className?: string }> = ({ severity, className }) => {
-  const styles = {
-    CRITICAL: 'border-l-[#B53924] text-[#8A2517] bg-[#B53924]/10',
-    HIGH: 'border-l-[#8C3D1A] text-[#8C3D1A] bg-[#8C3D1A]/10',
-    MEDIUM: 'border-l-[#D4854A] text-[#D4854A] bg-[#D4854A]/10',
-    LOW: 'border-l-[#C8BFB3] text-[#A89F93] bg-[#F3EDE4]',
+  const styles: Record<string, { borderLeft: string; color: string; background: string }> = {
+    CRITICAL: {
+      borderLeft: 'var(--color-status-flagged)',
+      color: 'var(--color-status-flagged)',
+      background: 'var(--color-status-flagged-bg)',
+    },
+    HIGH: {
+      borderLeft: 'var(--color-status-active)',
+      color: 'var(--color-status-active)',
+      background: 'var(--color-status-active-bg)',
+    },
+    MEDIUM: {
+      borderLeft: 'var(--color-status-warning)',
+      color: 'var(--color-status-warning)',
+      background: 'var(--color-status-warning-bg)',
+    },
+    LOW: {
+      borderLeft: 'var(--color-border-strong)',
+      color: 'var(--color-text-muted)',
+      background: 'var(--color-bg-surface)',
+    },
   };
 
+  const currentStyle = styles[severity] || styles.LOW;
+
   return (
-    <span className={cn(
-      "inline-flex items-center px-2 py-0.5 border-y border-r border-[#DDD5CA] border-l-2 text-[10px] font-mono uppercase tracking-wider rounded-sm",
-      styles[severity],
-      className
-    )}>
+    <span 
+      className={cn(
+        "inline-flex items-center px-2 py-0.5 text-[10px] font-mono uppercase tracking-wider rounded-sm",
+        className
+      )}
+      style={{
+        border: '1px solid var(--color-border)',
+        borderLeft: `2.5px solid ${currentStyle.borderLeft}`,
+        color: currentStyle.color,
+        background: currentStyle.background,
+      }}
+    >
       {severity}
     </span>
   );
 };
+export default StatusBadge;
