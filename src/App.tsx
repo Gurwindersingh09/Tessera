@@ -9,7 +9,7 @@ import { AnalyticsPage, AlertsPage, SettingsPage, SearchPage, CasesPage } from '
 
 export function App() {
   const location = useLocation();
-  const isLanding = location.pathname === '/';
+  const isLanding = location.pathname === '/' || location.pathname === '/login';
 
   if (isLanding) {
     return <LandingPage />;
@@ -20,6 +20,8 @@ export function App() {
       <Sidebar />
       <main style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
         <Routes>
+          <Route path="/"             element={<LandingPage />} />
+          <Route path="/login"        element={<LandingPage />} />
           <Route path="/dashboard"    element={<CaseDashboard />} />
           <Route path="/new-case"     element={<NewCasePage />} />
           <Route path="/case/:caseId" element={<CaseDetail />} />
