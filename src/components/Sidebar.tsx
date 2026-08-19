@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { usePhishieldStore } from '../store/usePhishieldStore';
 import { useAnalyticsStore } from '../store/useAnalyticsStore';
+import { PanelLeftClose, PanelLeftOpen, ChevronLeft, ChevronRight } from 'lucide-react';
 
 /* ─── SVG Icons for 4 primary nav items ─────────────────────────────────────── */
 const IconDashboard = () => (
@@ -76,7 +77,7 @@ const ONLINE_TEAM = [
 export const Sidebar: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { navigationHistory, truncateNavAt, pushNavHistory, cases } = usePhishieldStore();
+  const { navigationHistory, truncateNavAt, pushNavHistory, cases, sidebarCollapsed, toggleSidebarCollapse } = usePhishieldStore();
   const { setCaseId } = useAnalyticsStore();
 
   const currentPath = location.pathname;
@@ -100,36 +101,93 @@ export const Sidebar: React.FC = () => {
     }
   };
 
-  // Show breadcrumb navigation stack only if user navigated deeper into sub-pages
   const hasSubPageHistory = navigationHistory.length > 1;
+  const width = sidebarCollapsed ? 60 : 224;
 
   return (
     <aside
       style={{
-        width: 224, minWidth: 224,
+        width,
+        minWidth: width,
         background: '#F3EDE4',
         borderRight: '1px solid #DDD5CA',
-        display: 'flex', flexDirection: 'column',
-        height: '100vh', position: 'sticky', top: 0,
-        overflowY: 'auto', flexShrink: 0, zIndex: 30
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100vh',
+        position: 'sticky',
+        top: 0,
+        overflowY: 'auto',
+        overflowX: 'hidden',
+        flexShrink: 0,
+        zIndex: 40,
+        transition: 'width 200ms cubic-bezier(0.4, 0, 0.2, 1), min-width 200ms cubic-bezier(0.4, 0, 0.2, 1)',
       }}
     >
-      {/* Logo */}
+      {/* Top Header with Brand & Collapse Toggle Button */}
       <div 
-        onClick={() => navigate('/')} 
-        style={{ padding: '18px 16px 16px', borderBottom: '1px solid #DDD5CA', display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}
-        title="Return to Landing Page"
+        style={{
+          padding: sidebarCollapsed ? '16px 12px' : '16px 14px',
+          borderBottom: '1px solid #DDD5CA',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: sidebarCollapsed ? 'center' : 'space-between',
+          gap: 8,
+          background: '#F3EDE4',
+        }}
       >
-        <PhishieldMark />
-        <div>
-          <div style={{ color: '#2A2420', fontSize: 12, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', fontFamily: 'Inter, sans-serif' }}>
-            Phishield
-          </div>
-          <div className="data-label" style={{ marginTop: 1 }}>Intelligence Platform</div>
+        <div 
+          onClick={() => navigate('/')} 
+          style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}
+          title="Return to Landing Page"
+        >
+          <PhishieldMark />
+          {!sidebarCollapsed && (
+            <div>
+              <div style={{ color: '#2A2420', fontSize: 12, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', fontFamily: 'Inter, sans-serif' }}>
+                Phishield
+              </div>
+              <div className="data-label" style={{ marginTop: 1, fontSize: '0.58rem' }}>Intelligence Platform</div>
+            </div>
+          )}
         </div>
+
+        {/* Compress / Expand Sidebar Toggle Button */}
+        <button
+          type="button"
+          onClick={toggleSidebarCollapse}
+          title={sidebarCollapsed ? "Expand sidebar panel" : "Compress sidebar panel"}
+          style={{
+            width: 26,
+            height: 26,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            border: '1px solid #DDD5CA',
+            borderRadius: 4,
+            background: '#FFFFFF',
+            color: '#7A6F63',
+            cursor: 'pointer',
+            flexShrink: 0,
+            transition: 'all 120ms ease',
+          }}
+          onMouseEnter={e => {
+            e.currentTarget.style.borderColor = '#C4622D';
+            e.currentTarget.style.color = '#C4622D';
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.borderColor = '#DDD5CA';
+            e.currentTarget.style.color = '#7A6F63';
+          }}
+        >
+          {sidebarCollapsed ? (
+            <PanelLeftOpen className="w-3.5 h-3.5" />
+          ) : (
+            <PanelLeftClose className="w-3.5 h-3.5" />
+          )}
+        </button>
       </div>
 
-      {/* Primary Nav (4 items: Dashboard, Analytics, Alerts, Settings) */}
+      {/* Primary Nav Items */}
       <nav style={{ padding: '8px 0', borderBottom: '1px solid #DDD5CA' }}>
         {NAV_ITEMS.map((item) => {
           const Icon = item.icon;
@@ -138,15 +196,20 @@ export const Sidebar: React.FC = () => {
             <button
               key={item.id}
               onClick={() => handleNavClick(item)}
+              title={sidebarCollapsed ? item.label : undefined}
               style={{
                 width: '100%',
-                display: 'flex', alignItems: 'center', gap: 10,
-                padding: '7px 16px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: sidebarCollapsed ? 'center' : 'flex-start',
+                gap: 10,
+                padding: sidebarCollapsed ? '10px 0' : '7px 16px',
                 background: isActive ? '#EDE5D8' : 'transparent',
                 border: 'none',
                 borderLeft: `3px solid ${isActive ? '#C4622D' : 'transparent'}`,
                 color: isActive ? '#C4622D' : '#7A6F63',
-                cursor: 'pointer', textAlign: 'left',
+                cursor: 'pointer',
+                textAlign: 'left',
                 transition: 'color 100ms, background 100ms, border-left-color 100ms',
                 fontFamily: 'Inter, sans-serif',
                 fontWeight: isActive ? 600 : 500,
@@ -155,169 +218,224 @@ export const Sidebar: React.FC = () => {
               onMouseLeave={e => { if (!isActive) { e.currentTarget.style.color = '#7A6F63'; e.currentTarget.style.background = 'transparent'; } }}
             >
               <Icon />
-              <span style={{ fontSize: 12, letterSpacing: '0.01em' }}>{item.label}</span>
+              {!sidebarCollapsed && (
+                <span style={{ fontSize: 12, letterSpacing: '0.01em' }}>{item.label}</span>
+              )}
             </button>
           );
         })}
       </nav>
 
-      {/* Dynamic Middle Section: Contextual History or Recent Activity Feed */}
-      <div style={{ flex: 1, padding: '10px 0', overflowY: 'auto' }}>
-        {hasSubPageHistory ? (
-          <div>
-            <div className="data-label" style={{ padding: '4px 16px 8px', borderBottom: '1px solid #DDD5CA', marginBottom: 4 }}>
-              Navigation History
-            </div>
+      {/* Middle Contextual Area (Activity Feed or Navigation Stack) */}
+      {!sidebarCollapsed && (
+        <div style={{ flex: 1, padding: '10px 0', overflowY: 'auto' }}>
+          {hasSubPageHistory ? (
+            <div>
+              <div className="data-label" style={{ padding: '4px 16px 8px', borderBottom: '1px solid #DDD5CA', marginBottom: 4 }}>
+                Navigation History
+              </div>
 
-            {navigationHistory.map((entry, idx) => {
-              const isLast = idx === navigationHistory.length - 1;
-              const indentPx = 16 + entry.depth * 12;
+              {navigationHistory.map((entry, idx) => {
+                const isLast = idx === navigationHistory.length - 1;
+                const indentPx = 16 + entry.depth * 12;
 
-              return (
-                <button
-                  key={`${entry.path}-${idx}`}
-                  onClick={() => handleHistoryClick(entry)}
-                  className={`nav-entry ${isLast ? 'active' : 'inactive'}`}
-                  style={{
-                    width: '100%',
-                    display: 'flex', alignItems: 'center',
-                    padding: `5px 16px`, paddingLeft: indentPx,
-                    background: 'transparent', border: 'none',
-                    textAlign: 'left', position: 'relative',
-                    fontFamily: 'Inter, sans-serif',
-                  }}
-                >
-                  {entry.depth > 0 && (
+                return (
+                  <button
+                    key={`${entry.path}-${idx}`}
+                    onClick={() => handleHistoryClick(entry)}
+                    className={`nav-entry ${isLast ? 'active' : 'inactive'}`}
+                    style={{
+                      width: '100%',
+                      display: 'flex', alignItems: 'center',
+                      padding: `5px 16px`, paddingLeft: indentPx,
+                      background: 'transparent', border: 'none',
+                      textAlign: 'left', position: 'relative',
+                      fontFamily: 'Inter, sans-serif',
+                    }}
+                  >
+                    {entry.depth > 0 && (
+                      <span style={{
+                        position: 'absolute',
+                        left: indentPx - 10, top: '50%',
+                        transform: 'translateY(-50%)',
+                        width: 8, height: 1,
+                        background: '#DDD5CA',
+                        display: 'block',
+                      }} />
+                    )}
+                    {entry.depth > 0 && (
+                      <span style={{
+                        position: 'absolute',
+                        left: indentPx - 10, top: 0, bottom: '50%',
+                        width: 1, background: '#DDD5CA',
+                        display: 'block',
+                      }} />
+                    )}
+
                     <span style={{
-                      position: 'absolute',
-                      left: indentPx - 10, top: '50%',
-                      transform: 'translateY(-50%)',
-                      width: 8, height: 1,
-                      background: '#DDD5CA',
-                      display: 'block',
-                    }} />
-                  )}
-                  {entry.depth > 0 && (
-                    <span style={{
-                      position: 'absolute',
-                      left: indentPx - 10, top: 0, bottom: '50%',
-                      width: 1, background: '#DDD5CA',
-                      display: 'block',
-                    }} />
-                  )}
-
-                  <span style={{
-                    fontSize: 11, letterSpacing: '0.01em',
-                    color: isLast ? '#C4622D' : '#7A6F63',
-                    fontFamily: entry.id?.startsWith('case-')
-                      ? 'IBM Plex Mono, monospace'
-                      : 'Inter, sans-serif',
-                  }}>
-                    {entry.label}
-                  </span>
-
-                  {isLast && (
-                    <span style={{
-                      marginLeft: 6, width: 4, height: 4,
-                      borderRadius: '50%', background: '#C4622D',
-                      display: 'inline-block', flexShrink: 0,
-                    }} />
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        ) : (
-          <div>
-            <div className="data-label" style={{ padding: '4px 16px 8px', borderBottom: '1px solid #DDD5CA', marginBottom: 8, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span>Recent Activity</span>
-              <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#C4622D' }} />
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, padding: '0 12px' }}>
-              {RECENT_ACTIVITIES.map((act) => (
-                <div
-                  key={act.id}
-                  onClick={() => handleActivityClick(act.caseId)}
-                  style={{
-                    padding: '6px 8px',
-                    borderRadius: 4,
-                    background: '#FAF6F0',
-                    border: '1px solid #DDD5CA',
-                    cursor: 'pointer',
-                    transition: 'all 120ms ease',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 3,
-                  }}
-                  onMouseEnter={e => {
-                    e.currentTarget.style.borderColor = '#C4622D';
-                    e.currentTarget.style.background = '#FFFFFF';
-                  }}
-                  onMouseLeave={e => {
-                    e.currentTarget.style.borderColor = '#DDD5CA';
-                    e.currentTarget.style.background = '#FAF6F0';
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                    <span style={{
-                      width: 5, height: 5, borderRadius: '50%',
-                      background: act.dotColor, display: 'inline-block', flexShrink: 0,
-                    }} />
-                    <span style={{ fontSize: 10.5, color: '#2A2420', fontWeight: 500, fontFamily: 'Inter, sans-serif' }}>
-                      {act.user}
+                      fontSize: 11, letterSpacing: '0.01em',
+                      color: isLast ? '#C4622D' : '#7A6F63',
+                      fontFamily: entry.id?.startsWith('case-')
+                        ? 'IBM Plex Mono, monospace'
+                        : 'Inter, sans-serif',
+                    }}>
+                      {entry.label}
                     </span>
-                    <span style={{ fontSize: 10, color: '#7A6F63', marginLeft: 'auto', fontFamily: 'IBM Plex Mono, monospace' }}>
-                      {act.time}
-                    </span>
-                  </div>
-                  <div style={{ fontSize: 10, color: '#7A6F63', lineHeight: 1.3, paddingLeft: 10 }}>
-                    {act.action} <span style={{ fontFamily: 'IBM Plex Mono, monospace', color: '#8C3D1A', fontWeight: 500 }}>{act.target}</span>
-                  </div>
-                </div>
-              ))}
+
+                    {isLast && (
+                      <span style={{
+                        marginLeft: 6, width: 4, height: 4,
+                        borderRadius: '50%', background: '#C4622D',
+                        display: 'inline-block', flexShrink: 0,
+                      }} />
+                    )}
+                  </button>
+                );
+              })}
             </div>
-          </div>
-        )}
-      </div>
+          ) : (
+            <div>
+              <div className="data-label" style={{ padding: '4px 16px 8px', borderBottom: '1px solid #DDD5CA', marginBottom: 8, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span>Recent Activity</span>
+                <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#C4622D' }} />
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, padding: '0 12px' }}>
+                {RECENT_ACTIVITIES.map((act) => (
+                  <div
+                    key={act.id}
+                    onClick={() => handleActivityClick(act.caseId)}
+                    style={{
+                      padding: '6px 8px',
+                      borderRadius: 4,
+                      background: '#FAF6F0',
+                      border: '1px solid #DDD5CA',
+                      cursor: 'pointer',
+                      transition: 'all 120ms ease',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 3,
+                    }}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.borderColor = '#C4622D';
+                      e.currentTarget.style.background = '#FFFFFF';
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.borderColor = '#DDD5CA';
+                      e.currentTarget.style.background = '#FAF6F0';
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                      <span style={{
+                        width: 5, height: 5, borderRadius: '50%',
+                        background: act.dotColor, display: 'inline-block', flexShrink: 0,
+                      }} />
+                      <span style={{ fontSize: 10.5, color: '#2A2420', fontWeight: 500, fontFamily: 'Inter, sans-serif' }}>
+                        {act.user}
+                      </span>
+                      <span style={{ fontSize: 10, color: '#7A6F63', marginLeft: 'auto', fontFamily: 'IBM Plex Mono, monospace' }}>
+                        {act.time}
+                      </span>
+                    </div>
+                    <div style={{ fontSize: 10, color: '#7A6F63', lineHeight: 1.3, paddingLeft: 10 }}>
+                      {act.action} <span style={{ fontFamily: 'IBM Plex Mono, monospace', color: '#8C3D1A', fontWeight: 500 }}>{act.target}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {sidebarCollapsed && (
+        <div style={{ flex: 1 }} />
+      )}
 
       {/* Team Online Presence Row */}
-      <div style={{
-        padding: '10px 16px',
-        borderTop: '1px solid #DDD5CA',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 8,
-        background: '#FAF6F0',
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <span className="data-label" style={{ fontSize: '0.62rem' }}>Team Online</span>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 9.5, color: '#3D7A4A', fontFamily: 'IBM Plex Mono, monospace', fontWeight: 600 }}>
-            <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#3D7A4A', display: 'inline-block' }} />
-            4 ACTIVE
-          </span>
+      {!sidebarCollapsed ? (
+        <div style={{
+          padding: '10px 16px',
+          borderTop: '1px solid #DDD5CA',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 8,
+          background: '#FAF6F0',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span className="data-label" style={{ fontSize: '0.62rem' }}>Team Online</span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 9.5, color: '#3D7A4A', fontFamily: 'IBM Plex Mono, monospace', fontWeight: 600 }}>
+              <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#3D7A4A', display: 'inline-block' }} />
+              4 ACTIVE
+            </span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+            {ONLINE_TEAM.map((member) => (
+              <div
+                key={member.initial}
+                title={`${member.name} (${member.status})`}
+                style={{
+                  position: 'relative',
+                  width: 25,
+                  height: 25,
+                  borderRadius: '50%',
+                  background: '#FFFFFF',
+                  border: '1px solid #DDD5CA',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: 9.5,
+                  fontWeight: 600,
+                  color: member.color,
+                  fontFamily: 'Inter, sans-serif',
+                  cursor: 'default',
+                  boxShadow: '0 1px 2px rgba(42, 36, 32, 0.04)',
+                }}
+              >
+                {member.initial}
+                <span
+                  style={{
+                    position: 'absolute',
+                    bottom: -1,
+                    right: -1,
+                    width: 6.5,
+                    height: 6.5,
+                    borderRadius: '50%',
+                    background: member.status === 'online' ? '#3D7A4A' : '#D4854A',
+                    border: '1.5px solid #FFFFFF',
+                    display: 'inline-block',
+                  }}
+                />
+              </div>
+            ))}
+          </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-          {ONLINE_TEAM.map((member) => (
+      ) : (
+        <div style={{
+          padding: '10px 0',
+          borderTop: '1px solid #DDD5CA',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: 6,
+        }}>
+          {ONLINE_TEAM.slice(0, 2).map((member) => (
             <div
               key={member.initial}
               title={`${member.name} (${member.status})`}
               style={{
                 position: 'relative',
-                width: 25,
-                height: 25,
+                width: 22,
+                height: 22,
                 borderRadius: '50%',
                 background: '#FFFFFF',
                 border: '1px solid #DDD5CA',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: 9.5,
+                fontSize: 8.5,
                 fontWeight: 600,
                 color: member.color,
-                fontFamily: 'Inter, sans-serif',
-                cursor: 'default',
-                boxShadow: '0 1px 2px rgba(42, 36, 32, 0.04)',
               }}
             >
               {member.initial}
@@ -326,24 +444,27 @@ export const Sidebar: React.FC = () => {
                   position: 'absolute',
                   bottom: -1,
                   right: -1,
-                  width: 6.5,
-                  height: 6.5,
+                  width: 5,
+                  height: 5,
                   borderRadius: '50%',
                   background: member.status === 'online' ? '#3D7A4A' : '#D4854A',
-                  border: '1.5px solid #FFFFFF',
+                  border: '1px solid #FFFFFF',
                   display: 'inline-block',
                 }}
               />
             </div>
           ))}
         </div>
-      </div>
+      )}
 
-      {/* User Footer */}
+      {/* User Profile Footer */}
       <div style={{
-        padding: '12px 16px',
+        padding: sidebarCollapsed ? '12px 0' : '12px 16px',
         borderTop: '1px solid #DDD5CA',
-        display: 'flex', alignItems: 'center', gap: 8,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: sidebarCollapsed ? 'center' : 'flex-start',
+        gap: 8,
         background: '#F3EDE4',
       }}>
         <div style={{
@@ -353,13 +474,15 @@ export const Sidebar: React.FC = () => {
           borderRadius: 4,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 10, color: '#7A6F63', fontWeight: 600, flexShrink: 0,
-        }}>
+        }} title="R. Okafor (Lead Investigator)">
           RO
         </div>
-        <div>
-          <div style={{ fontSize: 11, color: '#2A2420', fontWeight: 500, fontFamily: 'Inter, sans-serif' }}>R. Okafor</div>
-          <div className="data-label">Lead Investigator</div>
-        </div>
+        {!sidebarCollapsed && (
+          <div>
+            <div style={{ fontSize: 11, color: '#2A2420', fontWeight: 500, fontFamily: 'Inter, sans-serif' }}>R. Okafor</div>
+            <div className="data-label">Lead Investigator</div>
+          </div>
+        )}
       </div>
     </aside>
   );

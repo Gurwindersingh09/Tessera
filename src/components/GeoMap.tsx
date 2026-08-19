@@ -4,19 +4,37 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useAnalyticsStore } from '../store/useAnalyticsStore';
 
-const createTerracottaIcon = (isSelected: boolean) => L.divIcon({
-  className: 'custom-div-icon',
-  html: `<div style="
-    background-color: ${isSelected ? '#6B2E12' : '#C4622D'};
-    width: ${isSelected ? '10px' : '6px'};
-    height: ${isSelected ? '10px' : '6px'};
-    border-radius: 50%;
-    box-shadow: 0 0 ${isSelected ? '8px' : '4px'} ${isSelected ? 'rgba(107, 46, 18, 0.5)' : 'rgba(196, 98, 45, 0.4)'};
-    border: 1.5px solid ${isSelected ? '#2A2420' : '#8C3D1A'};
-  "></div>`,
-  iconSize: [12, 12],
-  iconAnchor: [6, 6]
-});
+const createEntityIcon = (type: string, isSelected: boolean) => {
+  let color = '#C4622D';
+  let borderRadius = '50%';
+
+  if (type === 'BANK_ACCOUNT') {
+    color = '#8C3D1A';
+    borderRadius = '2px';
+  } else if (type === 'SOCIAL_HANDLE') {
+    color = '#D4854A';
+    borderRadius = '2px';
+  } else if (type === 'PERSON') {
+    color = '#2A2420';
+    borderRadius = '50%';
+  }
+
+  return L.divIcon({
+    className: 'custom-div-icon',
+    html: `<div style="
+      background-color: ${color};
+      width: ${isSelected ? '12px' : '8px'};
+      height: ${isSelected ? '12px' : '8px'};
+      border-radius: ${borderRadius};
+      box-shadow: 0 0 ${isSelected ? '10px' : '4px'} ${isSelected ? 'rgba(196, 98, 45, 0.7)' : 'rgba(42, 36, 32, 0.35)'};
+      border: 1.5px solid ${isSelected ? '#FFFFFF' : '#FAF6F0'};
+      transform: ${type === 'SOCIAL_HANDLE' ? 'rotate(45deg)' : 'none'};
+      transition: all 150ms ease;
+    "></div>`,
+    iconSize: [14, 14],
+    iconAnchor: [7, 7]
+  });
+};
 
 const MapController = ({ selectedEntityId, events }: { selectedEntityId: string | null, events: any[] }) => {
   const map = useMap();
@@ -30,7 +48,7 @@ const MapController = ({ selectedEntityId, events }: { selectedEntityId: string 
 
     if (entityEvents.length > 0) {
       const bounds = L.latLngBounds(entityEvents.map(e => [e.location!.lat, e.location!.lng]));
-      map.fitBounds(bounds, { padding: [50, 50], maxZoom: 14 });
+      map.fitBounds(bounds, { padding: [40, 40], maxZoom: 14 });
     }
   }, [selectedEntityId, events, map]);
 
@@ -38,7 +56,13 @@ const MapController = ({ selectedEntityId, events }: { selectedEntityId: string 
 };
 
 export const GeoMap: React.FC = () => {
-  const { events, selectedEntityId, setSelectedEntityId } = useAnalyticsStore();
+  const { events, selectedEntityId, setSelectedEntityId, entities } = useAnalyticsStore();
+
+  const entityTypeMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    entities.forEach(e => { map[e.id] = e.type; });
+    return map;
+  }, [entities]);
 
   const mapData = useMemo(() => {
     const locations = events.filter(e => e.location !== null).sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
@@ -54,41 +78,53 @@ export const GeoMap: React.FC = () => {
 
   return (
     <div className="h-full w-full relative bg-[#FAF6F0] z-0">
-      <div className="absolute top-0 left-0 w-full h-8 border-b border-[#DDD5CA] bg-[#F3EDE4] flex items-center px-4 shrink-0 z-10 pointer-events-none">
+      <div className="absolute top-0 left-0 w-full h-8 border-b border-[#DDD5CA] bg-[#F3EDE4] flex items-center justify-between px-4 shrink-0 z-10 pointer-events-none">
         <span className="text-[10px] uppercase tracking-widest text-[#7A6F63] font-semibold">Geospatial Trajectory</span>
+        <span className="text-[9.5px] font-mono text-[#8C3D1A] font-medium">{mapData.locations.length} points plotted</span>
       </div>
       <MapContainer 
         center={[28.6139, 77.2090]}
         zoom={11} 
         zoomControl={false}
         className="w-full h-full bg-[#FAF6F0]"
-        style={{ background: '#FAF6F0' }}
+        style={{
+          background: '#FAF6F0',
+          filter: 'sepia(0.24) saturate(0.92) contrast(1.04) brightness(0.98)',
+        }}
       >
         <TileLayer
           attribution='&copy; <a href="https://carto.com/attributions">CARTO</a>'
-          url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+          url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
         />
         
         <MapController selectedEntityId={selectedEntityId} events={events} />
 
-        {Object.entries(mapData.pathsByEntity).map(([entityId, coords]) => (
-          <Polyline 
-            key={`path-${entityId}`} 
-            positions={coords} 
-            color={selectedEntityId === entityId ? '#6B2E12' : '#C4622D'} 
-            weight={selectedEntityId === entityId ? 2 : 1} 
-            opacity={selectedEntityId === entityId ? 1 : 0.4}
-            dashArray={selectedEntityId === entityId ? "0" : "5, 5"}
-          />
-        ))}
+        {Object.entries(mapData.pathsByEntity).map(([entityId, coords]) => {
+          const isSelected = selectedEntityId === entityId;
+          const entityType = entityTypeMap[entityId] || 'PHONE';
+          const strokeColor = entityType === 'BANK_ACCOUNT' ? '#8C3D1A' : '#C4622D';
+
+          return (
+            <Polyline 
+              key={`path-${entityId}`} 
+              positions={coords} 
+              color={strokeColor} 
+              weight={isSelected ? 2.5 : 1.5} 
+              opacity={isSelected ? 1 : 0.55}
+              dashArray={isSelected ? "0" : "4, 4"}
+            />
+          );
+        })}
 
         {mapData.locations.map((loc, idx) => {
           const isSelected = selectedEntityId === loc.entity_id || selectedEntityId === loc.counterparty_id;
+          const entityType = entityTypeMap[loc.entity_id] || 'PHONE';
+
           return (
             <Marker 
               key={`marker-${idx}`}
               position={[loc.location!.lat, loc.location!.lng]}
-              icon={createTerracottaIcon(isSelected)}
+              icon={createEntityIcon(entityType, isSelected)}
               eventHandlers={{
                 click: () => setSelectedEntityId(loc.entity_id)
               }}

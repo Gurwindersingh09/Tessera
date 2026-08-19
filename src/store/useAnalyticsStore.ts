@@ -15,6 +15,7 @@ interface AnalyticsState {
     sidebarOpen: boolean;
     dossierOpen: boolean;
     bottomPaneHeight: number;
+    bottomPaneCollapsed: boolean;
   };
   
   // Actions
@@ -24,6 +25,7 @@ interface AnalyticsState {
   setData: (data: { entities: EntityNode[], edges: RelationshipEdge[], events: AnalyticsEvent[], anomalies: AnomalyFlag[] }) => void;
   toggleSidebar: () => void;
   toggleDossier: () => void;
+  toggleBottomPane: () => void;
   setBottomPaneHeight: (height: number) => void;
 }
 
@@ -39,7 +41,8 @@ export const useAnalyticsStore = create<AnalyticsState>((set) => ({
   panelState: {
     sidebarOpen: true,
     dossierOpen: false,
-    bottomPaneHeight: 280,
+    bottomPaneHeight: 260,
+    bottomPaneCollapsed: false,
   },
 
   setCaseId: (id) => set({ caseId: id }),
@@ -51,5 +54,6 @@ export const useAnalyticsStore = create<AnalyticsState>((set) => ({
   setData: (data) => set({ ...data }),
   toggleSidebar: () => set((state) => ({ panelState: { ...state.panelState, sidebarOpen: !state.panelState.sidebarOpen } })),
   toggleDossier: () => set((state) => ({ panelState: { ...state.panelState, dossierOpen: !state.panelState.dossierOpen } })),
+  toggleBottomPane: () => set((state) => ({ panelState: { ...state.panelState, bottomPaneCollapsed: !state.panelState.bottomPaneCollapsed } })),
   setBottomPaneHeight: (height) => set((state) => ({ panelState: { ...state.panelState, bottomPaneHeight: height } })),
 }));

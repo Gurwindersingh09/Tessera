@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { usePhishieldStore } from '../store/usePhishieldStore';
 import { useAnalyticsStore } from '../store/useAnalyticsStore';
 import { CaseItem } from '../types/schema';
-import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
+import { motion, useMotionValue, useTransform, animate, AnimatePresence } from 'framer-motion';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 
 /* ─── Easing ─── */
 const EASE_SHARP: [number, number, number, number] = [0.4, 0, 0.2, 1];
@@ -220,8 +221,10 @@ function StatStrip({ cases }: { cases: CaseItem[] }) {
   );
 }
 
-/* ─── Priority Queue: 3 Compact Cards for Highest-Anomaly Active Cases ─── */
+/* ─── Priority Queue: 3 Compact Cards for Highest-Anomaly Active Cases with Compress/Expand ─── */
 function PriorityQueue({ cases, onOpen }: { cases: CaseItem[]; onOpen: (c: CaseItem) => void }) {
+  const [collapsed, setCollapsed] = useState(false);
+
   const priorityCases = useMemo(() => {
     return cases
       .filter(c => c.status === 'active' || c.status === 'flagged')
@@ -233,11 +236,12 @@ function PriorityQueue({ cases, onOpen }: { cases: CaseItem[]; onOpen: (c: CaseI
 
   return (
     <div style={{
-      padding: '14px 20px',
+      padding: '12px 20px',
       borderBottom: '1px solid #DDD5CA',
       background: '#FAF6F0',
+      transition: 'all 200ms ease',
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: collapsed ? 0 : 10 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <span style={{
             width: 6, height: 6, borderRadius: '50%',
@@ -248,139 +252,165 @@ function PriorityQueue({ cases, onOpen }: { cases: CaseItem[]; onOpen: (c: CaseI
             Priority Queue · Highest Risk Active Cases
           </span>
         </div>
-        <span style={{ fontSize: 10, fontFamily: 'IBM Plex Mono, monospace', color: '#7A6F63' }}>
-          3 cases surfaced for triage
-        </span>
+        
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ fontSize: 10, fontFamily: 'IBM Plex Mono, monospace', color: '#7A6F63' }}>
+            3 cases surfaced
+          </span>
+
+          <button
+            type="button"
+            onClick={() => setCollapsed(!collapsed)}
+            title={collapsed ? "Expand Priority Queue" : "Compress Priority Queue"}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 3,
+              border: '1px solid #DDD5CA',
+              borderRadius: 3,
+              background: '#FFFFFF',
+              padding: '2px 6px',
+              fontSize: 9.5,
+              color: '#7A6F63',
+              cursor: 'pointer',
+            }}
+          >
+            {collapsed ? <ChevronDown className="w-3 h-3 text-[#C4622D]" /> : <ChevronUp className="w-3 h-3 text-[#7A6F63]" />}
+            <span>{collapsed ? 'Expand' : 'Compress'}</span>
+          </button>
+        </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 12 }}>
-        {priorityCases.map((c, i) => {
-          const initials = c.investigator
-            ? c.investigator.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
-            : 'RO';
-          const isCritical = c.priority === 'critical';
-          const borderColor = isCritical ? '#B53924' : '#C4622D';
+      {!collapsed && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 12 }}>
+          {priorityCases.map((c, i) => {
+            const initials = c.investigator
+              ? c.investigator.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
+              : 'RO';
+            const isCritical = c.priority === 'critical';
+            const borderColor = isCritical ? '#B53924' : '#C4622D';
 
-          return (
-            <motion.div
-              key={c.id}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.06, duration: 0.3, ease: EASE_SHARP }}
-              whileHover={{ y: -2, boxShadow: '0 4px 12px rgba(42,36,32,0.08)' }}
-              onClick={() => onOpen(c)}
-              tabIndex={0}
-              role="button"
-              aria-label={`Open high-priority case ${c.id}: ${c.title}`}
-              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpen(c); } }}
-              style={{
-                background: '#FFFFFF',
-                border: '1px solid #DDD5CA',
-                borderLeft: `3px solid ${borderColor}`,
-                borderRadius: 8,
-                padding: '12px 14px',
-                cursor: 'pointer',
-                boxShadow: '0 1px 3px rgba(42,36,32,0.04)',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 8,
-                transition: 'border-color 150ms, box-shadow 150ms',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <span style={{
-                    fontFamily: 'IBM Plex Mono, monospace',
-                    fontSize: 11,
-                    fontWeight: 600,
-                    color: '#8C3D1A',
-                  }}>
-                    {c.id}
-                  </span>
-                  <span style={{
-                    fontSize: 9,
-                    textTransform: 'uppercase',
-                    fontFamily: 'IBM Plex Mono, monospace',
-                    fontWeight: 600,
-                    padding: '1px 5px',
-                    borderRadius: 2,
-                    background: isCritical ? '#B5392415' : '#C4622D15',
-                    color: isCritical ? '#B53924' : '#C4622D',
-                    border: `1px solid ${isCritical ? '#B5392440' : '#C4622D40'}`,
-                  }}>
-                    {c.priority}
+            return (
+              <motion.div
+                key={c.id}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.06, duration: 0.3, ease: EASE_SHARP }}
+                whileHover={{ y: -2, boxShadow: '0 4px 12px rgba(42,36,32,0.08)' }}
+                onClick={() => onOpen(c)}
+                tabIndex={0}
+                role="button"
+                aria-label={`Open high-priority case ${c.id}: ${c.title}`}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpen(c); } }}
+                style={{
+                  background: '#FFFFFF',
+                  border: '1px solid #DDD5CA',
+                  borderLeft: `3px solid ${borderColor}`,
+                  borderRadius: 8,
+                  padding: '12px 14px',
+                  cursor: 'pointer',
+                  boxShadow: '0 1px 3px rgba(42,36,32,0.04)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 8,
+                  transition: 'border-color 150ms, box-shadow 150ms',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{
+                      fontFamily: 'IBM Plex Mono, monospace',
+                      fontSize: 11,
+                      fontWeight: 600,
+                      color: '#8C3D1A',
+                    }}>
+                      {c.id}
+                    </span>
+                    <span style={{
+                      fontSize: 9,
+                      textTransform: 'uppercase',
+                      fontFamily: 'IBM Plex Mono, monospace',
+                      fontWeight: 600,
+                      padding: '1px 5px',
+                      borderRadius: 2,
+                      background: isCritical ? '#B5392415' : '#C4622D15',
+                      color: isCritical ? '#B53924' : '#C4622D',
+                      border: `1px solid ${isCritical ? '#B5392440' : '#C4622D40'}`,
+                    }}>
+                      {c.priority}
+                    </span>
+                  </div>
+                  <div
+                    title={`Assigned: ${c.investigator}`}
+                    style={{
+                      width: 22, height: 22, borderRadius: '50%',
+                      background: '#F3EDE4', border: '1px solid #DDD5CA',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 9, fontWeight: 600, color: '#7A6F63',
+                      fontFamily: 'Inter, sans-serif',
+                    }}
+                  >
+                    {initials}
+                  </div>
+                </div>
+
+                <div style={{
+                  fontSize: 13.5,
+                  fontWeight: 600,
+                  color: '#2A2420',
+                  fontFamily: '"Fraunces", Georgia, serif',
+                  lineHeight: 1.25,
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}>
+                  {c.title}
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', paddingTop: 2 }}>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                    <span style={{
+                      fontFamily: 'IBM Plex Mono, monospace',
+                      fontSize: 19,
+                      fontWeight: 600,
+                      color: '#B53924',
+                      lineHeight: 1,
+                    }}>
+                      {String(c.anomalyCount).padStart(2, '0')}
+                    </span>
+                    <span style={{ fontSize: 9.5, color: '#7A6F63', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                      anomalies
+                    </span>
+                  </div>
+                  <span style={{ fontSize: 10, color: '#7A6F63', fontFamily: 'Inter, sans-serif' }}>
+                    {c.entityCount} entities · {c.status}
                   </span>
                 </div>
-                <div
-                  title={`Assigned: ${c.investigator}`}
-                  style={{
-                    width: 22, height: 22, borderRadius: '50%',
-                    background: '#F3EDE4', border: '1px solid #DDD5CA',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 9, fontWeight: 600, color: '#7A6F63',
-                    fontFamily: 'Inter, sans-serif',
-                  }}
-                >
-                  {initials}
-                </div>
-              </div>
 
-              <div style={{
-                fontSize: 13.5,
-                fontWeight: 600,
-                color: '#2A2420',
-                fontFamily: '"Fraunces", Georgia, serif',
-                lineHeight: 1.25,
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-              }}>
-                {c.title}
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', paddingTop: 2 }}>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-                  <span style={{
-                    fontFamily: 'IBM Plex Mono, monospace',
-                    fontSize: 19,
-                    fontWeight: 600,
-                    color: '#B53924',
-                    lineHeight: 1,
-                  }}>
-                    {String(c.anomalyCount).padStart(2, '0')}
-                  </span>
-                  <span style={{ fontSize: 9.5, color: '#7A6F63', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                    anomalies
+                <div style={{
+                  fontSize: 10,
+                  color: '#8C3D1A',
+                  background: '#FAF6F0',
+                  padding: '4px 7px',
+                  borderRadius: 4,
+                  border: '1px solid #DDD5CA80',
+                  lineHeight: 1.3,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 5,
+                }}>
+                  <span style={{ width: 4, height: 4, borderRadius: '50%', background: '#B53924', flexShrink: 0 }} />
+                  <span>
+                    {c.anomalyCount >= 10
+                      ? `${c.anomalyCount} anomalies · Rapid transaction volume · Unreviewed 2d`
+                      : `${c.anomalyCount} anomalies · Pattern deviation flagged by system`}
                   </span>
                 </div>
-                <span style={{ fontSize: 10, color: '#7A6F63', fontFamily: 'Inter, sans-serif' }}>
-                  {c.entityCount} entities · {c.status}
-                </span>
-              </div>
-
-              <div style={{
-                fontSize: 10,
-                color: '#8C3D1A',
-                background: '#FAF6F0',
-                padding: '4px 7px',
-                borderRadius: 4,
-                border: '1px solid #DDD5CA80',
-                lineHeight: 1.3,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 5,
-              }}>
-                <span style={{ width: 4, height: 4, borderRadius: '50%', background: '#B53924', flexShrink: 0 }} />
-                <span>
-                  {c.anomalyCount >= 10
-                    ? `${c.anomalyCount} anomalies · Rapid transaction volume · Unreviewed 2d`
-                    : `${c.anomalyCount} anomalies · Pattern deviation flagged by system`}
-                </span>
-              </div>
-            </motion.div>
-          );
-        })}
-      </div>
+              </motion.div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

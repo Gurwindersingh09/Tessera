@@ -19,6 +19,9 @@ interface PhishieldState {
   filters: FilterState;
   setFilter: (key: keyof FilterState, value: string) => void;
   resetFilters: () => void;
+  sidebarCollapsed: boolean;
+  toggleSidebarCollapse: () => void;
+  setSidebarCollapsed: (collapsed: boolean) => void;
 }
 
 export const usePhishieldStore = create<PhishieldState>()(
@@ -82,12 +85,19 @@ export const usePhishieldStore = create<PhishieldState>()(
         set({
           filters: { search: '', status: 'all', investigator: 'all', dateRange: 'all' },
         }),
+
+      sidebarCollapsed: false,
+      toggleSidebarCollapse: () =>
+        set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed })),
+      setSidebarCollapsed: (collapsed: boolean) =>
+        set({ sidebarCollapsed: collapsed }),
     }),
     {
       name: 'phishield-store',
       partialize: (state) => ({
         cases: state.cases,
         navigationHistory: state.navigationHistory,
+        sidebarCollapsed: state.sidebarCollapsed,
       }),
     }
   )

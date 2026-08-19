@@ -10,14 +10,9 @@ import { AnalyticsPage, AlertsPage, SettingsPage, SearchPage, CasesPage } from '
 export function App() {
   const location = useLocation();
   const isLanding = location.pathname === '/';
-  const isCaseDetail = location.pathname.startsWith('/case/');
 
   if (isLanding) {
     return <LandingPage />;
-  }
-
-  if (isCaseDetail) {
-    return <CaseDetail />;
   }
 
   return (
@@ -25,13 +20,14 @@ export function App() {
       <Sidebar />
       <main style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
         <Routes>
-          <Route path="/dashboard" element={<CaseDashboard />} />
-          <Route path="/new-case"   element={<NewCasePage />} />
-          <Route path="/analytics"  element={<AnalyticsPage />} />
-          <Route path="/alerts"     element={<AlertsPage />} />
-          <Route path="/settings"   element={<SettingsPage />} />
-          <Route path="/search"     element={<SearchPage />} />
-          <Route path="/cases"      element={<CasesPage />} />
+          <Route path="/dashboard"    element={<CaseDashboard />} />
+          <Route path="/new-case"     element={<NewCasePage />} />
+          <Route path="/case/:caseId" element={<CaseDetail />} />
+          <Route path="/analytics"    element={<AnalyticsPage />} />
+          <Route path="/alerts"       element={<AlertsPage />} />
+          <Route path="/settings"     element={<SettingsPage />} />
+          <Route path="/search"       element={<SearchPage />} />
+          <Route path="/cases"        element={<CasesPage />} />
         </Routes>
       </main>
     </div>
