@@ -5,9 +5,10 @@ import { usePhishieldStore } from '../store/usePhishieldStore';
 interface PlaceholderProps {
   title: string;
   path: string;
+  description?: string;
 }
 
-function PlaceholderPage({ title, path }: PlaceholderProps) {
+function PlaceholderPage({ title, path, description }: PlaceholderProps) {
   const navigate = useNavigate();
   const { pushNavHistory } = usePhishieldStore();
 
@@ -37,8 +38,16 @@ function PlaceholderPage({ title, path }: PlaceholderProps) {
         fontSize: 13,
         gap: 16
       }}>
-        <div style={{ padding: '24px 48px', border: '1px solid #DDD5CA', background: '#F3EDE4', borderRadius: 8 }}>
-          [{title.toUpperCase()} SYSTEM PANEL]
+        <div style={{ padding: '28px 52px', border: '1px solid #DDD5CA', background: '#F3EDE4', borderRadius: 8, textAlign: 'center' }}>
+          <div style={{ color: '#C4622D', fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 8, fontFamily: 'Inter, sans-serif', fontWeight: 600 }}>
+            System Module
+          </div>
+          <div style={{ color: '#2A2420', fontSize: 16, fontFamily: '"Fraunces", Georgia, serif', fontWeight: 600, marginBottom: 6 }}>
+            {title} Control Center
+          </div>
+          <div style={{ color: '#7A6F63', fontSize: 12, fontFamily: 'Inter, sans-serif' }}>
+            {description ?? 'Real-time telemetry and advanced operational analytics.'}
+          </div>
         </div>
         <button className="btn-accent" onClick={() => navigate('/dashboard')}>
           Go to Case Overview
@@ -48,6 +57,8 @@ function PlaceholderPage({ title, path }: PlaceholderProps) {
   );
 }
 
+export const AnalyticsPage: React.FC = () => <PlaceholderPage title="Analytics" path="/analytics" description="Cross-case behavioral trends, temporal clusters, and risk velocity." />;
+export const AlertsPage: React.FC = () => <PlaceholderPage title="Alerts" path="/alerts" description="Automated anomaly notifications, threshold breaches, and urgent triggers." />;
+export const SettingsPage: React.FC = () => <PlaceholderPage title="Settings" path="/settings" description="System configuration, API integrations, and access credentials." />;
 export const SearchPage: React.FC = () => <PlaceholderPage title="Search" path="/search" />;
-export const SettingsPage: React.FC = () => <PlaceholderPage title="Settings" path="/settings" />;
 export const CasesPage: React.FC = () => <PlaceholderPage title="Cases Registry" path="/cases" />;

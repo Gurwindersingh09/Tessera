@@ -5,7 +5,7 @@ import { LandingPage } from './pages/LandingPage';
 import { CaseDashboard } from './pages/CaseDashboard';
 import { CaseDetail } from './pages/CaseDetail';
 import { NewCasePage } from './pages/NewCasePage';
-import { SearchPage, SettingsPage, CasesPage } from './pages/PlaceholderPages';
+import { AnalyticsPage, AlertsPage, SettingsPage, SearchPage, CasesPage } from './pages/PlaceholderPages';
 
 export function App() {
   const location = useLocation();
@@ -27,8 +27,10 @@ export function App() {
         <Routes>
           <Route path="/dashboard" element={<CaseDashboard />} />
           <Route path="/new-case"   element={<NewCasePage />} />
-          <Route path="/search"     element={<SearchPage />} />
+          <Route path="/analytics"  element={<AnalyticsPage />} />
+          <Route path="/alerts"     element={<AlertsPage />} />
           <Route path="/settings"   element={<SettingsPage />} />
+          <Route path="/search"     element={<SearchPage />} />
           <Route path="/cases"      element={<CasesPage />} />
         </Routes>
       </main>

@@ -1,8 +1,9 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { usePhishieldStore } from '../store/usePhishieldStore';
+import { useAnalyticsStore } from '../store/useAnalyticsStore';
 
-/* ─── SVG Icons ─────────────────────────────────────────────────────────────── */
+/* ─── SVG Icons for 4 primary nav items ─────────────────────────────────────── */
 const IconDashboard = () => (
   <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
     <rect x="1" y="1" width="6" height="6" rx="0.5" stroke="currentColor" strokeWidth="1.2"/>
@@ -12,10 +13,17 @@ const IconDashboard = () => (
   </svg>
 );
 
-const IconSearch = () => (
+const IconAnalytics = () => (
   <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-    <circle cx="6.5" cy="6.5" r="5" stroke="currentColor" strokeWidth="1.2"/>
-    <line x1="10.5" y1="10.5" x2="15" y2="15" stroke="currentColor" strokeWidth="1.2" strokeLinecap="square"/>
+    <path d="M2 14V9M6 14V4M10 14V7M14 14V2" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+  </svg>
+);
+
+const IconAlerts = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+    <path d="M8 1.5C5.5 1.5 4 3.5 4 6.5V9.5L2.5 11.5H13.5L12 9.5V6.5C12 3.5 10.5 1.5 8 1.5Z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/>
+    <path d="M6.5 12C6.7 13.2 7.2 14 8 14C8.8 14 9.3 13.2 9.5 12" stroke="currentColor" strokeWidth="1.2"/>
+    <circle cx="12.5" cy="3.5" r="2" fill="#B53924"/>
   </svg>
 );
 
@@ -27,15 +35,6 @@ const IconSettings = () => (
   </svg>
 );
 
-const IconCases = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-    <rect x="1" y="3" width="14" height="11" rx="0.5" stroke="currentColor" strokeWidth="1.2"/>
-    <path d="M5 3V2.5C5 1.67 5.67 1 6.5 1h3C10.33 1 11 1.67 11 2.5V3" stroke="currentColor" strokeWidth="1.2"/>
-    <line x1="4" y1="7" x2="12" y2="7" stroke="currentColor" strokeWidth="1.1"/>
-    <line x1="4" y1="10" x2="9" y2="10" stroke="currentColor" strokeWidth="1.1"/>
-  </svg>
-);
-
 const PhishieldMark = () => (
   <div style={{
     width: 28, height: 28,
@@ -43,6 +42,7 @@ const PhishieldMark = () => (
     borderRadius: 4,
     display: 'flex', alignItems: 'center', justifyContent: 'center',
     flexShrink: 0,
+    background: '#FAF6F0',
   }}>
     <span style={{
       color: '#C4622D', fontSize: 13,
@@ -54,15 +54,30 @@ const PhishieldMark = () => (
 
 const NAV_ITEMS = [
   { id: 'dashboard', label: 'Dashboard', path: '/dashboard', icon: IconDashboard },
-  { id: 'search',    label: 'Search',    path: '/search',    icon: IconSearch },
-  { id: 'cases',     label: 'Cases',     path: '/cases',     icon: IconCases },
+  { id: 'analytics', label: 'Analytics', path: '/analytics', icon: IconAnalytics },
+  { id: 'alerts',    label: 'Alerts',    path: '/alerts',    icon: IconAlerts },
   { id: 'settings',  label: 'Settings',  path: '/settings',  icon: IconSettings },
+];
+
+const RECENT_ACTIVITIES = [
+  { id: 'act-1', user: 'S. Petrov', action: 'flagged', target: 'CASE-0038', time: '2h ago', dotColor: '#B53924', caseId: 'CASE-0038' },
+  { id: 'act-2', user: 'A. Lin', action: 'linked 3 entities in', target: 'CASE-0041', time: '4h ago', dotColor: '#C4622D', caseId: 'CASE-0041' },
+  { id: 'act-3', user: 'M. Kelly', action: 'closed', target: 'CASE-0029', time: '1d ago', dotColor: '#3D7A4A', caseId: 'CASE-0029' },
+  { id: 'act-4', user: 'R. Okafor', action: 'triaged anomalies in', target: 'CASE-0035', time: '2d ago', dotColor: '#D4854A', caseId: 'CASE-0035' },
+];
+
+const ONLINE_TEAM = [
+  { initial: 'SP', name: 'S. Petrov', status: 'online', color: '#8C3D1A' },
+  { initial: 'AL', name: 'A. Lin', status: 'online', color: '#C4622D' },
+  { initial: 'MK', name: 'M. Kelly', status: 'online', color: '#6B2E12' },
+  { initial: 'DK', name: 'D. Kim', status: 'idle', color: '#7A6F63' },
 ];
 
 export const Sidebar: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { navigationHistory, truncateNavAt, pushNavHistory } = usePhishieldStore();
+  const { navigationHistory, truncateNavAt, pushNavHistory, cases } = usePhishieldStore();
+  const { setCaseId } = useAnalyticsStore();
 
   const currentPath = location.pathname;
 
@@ -75,6 +90,18 @@ export const Sidebar: React.FC = () => {
     truncateNavAt(entry.path);
     navigate(entry.path);
   };
+
+  const handleActivityClick = (targetCaseId: string) => {
+    const foundCase = cases.find(c => c.id === targetCaseId);
+    if (foundCase) {
+      setCaseId(foundCase.id);
+      pushNavHistory({ id: `case-${foundCase.id}`, label: `Case: ${foundCase.title}`, path: `/case/${foundCase.id}`, depth: 1 });
+      navigate(`/case/${foundCase.id}`);
+    }
+  };
+
+  // Show breadcrumb navigation stack only if user navigated deeper into sub-pages
+  const hasSubPageHistory = navigationHistory.length > 1;
 
   return (
     <aside
@@ -102,7 +129,7 @@ export const Sidebar: React.FC = () => {
         </div>
       </div>
 
-      {/* Top Nav */}
+      {/* Primary Nav (4 items: Dashboard, Analytics, Alerts, Settings) */}
       <nav style={{ padding: '8px 0', borderBottom: '1px solid #DDD5CA' }}>
         {NAV_ITEMS.map((item) => {
           const Icon = item.icon;
@@ -115,86 +142,201 @@ export const Sidebar: React.FC = () => {
                 width: '100%',
                 display: 'flex', alignItems: 'center', gap: 10,
                 padding: '7px 16px',
-                background: 'transparent',
+                background: isActive ? '#EDE5D8' : 'transparent',
                 border: 'none',
-                borderLeft: `2px solid ${isActive ? '#C4622D' : 'transparent'}`,
-                color: isActive ? '#C4622D' : '#A89F93',
+                borderLeft: `3px solid ${isActive ? '#C4622D' : 'transparent'}`,
+                color: isActive ? '#C4622D' : '#7A6F63',
                 cursor: 'pointer', textAlign: 'left',
-                transition: 'color 100ms, background 100ms',
+                transition: 'color 100ms, background 100ms, border-left-color 100ms',
                 fontFamily: 'Inter, sans-serif',
+                fontWeight: isActive ? 600 : 500,
               }}
-              onMouseEnter={e => { if (!isActive) { e.currentTarget.style.color = '#7A6F63'; e.currentTarget.style.background = '#EDE5D8'; } }}
-              onMouseLeave={e => { if (!isActive) { e.currentTarget.style.color = '#A89F93'; e.currentTarget.style.background = 'transparent'; } }}
+              onMouseEnter={e => { if (!isActive) { e.currentTarget.style.color = '#2A2420'; e.currentTarget.style.background = '#EDE5D8'; } }}
+              onMouseLeave={e => { if (!isActive) { e.currentTarget.style.color = '#7A6F63'; e.currentTarget.style.background = 'transparent'; } }}
             >
               <Icon />
-              <span style={{ fontSize: 12, letterSpacing: '0.02em' }}>{item.label}</span>
+              <span style={{ fontSize: 12, letterSpacing: '0.01em' }}>{item.label}</span>
             </button>
           );
         })}
       </nav>
 
-      {/* Navigation History Stack */}
+      {/* Dynamic Middle Section: Contextual History or Recent Activity Feed */}
       <div style={{ flex: 1, padding: '10px 0', overflowY: 'auto' }}>
-        <div className="data-label" style={{ padding: '4px 16px 8px', borderBottom: '1px solid #DDD5CA', marginBottom: 4 }}>
-          Navigation History
+        {hasSubPageHistory ? (
+          <div>
+            <div className="data-label" style={{ padding: '4px 16px 8px', borderBottom: '1px solid #DDD5CA', marginBottom: 4 }}>
+              Navigation History
+            </div>
+
+            {navigationHistory.map((entry, idx) => {
+              const isLast = idx === navigationHistory.length - 1;
+              const indentPx = 16 + entry.depth * 12;
+
+              return (
+                <button
+                  key={`${entry.path}-${idx}`}
+                  onClick={() => handleHistoryClick(entry)}
+                  className={`nav-entry ${isLast ? 'active' : 'inactive'}`}
+                  style={{
+                    width: '100%',
+                    display: 'flex', alignItems: 'center',
+                    padding: `5px 16px`, paddingLeft: indentPx,
+                    background: 'transparent', border: 'none',
+                    textAlign: 'left', position: 'relative',
+                    fontFamily: 'Inter, sans-serif',
+                  }}
+                >
+                  {entry.depth > 0 && (
+                    <span style={{
+                      position: 'absolute',
+                      left: indentPx - 10, top: '50%',
+                      transform: 'translateY(-50%)',
+                      width: 8, height: 1,
+                      background: '#DDD5CA',
+                      display: 'block',
+                    }} />
+                  )}
+                  {entry.depth > 0 && (
+                    <span style={{
+                      position: 'absolute',
+                      left: indentPx - 10, top: 0, bottom: '50%',
+                      width: 1, background: '#DDD5CA',
+                      display: 'block',
+                    }} />
+                  )}
+
+                  <span style={{
+                    fontSize: 11, letterSpacing: '0.01em',
+                    color: isLast ? '#C4622D' : '#7A6F63',
+                    fontFamily: entry.id?.startsWith('case-')
+                      ? 'IBM Plex Mono, monospace'
+                      : 'Inter, sans-serif',
+                  }}>
+                    {entry.label}
+                  </span>
+
+                  {isLast && (
+                    <span style={{
+                      marginLeft: 6, width: 4, height: 4,
+                      borderRadius: '50%', background: '#C4622D',
+                      display: 'inline-block', flexShrink: 0,
+                    }} />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        ) : (
+          <div>
+            <div className="data-label" style={{ padding: '4px 16px 8px', borderBottom: '1px solid #DDD5CA', marginBottom: 8, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span>Recent Activity</span>
+              <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#C4622D' }} />
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, padding: '0 12px' }}>
+              {RECENT_ACTIVITIES.map((act) => (
+                <div
+                  key={act.id}
+                  onClick={() => handleActivityClick(act.caseId)}
+                  style={{
+                    padding: '6px 8px',
+                    borderRadius: 4,
+                    background: '#FAF6F0',
+                    border: '1px solid #DDD5CA',
+                    cursor: 'pointer',
+                    transition: 'all 120ms ease',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 3,
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.borderColor = '#C4622D';
+                    e.currentTarget.style.background = '#FFFFFF';
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.borderColor = '#DDD5CA';
+                    e.currentTarget.style.background = '#FAF6F0';
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                    <span style={{
+                      width: 5, height: 5, borderRadius: '50%',
+                      background: act.dotColor, display: 'inline-block', flexShrink: 0,
+                    }} />
+                    <span style={{ fontSize: 10.5, color: '#2A2420', fontWeight: 500, fontFamily: 'Inter, sans-serif' }}>
+                      {act.user}
+                    </span>
+                    <span style={{ fontSize: 10, color: '#7A6F63', marginLeft: 'auto', fontFamily: 'IBM Plex Mono, monospace' }}>
+                      {act.time}
+                    </span>
+                  </div>
+                  <div style={{ fontSize: 10, color: '#7A6F63', lineHeight: 1.3, paddingLeft: 10 }}>
+                    {act.action} <span style={{ fontFamily: 'IBM Plex Mono, monospace', color: '#8C3D1A', fontWeight: 500 }}>{act.target}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Team Online Presence Row */}
+      <div style={{
+        padding: '10px 16px',
+        borderTop: '1px solid #DDD5CA',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 8,
+        background: '#FAF6F0',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <span className="data-label" style={{ fontSize: '0.62rem' }}>Team Online</span>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 9.5, color: '#3D7A4A', fontFamily: 'IBM Plex Mono, monospace', fontWeight: 600 }}>
+            <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#3D7A4A', display: 'inline-block' }} />
+            4 ACTIVE
+          </span>
         </div>
-
-        {navigationHistory.map((entry, idx) => {
-          const isLast = idx === navigationHistory.length - 1;
-          const indentPx = 16 + entry.depth * 12;
-
-          return (
-            <button
-              key={`${entry.path}-${idx}`}
-              onClick={() => handleHistoryClick(entry)}
-              className={`nav-entry ${isLast ? 'active' : 'inactive'}`}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+          {ONLINE_TEAM.map((member) => (
+            <div
+              key={member.initial}
+              title={`${member.name} (${member.status})`}
               style={{
-                width: '100%',
-                display: 'flex', alignItems: 'center',
-                padding: `5px 16px`, paddingLeft: indentPx,
-                background: 'transparent', border: 'none',
-                textAlign: 'left', position: 'relative',
+                position: 'relative',
+                width: 25,
+                height: 25,
+                borderRadius: '50%',
+                background: '#FFFFFF',
+                border: '1px solid #DDD5CA',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: 9.5,
+                fontWeight: 600,
+                color: member.color,
                 fontFamily: 'Inter, sans-serif',
+                cursor: 'default',
+                boxShadow: '0 1px 2px rgba(42, 36, 32, 0.04)',
               }}
             >
-              {entry.depth > 0 && (
-                <span style={{
+              {member.initial}
+              <span
+                style={{
                   position: 'absolute',
-                  left: indentPx - 10, top: '50%',
-                  transform: 'translateY(-50%)',
-                  width: 8, height: 1,
-                  background: '#DDD5CA',
-                  display: 'block',
-                }} />
-              )}
-              {entry.depth > 0 && (
-                <span style={{
-                  position: 'absolute',
-                  left: indentPx - 10, top: 0, bottom: '50%',
-                  width: 1, background: '#DDD5CA',
-                  display: 'block',
-                }} />
-              )}
-
-              <span style={{
-                fontSize: 11, letterSpacing: '0.01em',
-                fontFamily: entry.id?.startsWith('case-')
-                  ? 'IBM Plex Mono, monospace'
-                  : 'Inter, sans-serif',
-              }}>
-                {entry.label}
-              </span>
-
-              {isLast && (
-                <span style={{
-                  marginLeft: 6, width: 4, height: 4,
-                  borderRadius: '50%', background: '#C4622D',
-                  display: 'inline-block', flexShrink: 0,
-                }} />
-              )}
-            </button>
-          );
-        })}
+                  bottom: -1,
+                  right: -1,
+                  width: 6.5,
+                  height: 6.5,
+                  borderRadius: '50%',
+                  background: member.status === 'online' ? '#3D7A4A' : '#D4854A',
+                  border: '1.5px solid #FFFFFF',
+                  display: 'inline-block',
+                }}
+              />
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* User Footer */}
@@ -202,6 +344,7 @@ export const Sidebar: React.FC = () => {
         padding: '12px 16px',
         borderTop: '1px solid #DDD5CA',
         display: 'flex', alignItems: 'center', gap: 8,
+        background: '#F3EDE4',
       }}>
         <div style={{
           width: 24, height: 24,
