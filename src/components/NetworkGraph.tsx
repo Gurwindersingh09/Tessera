@@ -1,6 +1,9 @@
 import React, { useRef, useEffect, useState, useMemo } from 'react';
 import ForceGraph2D, { ForceGraphMethods } from 'react-force-graph-2d';
 import { useAnalyticsStore } from '../store/useAnalyticsStore';
+import { motion } from 'framer-motion';
+
+const EASE_SHARP: [number, number, number, number] = [0.4, 0, 0.2, 1];
 
 export const NetworkGraph: React.FC = () => {
   const fgRef = useRef<ForceGraphMethods | null>(null);
@@ -30,12 +33,12 @@ export const NetworkGraph: React.FC = () => {
 
   const getNodeColor = (type: string) => {
     switch(type) {
-      case 'PHONE': return '#00f0ff';
-      case 'IMEI': return '#00f0ff';
-      case 'BANK_ACCOUNT': return '#ffb000';
-      case 'SOCIAL_HANDLE': return '#b026ff';
-      case 'PERSON': return '#ffffff';
-      default: return '#888888';
+      case 'PHONE': return '#C4622D';
+      case 'IMEI': return '#C4622D';
+      case 'BANK_ACCOUNT': return '#8C3D1A';
+      case 'SOCIAL_HANDLE': return '#D4854A';
+      case 'PERSON': return '#2A2420';
+      default: return '#A89F93';
     }
   };
 
@@ -64,9 +67,9 @@ export const NetworkGraph: React.FC = () => {
     
     if (isSelected || isHovered) {
       ctx.shadowColor = color;
-      ctx.shadowBlur = 15;
+      ctx.shadowBlur = 12;
       ctx.fill();
-      ctx.strokeStyle = '#fff';
+      ctx.strokeStyle = '#6B2E12';
       ctx.lineWidth = 2 / globalScale;
       ctx.stroke();
       ctx.shadowBlur = 0;
@@ -79,13 +82,19 @@ export const NetworkGraph: React.FC = () => {
       ctx.font = `${fontSize}px "IBM Plex Mono", monospace`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillStyle = isSelected ? '#fff' : '#888';
+      ctx.fillStyle = isSelected ? '#2A2420' : '#7A6F63';
       ctx.fillText(node.label, node.x, node.y + size + 6 / globalScale);
     }
   };
 
   return (
-    <div className="absolute inset-0 bg-[#090C15] overflow-hidden" ref={containerRef}>
+    <motion.div
+      initial={{ opacity: 0, scale: 0.97 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.5, ease: EASE_SHARP }}
+      className="absolute inset-0 bg-[#FAF6F0] overflow-hidden dot-pattern"
+      ref={containerRef}
+    >
       {dimensions.width > 0 && (
         <ForceGraph2D
           ref={fgRef as any}
@@ -94,9 +103,9 @@ export const NetworkGraph: React.FC = () => {
           graphData={graphData}
           nodeCanvasObject={drawNode}
           linkColor={(link: any) => {
-            if (link.type === 'CALLED') return '#00f0ff';
-            if (link.type === 'TRANSACTED_WITH') return '#ffb000';
-            return '#475569';
+            if (link.type === 'CALLED') return '#C4622D';
+            if (link.type === 'TRANSACTED_WITH') return '#8C3D1A';
+            return '#DDD5CA';
           }}
           linkWidth={1}
           linkDirectionalArrowLength={3.5}
@@ -109,9 +118,9 @@ export const NetworkGraph: React.FC = () => {
             }
           }}
           onNodeHover={(node: any) => setHoveredEntityId(node ? node.id : null)}
-          backgroundColor="#090C15"
+          backgroundColor="#FAF6F0"
         />
       )}
-    </div>
+    </motion.div>
   );
 };

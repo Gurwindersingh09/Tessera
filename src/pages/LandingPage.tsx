@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Particles from '@tsparticles/react';
 import { loadSlim } from '@tsparticles/slim';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ChevronDown, Loader2, Search, Menu } from 'lucide-react';
+import { X, Loader2, Search, Menu } from 'lucide-react';
 import { tsParticles } from '@tsparticles/engine';
 
 export const LandingPage: React.FC = () => {
@@ -156,23 +156,6 @@ export const LandingPage: React.FC = () => {
               </button>
             </motion.div>
           </div>
-
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 2.0, duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-            className="absolute bottom-8 text-gray-500"
-          >
-            <div className="flex flex-col items-center gap-2">
-              <span className="text-[10px] uppercase tracking-[0.2em] font-medium">SCROLL TO EXPLORE</span>
-              <motion.div
-                animate={{ y: [0, 8, 0] }}
-                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-              >
-                <ChevronDown className="w-4 h-4 stroke-[1.5]" />
-              </motion.div>
-            </div>
-          </motion.div>
         </main>
       </div>
 

@@ -6,7 +6,7 @@ interface SparklineProps {
   color?: string;
 }
 
-export const Sparkline: React.FC<SparklineProps> = ({ data, color = "#00f0ff" }) => {
+export const Sparkline: React.FC<SparklineProps> = ({ data, color = "#C4622D" }) => {
   const chartData = data.map((value, index) => ({ index, value }));
 
   return (

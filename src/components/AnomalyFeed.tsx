@@ -2,25 +2,45 @@ import React from 'react';
 import { useAnalyticsStore } from '../store/useAnalyticsStore';
 import { AnomalyCard } from './AnomalyCard';
 import { Activity } from 'lucide-react';
+import { motion } from 'framer-motion';
+
+const EASE_SHARP: [number, number, number, number] = [0.4, 0, 0.2, 1];
+
+const slideInVariants = {
+  hidden: { opacity: 0, x: -20 },
+  visible: (i: number) => ({
+    opacity: 1,
+    x: 0,
+    transition: { delay: i * 0.06, duration: 0.35, ease: EASE_SHARP },
+  }),
+};
 
 export const AnomalyFeed: React.FC = () => {
   const { anomalies } = useAnalyticsStore();
 
   return (
-    <div className="h-full flex flex-col bg-[#090C15]/80">
-      <div className="h-10 border-b border-slate-800 flex items-center justify-between px-3 shrink-0 bg-[#090C15]">
-        <div className="flex items-center gap-2 text-slate-300 uppercase tracking-widest text-xs font-semibold">
-          <Activity className="w-4 h-4 text-neon-amber" />
+    <div className="h-full flex flex-col bg-[#F3EDE4]">
+      <div className="h-10 border-b border-[#DDD5CA] flex items-center justify-between px-3 shrink-0 bg-[#F3EDE4]">
+        <div className="flex items-center gap-2 text-[#2A2420] uppercase tracking-widest text-xs font-semibold">
+          <Activity className="w-4 h-4 text-[#D4854A]" />
           Anomaly Feed
         </div>
-        <div className="px-1.5 py-0.5 bg-slate-800 text-slate-300 font-mono text-[10px] border border-slate-700">
+        <div className="px-1.5 py-0.5 bg-[#FAF6F0] text-[#7A6F63] font-mono text-[10px] border border-[#DDD5CA] rounded">
           {anomalies.length}
         </div>
       </div>
       
-      <div className="flex-1 overflow-y-auto p-2 space-y-2 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-slate-700 [&::-webkit-scrollbar-track]:bg-transparent">
-        {anomalies.map(anomaly => (
-          <AnomalyCard key={anomaly.id} anomaly={anomaly} />
+      <div className="flex-1 overflow-y-auto p-2 space-y-2">
+        {anomalies.map((anomaly, i) => (
+          <motion.div
+            key={anomaly.id}
+            custom={i}
+            variants={slideInVariants}
+            initial="hidden"
+            animate="visible"
+          >
+            <AnomalyCard anomaly={anomaly} />
+          </motion.div>
         ))}
       </div>
     </div>
