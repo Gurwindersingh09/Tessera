@@ -3,18 +3,18 @@ import { useNavigate } from 'react-router-dom';
 import Particles from '@tsparticles/react';
 import { loadSlim } from '@tsparticles/slim';
 import { motion, AnimatePresence, useScroll, useTransform, useMotionValue, animate } from 'framer-motion';
-import { 
-  X, 
-  Loader2, 
-  Search, 
-  Menu, 
-  ShieldCheck, 
-  FileClock, 
-  Lock, 
-  PhoneCall, 
-  Landmark, 
-  AlertTriangle, 
-  Fingerprint, 
+import {
+  X,
+  Loader2,
+  Search,
+  Menu,
+  ShieldCheck,
+  FileClock,
+  Lock,
+  PhoneCall,
+  Landmark,
+  AlertTriangle,
+  Fingerprint,
   ArrowRight,
   ChevronDown
 } from 'lucide-react';
@@ -22,22 +22,25 @@ import { tsParticles } from '@tsparticles/engine';
 
 const EASE_SHARP: [number, number, number, number] = [0.4, 0, 0.2, 1];
 
+const heroVideoSrc = "/videos/bg-video.mp4";
+const defaultPosterUrl = "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?q=80&w=2000&auto=format&fit=crop";
+
 interface LandingPageProps {
   videoUrl?: string;
   posterUrl?: string;
 }
 
 /* ─── Animated Number Counter in IBM Plex Mono ─── */
-function AnimatedCounter({ 
-  target, 
-  suffix = '', 
-  prefix = '', 
-  decimals = 0 
-}: { 
-  target: number; 
-  suffix?: string; 
-  prefix?: string; 
-  decimals?: number; 
+function AnimatedCounter({
+  target,
+  suffix = '',
+  prefix = '',
+  decimals = 0
+}: {
+  target: number;
+  suffix?: string;
+  prefix?: string;
+  decimals?: number;
 }) {
   const [displayValue, setDisplayValue] = useState('0');
   const countMotion = useMotionValue(0);
@@ -76,8 +79,8 @@ function AnimatedCounter({
 }
 
 export const LandingPage: React.FC<LandingPageProps> = ({
-  videoUrl = "https://assets.mixkit.co/videos/preview/mixkit-digital-animation-of-screens-with-graphs-and-data-31911-large.mp4",
-  posterUrl = "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?q=80&w=2000&auto=format&fit=crop"
+  videoUrl = heroVideoSrc,
+  posterUrl = defaultPosterUrl
 }) => {
   const navigate = useNavigate();
   const [init, setInit] = useState(false);
@@ -132,23 +135,24 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
   return (
     <div className="relative min-h-[100dvh] w-full bg-[#FAF6F0] font-sans text-[#2A2420] selection:bg-[#F2D9C4] selection:text-[#6B2E12] overflow-x-hidden">
-      
-      {/* ─── Sticky Header with Warm Scroll Transition ───────────────── */}
-      <nav 
-        className="fixed top-0 left-0 right-0 h-16 flex items-center justify-between px-6 md:px-10 z-50 transition-all duration-300"
+
+      {/* ─── Frosted-Glass Navigation Bar with Blur & Border ───────── */}
+      <nav
+        className="fixed top-0 left-0 right-0 h-16 flex items-center justify-between px-6 md:px-10 z-50 transition-all duration-300 backdrop-blur-md"
         style={{
-          backgroundColor: isScrolled ? 'rgba(250, 246, 240, 0.94)' : 'transparent',
-          borderBottom: isScrolled ? '1px solid #DDD5CA' : '1px solid transparent',
-          backdropFilter: isScrolled ? 'blur(10px)' : 'none',
+          backgroundColor: isScrolled ? 'rgba(26, 20, 16, 0.85)' : 'rgba(26, 20, 16, 0.55)',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+          boxShadow: isScrolled ? '0 4px 20px rgba(0, 0, 0, 0.25)' : 'none',
         }}
       >
-        <div 
+        <div
           onClick={() => navigate('/dashboard')}
           className="flex items-center gap-3 cursor-pointer group"
         >
           <div style={{
             width: 28, height: 28, borderRadius: 4,
-            background: '#F3EDE4', border: '1px solid #DDD5CA',
+            background: 'rgba(243, 237, 228, 0.12)',
+            border: '1px solid rgba(255, 255, 255, 0.15)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
             <span style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 13, fontWeight: 700, color: '#C4622D' }}>
@@ -156,33 +160,33 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             </span>
           </div>
           <div>
-            <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#2A2420', fontFamily: 'Inter, sans-serif' }}>
+            <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#F5EFE6', fontFamily: 'Inter, sans-serif' }}>
               Phishield
             </span>
-            <span className="hidden sm:inline-block ml-2 text-[10px] font-mono text-[#7A6F63] uppercase tracking-wider">
+            <span className="hidden sm:inline-block ml-2 text-[10px] font-mono text-[#C9C0B4] uppercase tracking-wider">
               / Intelligence Core
             </span>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
-          <button 
+          <button
             onClick={() => navigate('/search')}
-            className="p-2 text-[#7A6F63] hover:text-[#C4622D] hover:bg-[#F3EDE4] border border-[#DDD5CA] rounded transition-colors"
+            className="p-2 text-[#C9C0B4] hover:text-[#C4622D] hover:bg-white/10 border border-white/15 rounded transition-colors"
             title="Search System"
           >
             <Search className="w-4 h-4" />
           </button>
-          
-          <button 
+
+          <button
             onClick={() => navigate('/dashboard')}
-            className="p-2 text-[#7A6F63] hover:text-[#C4622D] hover:bg-[#F3EDE4] border border-[#DDD5CA] rounded transition-colors"
+            className="p-2 text-[#C9C0B4] hover:text-[#C4622D] hover:bg-white/10 border border-white/15 rounded transition-colors"
             title="Open Platform Workspace"
           >
             <Menu className="w-4 h-4" />
           </button>
 
-          <button 
+          <button
             onClick={() => setDrawerOpen(true)}
             className="btn-accent"
             style={{ padding: '8px 16px', fontSize: '11px', borderRadius: 4 }}
@@ -192,47 +196,55 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         </div>
       </nav>
 
-      {/* ─── Hero Section (Warm Tonal Visuals + Fraunces Typography) ─── */}
-      <section 
+      {/* ─── Hero Section (Full-Width with Looping Video + Black Tint + Textures) ─── */}
+      <section
         ref={heroRef}
         className="grain-texture relative min-h-[100dvh] w-full flex flex-col justify-center items-center px-6 pt-24 pb-20 text-center overflow-hidden"
         style={{ background: '#FAF6F0' }}
       >
-        {/* Looping Muted Background Video with Warm Sepia/Terracotta Filter & Parallax */}
-        <motion.div 
+        {/* Layer 1 & 2: Bottommost Video + Black Tint Overlay + Textures */}
+        <motion.div
           style={{ y: videoY }}
           className="absolute inset-0 z-0 overflow-hidden pointer-events-none"
         >
+          {/* Bottommost Layer: Looping Video */}
           <video
             autoPlay
             loop
             muted
             playsInline
             poster={posterUrl}
-            className="w-full h-full object-cover scale-105"
-            style={{
-              filter: 'sepia(0.45) saturate(0.75) brightness(1.02) contrast(0.95)',
-              opacity: 0.18,
-              mixBlendMode: 'multiply',
-            }}
+            src={videoUrl}
+            className="absolute inset-0 w-full h-full object-cover scale-105"
             aria-hidden="true"
           >
             <source src={videoUrl} type="video/mp4" />
-            <img 
-              src={posterUrl} 
-              alt="Background Fallback" 
+            <img
+              src={posterUrl}
+              alt="Background Fallback"
               className="w-full h-full object-cover opacity-15"
-              style={{ filter: 'sepia(0.5)' }} 
+              style={{ filter: 'sepia(0.5)' }}
             />
           </video>
-          
-          {/* Tonal layered warmth overlays instead of flat gradients */}
-          <div className="absolute inset-0 bg-[#FAF6F0]/65" />
-          <div className="absolute inset-0 dot-pattern opacity-40" />
+
+          {/* Tint Layer 1: Solid black overlay at ~70% opacity */}
+          <div className="absolute inset-0 bg-black/70" />
+
+          {/* Tint Layer 2: Center radial dark vignette behind headline/text block */}
+          <div 
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background: 'radial-gradient(ellipse 900px 520px at 50% 45%, rgba(10, 8, 6, 0.75) 0%, rgba(20, 16, 13, 0.35) 65%, transparent 100%)'
+            }}
+          />
+
+          {/* Existing texture & warm overlay layers */}
+          <div className="absolute inset-0 bg-[#FAF6F0]/15 mix-blend-overlay pointer-events-none" />
+          <div className="absolute inset-0 dot-pattern opacity-30 pointer-events-none" />
         </motion.div>
 
         {/* Cursor-Following Subtle Terracotta Glow (No harsh cyan) */}
-        <div 
+        <div
           className="pointer-events-none absolute inset-0 z-10 transition-opacity duration-300 hidden md:block"
           style={{
             background: `radial-gradient(480px circle at ${mousePos.x}px ${mousePos.y}px, rgba(196, 98, 45, 0.08), transparent 65%)`
@@ -272,7 +284,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
         {/* Hero Foreground Content */}
         <div className={`relative z-20 w-full max-w-5xl mx-auto flex flex-col items-center transition-all duration-700 ${drawerOpen ? 'opacity-40' : 'opacity-100'}`}>
-          
+
           {/* Operational Eyebrow Pill */}
           <motion.div
             initial={{ opacity: 0, y: -10 }}
@@ -288,18 +300,19 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
           {/* Fraunces Serif Headline with Decrypt Character Entrance */}
           <DecryptHeadline text="Built to find what manual review misses." />
-          
-          <motion.p 
+
+          <motion.p
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.9, duration: 0.7, ease: EASE_SHARP }}
             style={{
               fontSize: 18,
-              color: '#7A6F63',
+              color: '#C9C0B4',
               maxWidth: 620,
               marginTop: 18,
               lineHeight: 1.55,
               fontFamily: 'Inter, sans-serif',
+              textShadow: '0 2px 12px rgba(0, 0, 0, 0.55)',
             }}
           >
             See the connections hidden across calls, transactions, and networks.
@@ -315,7 +328,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             {/* Launch Platform Button: Warm tonal terracotta, solid rest state, deepens on hover */}
             <motion.button
               onClick={handleAccessGranted}
-              whileHover={{ 
+              whileHover={{
                 scale: 1.02,
                 backgroundColor: '#8C3D1A',
                 boxShadow: '0 4px 14px rgba(140, 61, 26, 0.28)',
@@ -362,7 +375,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         </div>
 
         {/* Subtle Scroll Indicator */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.6, duration: 0.8 }}
@@ -579,15 +592,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
-            <span 
-              onClick={() => navigate('/dashboard')} 
+            <span
+              onClick={() => navigate('/dashboard')}
               style={{ cursor: 'pointer', color: '#C4622D', fontWeight: 500 }}
               className="hover:underline"
             >
               Enter Workspace →
             </span>
-            <span 
-              onClick={() => setDrawerOpen(true)} 
+            <span
+              onClick={() => setDrawerOpen(true)}
               style={{ cursor: 'pointer', color: '#7A6F63' }}
               className="hover:underline"
             >
@@ -610,7 +623,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 /* ─── Fraunces Serif Decrypting Headline Effect (No mid-word split) ─── */
 const DecryptHeadline = ({ text }: { text: string }) => {
   const words = text.split(' ');
-  
+
   const container = {
     hidden: { opacity: 0 },
     visible: {
@@ -620,16 +633,16 @@ const DecryptHeadline = ({ text }: { text: string }) => {
   };
 
   const child = {
-    visible: { 
-      opacity: 1, 
-      y: 0, 
-      filter: "blur(0px)", 
-      transition: { duration: 0.65, ease: EASE_SHARP } 
+    visible: {
+      opacity: 1,
+      y: 0,
+      filter: "blur(0px)",
+      transition: { duration: 0.65, ease: EASE_SHARP }
     },
-    hidden: { 
-      opacity: 0, 
-      y: 10, 
-      filter: "blur(4px)" 
+    hidden: {
+      opacity: 0,
+      y: 10,
+      filter: "blur(4px)"
     },
   };
 
@@ -639,7 +652,7 @@ const DecryptHeadline = ({ text }: { text: string }) => {
       style={{
         fontSize: 'clamp(2.4rem, 5.2vw, 4.5rem)',
         fontWeight: 600,
-        color: '#2A2420',
+        color: '#F5EFE6',
         fontFamily: '"Fraunces", Georgia, serif',
         letterSpacing: '-0.02em',
         lineHeight: 1.15,
@@ -647,14 +660,15 @@ const DecryptHeadline = ({ text }: { text: string }) => {
         width: '100%',
         wordBreak: 'normal',
         overflowWrap: 'normal',
+        textShadow: '0 2px 14px rgba(0, 0, 0, 0.65)',
       }}
       variants={container}
       initial="hidden"
       animate="visible"
     >
       {words.map((word, wIndex) => (
-        <span 
-          key={wIndex} 
+        <span
+          key={wIndex}
           className="inline-block whitespace-nowrap"
           style={{ marginRight: wIndex < words.length - 1 ? '0.28em' : 0 }}
         >
@@ -694,7 +708,7 @@ const GetStartedDrawer = ({ onClose, onLogin }: { onClose: () => void, onLogin: 
 
   return (
     <>
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
@@ -708,7 +722,7 @@ const GetStartedDrawer = ({ onClose, onLogin }: { onClose: () => void, onLogin: 
         }}
         onClick={onClose}
       />
-      
+
       <motion.div
         role="dialog"
         aria-modal="true"
@@ -733,7 +747,7 @@ const GetStartedDrawer = ({ onClose, onLogin }: { onClose: () => void, onLogin: 
         <div style={{ flex: 1, overflowY: 'auto', padding: '32px 36px', display: 'flex', flexDirection: 'column' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
             <span className="data-label" style={{ color: '#8C3D1A', fontWeight: 600 }}>Agency Credentials Verification</span>
-            <button 
+            <button
               onClick={onClose}
               aria-label="Close panel"
               style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: '#7A6F63', padding: 4 }}
@@ -743,7 +757,7 @@ const GetStartedDrawer = ({ onClose, onLogin }: { onClose: () => void, onLogin: 
           </div>
 
           <div style={{ marginBottom: 24 }}>
-            <h2 
+            <h2
               id="drawer-title"
               style={{ fontSize: 24, fontWeight: 600, color: '#2A2420', fontFamily: '"Fraunces", Georgia, serif' }}
             >
@@ -756,7 +770,7 @@ const GetStartedDrawer = ({ onClose, onLogin }: { onClose: () => void, onLogin: 
 
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16, flex: 1 }}>
             {formFields.map((field, i) => (
-              <motion.div 
+              <motion.div
                 key={field.id}
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -766,7 +780,7 @@ const GetStartedDrawer = ({ onClose, onLogin }: { onClose: () => void, onLogin: 
                 <label htmlFor={field.id} className="data-label" style={{ fontSize: '0.62rem', color: '#2A2420', fontWeight: 600 }}>
                   {field.label} {field.required && <span style={{ color: '#B53924' }}>*</span>}
                 </label>
-                <input 
+                <input
                   type={field.type}
                   id={field.id}
                   required={field.required}
