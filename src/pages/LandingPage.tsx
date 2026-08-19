@@ -98,7 +98,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
   const addToast = (title: string, type: 'info' | 'success' | 'warning' | 'error' = 'info', description?: string) => {
     const id = `toast-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`;
-    setToasts((prev) => [...prev, { id, title, description, type, duration: 4000 }]);
+    setToasts((prev) => [...prev, { id, title, description, type, duration: 5000 }]);
   };
 
   const removeToast = (id: string) => {
@@ -106,8 +106,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   };
 
   const handleLogoClick = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    navigate('/');
+    window.location.href = '/';
   };
 
   const handleOpenRequestAccess = () => {

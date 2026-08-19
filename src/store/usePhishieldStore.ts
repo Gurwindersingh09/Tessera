@@ -155,7 +155,6 @@ export const usePhishieldStore = create<PhishieldState>()(
         cases: state.cases,
         navigationHistory: state.navigationHistory,
         sidebarCollapsed: state.sidebarCollapsed,
-        hasRequestedAccess: state.hasRequestedAccess,
       }),
     }
   )

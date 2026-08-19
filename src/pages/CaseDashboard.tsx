@@ -942,14 +942,10 @@ export const CaseDashboard: React.FC = () => {
 
   const addToast = (toast: Omit<ToastMessage, 'id'>) => {
     const id = `toast-${Date.now()}-${Math.random()}`;
-    const duration = toast.duration || (toast.onUndo ? 5500 : 3200);
+    const duration = toast.duration || 5000;
     const newToast: ToastMessage = { ...toast, id, duration };
 
     setToasts(prev => [...prev, newToast]);
-
-    setTimeout(() => {
-      setToasts(prev => prev.filter(t => t.id !== id));
-    }, duration);
   };
 
   const removeToast = (id: string) => {
