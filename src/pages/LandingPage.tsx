@@ -86,7 +86,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   const [init, setInit] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [mousePos, setMousePos] = useState({ x: -1000, y: -1000 });
-  const [isScrolled, setIsScrolled] = useState(false);
+  const [isScrolledPastHero, setIsScrolledPastHero] = useState(false);
 
   const heroRef = useRef<HTMLDivElement>(null);
   const { scrollY } = useScroll();
@@ -100,9 +100,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 40);
+      const heroThreshold = heroRef.current ? heroRef.current.offsetHeight - 90 : 600;
+      setIsScrolledPastHero(window.scrollY > heroThreshold);
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -136,65 +138,103 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   return (
     <div className="relative min-h-[100dvh] w-full bg-[#FAF6F0] font-sans text-[#2A2420] selection:bg-[#F2D9C4] selection:text-[#6B2E12] overflow-x-hidden">
 
-      {/* ─── Frosted-Glass Navigation Bar with Blur & Border ───────── */}
-      <nav
-        className="fixed top-0 left-0 right-0 h-16 flex items-center justify-between px-6 md:px-10 z-50 transition-all duration-300 backdrop-blur-md"
-        style={{
-          backgroundColor: isScrolled ? 'rgba(26, 20, 16, 0.85)' : 'rgba(26, 20, 16, 0.55)',
-          borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-          boxShadow: isScrolled ? '0 4px 20px rgba(0, 0, 0, 0.25)' : 'none',
-        }}
-      >
-        <div
-          onClick={() => navigate('/dashboard')}
-          className="flex items-center gap-3 cursor-pointer group"
+      {/* ─── Floating Wide Glassmorphic Nav Capsule with Scroll-Aware Contrast ─── */}
+      <div className="fixed top-0 left-0 right-0 z-50 px-3 sm:px-4 pt-3 sm:pt-4 pointer-events-none">
+        <nav
+          className="w-full max-w-[calc(100%-0.5rem)] sm:max-w-[calc(100%-1.5rem)] mx-auto h-14 sm:h-16 flex items-center justify-between px-5 md:px-8 rounded-2xl pointer-events-auto transition-all duration-300"
+          style={{
+            backdropFilter: 'blur(20px) saturate(180%)',
+            WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+            backgroundColor: isScrolledPastHero ? 'rgba(250, 246, 240, 0.78)' : 'rgba(255, 255, 255, 0.12)',
+            border: isScrolledPastHero ? '1px solid rgba(42, 36, 32, 0.12)' : '1px solid rgba(255, 255, 255, 0.22)',
+            boxShadow: isScrolledPastHero
+              ? 'inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 8px 32px rgba(42, 36, 32, 0.08)'
+              : 'inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 8px 32px rgba(0, 0, 0, 0.2)',
+            transition: 'background-color 250ms ease, border-color 250ms ease, box-shadow 250ms ease',
+          }}
         >
-          <div style={{
-            width: 28, height: 28, borderRadius: 4,
-            background: 'rgba(243, 237, 228, 0.12)',
-            border: '1px solid rgba(255, 255, 255, 0.15)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <span style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 13, fontWeight: 700, color: '#C4622D' }}>
-              Ψ
-            </span>
-          </div>
-          <div>
-            <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#F5EFE6', fontFamily: 'Inter, sans-serif' }}>
-              Phishield
-            </span>
-            <span className="hidden sm:inline-block ml-2 text-[10px] font-mono text-[#C9C0B4] uppercase tracking-wider">
-              / Intelligence Core
-            </span>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => navigate('/search')}
-            className="p-2 text-[#C9C0B4] hover:text-[#C4622D] hover:bg-white/10 border border-white/15 rounded transition-colors"
-            title="Search System"
-          >
-            <Search className="w-4 h-4" />
-          </button>
-
-          <button
+          <div
             onClick={() => navigate('/dashboard')}
-            className="p-2 text-[#C9C0B4] hover:text-[#C4622D] hover:bg-white/10 border border-white/15 rounded transition-colors"
-            title="Open Platform Workspace"
+            className="flex items-center gap-3 cursor-pointer group"
           >
-            <Menu className="w-4 h-4" />
-          </button>
+            <div style={{
+              width: 28, height: 28, borderRadius: 6,
+              background: isScrolledPastHero ? '#F3EDE4' : 'rgba(255, 255, 255, 0.18)',
+              border: isScrolledPastHero ? '1px solid #DDD5CA' : '1px solid rgba(255, 255, 255, 0.28)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              transition: 'background-color 250ms ease, border-color 250ms ease',
+            }}>
+              <span style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 13, fontWeight: 700, color: '#C4622D' }}>
+                Ψ
+              </span>
+            </div>
+            <div>
+              <span style={{
+                fontSize: 13,
+                fontWeight: 700,
+                letterSpacing: '0.12em',
+                textTransform: 'uppercase',
+                color: isScrolledPastHero ? '#2A2420' : '#FFFFFF',
+                fontFamily: 'Inter, sans-serif',
+                textShadow: isScrolledPastHero ? 'none' : '0 1px 6px rgba(0, 0, 0, 0.4)',
+                transition: 'color 250ms ease, text-shadow 250ms ease',
+              }}>
+                Phishield
+              </span>
+              <span
+                className="hidden sm:inline-block ml-2 text-[10px] font-mono uppercase tracking-wider"
+                style={{
+                  color: isScrolledPastHero ? '#7A6F63' : '#E8E0D5',
+                  textShadow: isScrolledPastHero ? 'none' : '0 1px 4px rgba(0, 0, 0, 0.4)',
+                  transition: 'color 250ms ease, text-shadow 250ms ease',
+                }}
+              >
+                / Intelligence Core
+              </span>
+            </div>
+          </div>
 
-          <button
-            onClick={() => setDrawerOpen(true)}
-            className="btn-accent"
-            style={{ padding: '8px 16px', fontSize: '11px', borderRadius: 4 }}
-          >
-            Request Access
-          </button>
-        </div>
-      </nav>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate('/search')}
+              className="p-2 rounded-lg transition-colors"
+              style={{
+                color: isScrolledPastHero ? '#7A6F63' : '#FFFFFF',
+                backgroundColor: isScrolledPastHero ? 'transparent' : 'rgba(255, 255, 255, 0.08)',
+                border: isScrolledPastHero ? '1px solid #DDD5CA' : '1px solid rgba(255, 255, 255, 0.22)',
+                textShadow: isScrolledPastHero ? 'none' : '0 1px 4px rgba(0,0,0,0.3)',
+                transition: 'color 250ms ease, background-color 250ms ease, border-color 250ms ease',
+              }}
+              title="Search System"
+            >
+              <Search className="w-4 h-4" />
+            </button>
+
+            <button
+              onClick={() => navigate('/dashboard')}
+              className="p-2 rounded-lg transition-colors"
+              style={{
+                color: isScrolledPastHero ? '#7A6F63' : '#FFFFFF',
+                backgroundColor: isScrolledPastHero ? 'transparent' : 'rgba(255, 255, 255, 0.08)',
+                border: isScrolledPastHero ? '1px solid #DDD5CA' : '1px solid rgba(255, 255, 255, 0.22)',
+                textShadow: isScrolledPastHero ? 'none' : '0 1px 4px rgba(0,0,0,0.3)',
+                transition: 'color 250ms ease, background-color 250ms ease, border-color 250ms ease',
+              }}
+              title="Open Platform Workspace"
+            >
+              <Menu className="w-4 h-4" />
+            </button>
+
+            <button
+              onClick={() => setDrawerOpen(true)}
+              className="btn-accent"
+              style={{ padding: '8px 16px', fontSize: '11px', borderRadius: 6 }}
+            >
+              Request Access
+            </button>
+          </div>
+        </nav>
+      </div>
 
       {/* ─── Hero Section (Full-Width with Looping Video + Black Tint + Textures) ─── */}
       <section
@@ -231,7 +271,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           <div className="absolute inset-0 bg-black/70" />
 
           {/* Tint Layer 2: Center radial dark vignette behind headline/text block */}
-          <div 
+          <div
             className="absolute inset-0 pointer-events-none"
             style={{
               background: 'radial-gradient(ellipse 900px 520px at 50% 45%, rgba(10, 8, 6, 0.75) 0%, rgba(20, 16, 13, 0.35) 65%, transparent 100%)'
