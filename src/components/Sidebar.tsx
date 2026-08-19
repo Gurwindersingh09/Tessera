@@ -39,12 +39,12 @@ const IconCases = () => (
 const PhishieldMark = () => (
   <div style={{
     width: 28, height: 28,
-    border: '1.5px solid rgba(95,168,211,0.5)',
+    border: '1.5px solid #00E5FF',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
     flexShrink: 0,
   }}>
     <span style={{
-      color: '#5FA8D3', fontSize: 13,
+      color: '#00E5FF', fontSize: 13,
       fontFamily: 'IBM Plex Mono, monospace',
       fontWeight: 500, letterSpacing: '-0.05em',
     }}>P</span>
@@ -81,7 +81,7 @@ export const Sidebar: React.FC = () => {
       style={{
         width: 224, minWidth: 224,
         background: '#0A0A0C',
-        borderRight: '1px solid rgba(255,255,255,0.06)',
+        borderRight: '1px solid #22262E',
         display: 'flex', flexDirection: 'column',
         height: '100vh', position: 'sticky', top: 0,
         overflowY: 'auto', flexShrink: 0, zIndex: 30
@@ -90,7 +90,7 @@ export const Sidebar: React.FC = () => {
       {/* Logo */}
       <div 
         onClick={() => navigate('/')} 
-        style={{ padding: '18px 16px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}
+        style={{ padding: '18px 16px 16px', borderBottom: '1px solid #22262E', display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}
         title="Return to Landing Page"
       >
         <PhishieldMark />
@@ -103,7 +103,7 @@ export const Sidebar: React.FC = () => {
       </div>
 
       {/* Top Nav */}
-      <nav style={{ padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+      <nav style={{ padding: '8px 0', borderBottom: '1px solid #22262E' }}>
         {NAV_ITEMS.map((item) => {
           const Icon = item.icon;
           const isActive = currentPath === item.path;
@@ -115,15 +115,15 @@ export const Sidebar: React.FC = () => {
                 width: '100%',
                 display: 'flex', alignItems: 'center', gap: 10,
                 padding: '7px 16px',
-                background: isActive ? 'rgba(95,168,211,0.07)' : 'transparent',
+                background: 'transparent',
                 border: 'none',
-                borderLeft: `2px solid ${isActive ? '#5FA8D3' : 'transparent'}`,
-                color: isActive ? '#5FA8D3' : '#5A5A65',
+                borderLeft: `2px solid ${isActive ? '#00E5FF' : 'transparent'}`,
+                color: isActive ? '#00E5FF' : '#5A5A65',
                 cursor: 'pointer', textAlign: 'left',
                 transition: 'color 100ms, background 100ms',
                 fontFamily: 'Inter, sans-serif',
               }}
-              onMouseEnter={e => { if (!isActive) { e.currentTarget.style.color = '#9494A0'; e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; } }}
+              onMouseEnter={e => { if (!isActive) { e.currentTarget.style.color = '#9494A0'; e.currentTarget.style.background = '#161A21'; } }}
               onMouseLeave={e => { if (!isActive) { e.currentTarget.style.color = '#5A5A65'; e.currentTarget.style.background = 'transparent'; } }}
             >
               <Icon />
@@ -135,7 +135,7 @@ export const Sidebar: React.FC = () => {
 
       {/* Navigation History Stack */}
       <div style={{ flex: 1, padding: '10px 0', overflowY: 'auto' }}>
-        <div className="data-label" style={{ padding: '4px 16px 8px', borderBottom: '1px solid rgba(255,255,255,0.04)', marginBottom: 4 }}>
+        <div className="data-label" style={{ padding: '4px 16px 8px', borderBottom: '1px solid #22262E', marginBottom: 4 }}>
           Navigation History
         </div>
 
@@ -163,7 +163,7 @@ export const Sidebar: React.FC = () => {
                   left: indentPx - 10, top: '50%',
                   transform: 'translateY(-50%)',
                   width: 8, height: 1,
-                  background: 'rgba(255,255,255,0.1)',
+                  background: '#22262E',
                   display: 'block',
                 }} />
               )}
@@ -171,7 +171,7 @@ export const Sidebar: React.FC = () => {
                 <span style={{
                   position: 'absolute',
                   left: indentPx - 10, top: 0, bottom: '50%',
-                  width: 1, background: 'rgba(255,255,255,0.07)',
+                  width: 1, background: '#22262E',
                   display: 'block',
                 }} />
               )}
@@ -188,7 +188,7 @@ export const Sidebar: React.FC = () => {
               {isLast && (
                 <span style={{
                   marginLeft: 6, width: 4, height: 4,
-                  borderRadius: '50%', background: '#5FA8D3',
+                  borderRadius: '50%', background: '#00E5FF',
                   display: 'inline-block', flexShrink: 0,
                 }} />
               )}
@@ -200,13 +200,13 @@ export const Sidebar: React.FC = () => {
       {/* User Footer */}
       <div style={{
         padding: '12px 16px',
-        borderTop: '1px solid rgba(255,255,255,0.06)',
+        borderTop: '1px solid #22262E',
         display: 'flex', alignItems: 'center', gap: 8,
       }}>
         <div style={{
           width: 24, height: 24,
-          background: '#1A1A20',
-          border: '1px solid rgba(255,255,255,0.09)',
+          background: '#111318',
+          border: '1px solid #22262E',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 10, color: '#9494A0', fontWeight: 600, flexShrink: 0,
         }}>
