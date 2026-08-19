@@ -36,44 +36,13 @@ import {
 /* ─── Motion Easing ─── */
 const EASE_SHARP: [number, number, number, number] = [0.4, 0, 0.2, 1];
 
-/* ─── Tonal Terracotta Scale & Status Tokens ─── */
-const COLOR_TONES = {
-  rustDeep:    '#6B2E12',
-  rust:        '#8C3D1A',
-  terracotta:  '#C4622D',
-  terracotta4: '#D4854A',
-  peach:       '#E8B896',
-  peachLight:  '#F2D9C4',
-  cream:       '#FAF6F0',
-  creamWarm:   '#F3EDE4',
-  border:      '#DDD5CA',
-  ink:         '#2A2420',
-  muted:       '#7A6F63',
-  green:       '#3D7A4A',
-  critical:    '#B53924',
-};
-
-const STATUS_COLORS: Record<string, string> = {
-  active:   COLOR_TONES.terracotta,
-  flagged:  COLOR_TONES.critical,
-  closed:   COLOR_TONES.green,
-  archived: COLOR_TONES.muted,
-};
-
-const PRIORITY_COLORS: Record<string, string> = {
-  critical: COLOR_TONES.critical,
-  high:     COLOR_TONES.terracotta,
-  medium:   COLOR_TONES.terracotta4,
-  low:      COLOR_TONES.muted,
-};
-
 const CATEGORY_COLORS = [
-  '#8C3D1A',
   '#C4622D',
   '#D4854A',
-  '#6B2E12',
-  '#B53924',
-  '#7A6F63',
+  '#E58A4E',
+  '#8C3D1A',
+  '#E05A47',
+  '#4E9A5E',
 ];
 
 /* ─── Category Inferrer ─── */
@@ -127,7 +96,7 @@ function MiniSparkline({ data, color, isUp }: { data: number[]; color: string; i
         />
         <circle cx={lastPoint[0]} cy={lastPoint[1]} r="1.8" fill={color} />
       </svg>
-      <span style={{ fontSize: 9, fontFamily: 'IBM Plex Mono, monospace', color: '#7A6F63' }}>
+      <span style={{ fontSize: 9, fontFamily: 'IBM Plex Mono, monospace', color: 'var(--color-text-muted)' }}>
         {isUp ? '↑ 30d' : '↓ 30d'}
       </span>
     </div>
@@ -173,19 +142,19 @@ const CustomChartTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
       <div style={{
-        background: '#FFFFFF',
-        border: '1px solid #DDD5CA',
+        background: 'var(--color-bg-raised)',
+        border: '1px solid var(--color-border)',
         borderTop: '2px solid #C4622D',
         borderRadius: 6,
         padding: '8px 12px',
-        boxShadow: '0 6px 20px rgba(42, 36, 32, 0.12)',
+        boxShadow: 'var(--shadow-dropdown)',
         fontSize: 11,
         fontFamily: 'Inter, sans-serif',
       }}>
         <div style={{
           fontFamily: '"Fraunces", Georgia, serif',
           fontWeight: 600,
-          color: '#2A2420',
+          color: 'var(--color-text-primary)',
           marginBottom: 4,
           fontSize: 12,
         }}>
@@ -195,9 +164,9 @@ const CustomChartTooltip = ({ active, payload, label }: any) => {
           <div key={`item-${index}`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginTop: 2 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <span style={{ width: 6, height: 6, borderRadius: '50%', background: entry.color || entry.fill }} />
-              <span style={{ color: '#7A6F63' }}>{entry.name}:</span>
+              <span style={{ color: 'var(--color-text-secondary)' }}>{entry.name}:</span>
             </div>
-            <span style={{ fontFamily: 'IBM Plex Mono, monospace', fontWeight: 600, color: '#2A2420' }}>
+            <span style={{ fontFamily: 'IBM Plex Mono, monospace', fontWeight: 600, color: 'var(--color-text-primary)' }}>
               {entry.value}
             </span>
           </div>
@@ -212,23 +181,21 @@ const CustomChartTooltip = ({ active, payload, label }: any) => {
 interface HeatmapDay {
   dateStr: string;
   month: string;
-  dayOfWeek: number; // 0 Sun - 6 Sat
+  dayOfWeek: number;
   count: number;
   caseCount: number;
   anomalyCount: number;
-  level: number; // 0 to 4
+  level: number;
 }
 
 function ActivityHeatmap({ cases }: { cases: CaseItem[] }) {
   const [hoveredDay, setHoveredDay] = useState<HeatmapDay | null>(null);
 
-  // Generate 52 weeks of dates leading up to today (Aug 2026 simulation)
   const heatmapData = useMemo(() => {
     const today = new Date('2026-08-19T00:00:00Z');
     const days: HeatmapDay[] = [];
     const totalDays = 52 * 7;
 
-    // Create a map of active dates from cases
     const activityMap: Record<string, { cases: number; anomalies: number }> = {};
 
     cases.forEach((c) => {
@@ -244,7 +211,6 @@ function ActivityHeatmap({ cases }: { cases: CaseItem[] }) {
       const month = d.toLocaleDateString('en-US', { month: 'short' });
       const dayOfWeek = d.getUTCDay();
 
-      // Combine real case activity + pseudo deterministic telemetry traffic
       const seeded = (Math.sin(d.getTime() * 0.00000005) + 1) * 2;
       const real = activityMap[dateStr];
       const caseCount = (real?.cases || 0) + (seeded > 3.2 ? 1 : 0);
@@ -268,7 +234,6 @@ function ActivityHeatmap({ cases }: { cases: CaseItem[] }) {
       });
     }
 
-    // Group into 52 weeks
     const weeks: HeatmapDay[][] = [];
     for (let w = 0; w < 52; w++) {
       weeks.push(days.slice(w * 7, (w + 1) * 7));
@@ -277,9 +242,8 @@ function ActivityHeatmap({ cases }: { cases: CaseItem[] }) {
     return { weeks, days };
   }, [cases]);
 
-  const levelColors = ['#F3EDE4', '#F2D9C4', '#E8B896', '#D4854A', '#8C3D1A'];
+  const levelColors = ['var(--color-bg-base)', 'rgba(196, 98, 45, 0.25)', 'rgba(196, 98, 45, 0.5)', 'rgba(212, 133, 74, 0.8)', '#C4622D'];
 
-  // Identify where month labels should appear
   const monthHeaders = useMemo(() => {
     const headers: { month: string; colIndex: number }[] = [];
     let lastMonth = '';
@@ -295,24 +259,24 @@ function ActivityHeatmap({ cases }: { cases: CaseItem[] }) {
 
   return (
     <div style={{
-      background: '#FFFFFF',
-      border: '1px solid #DDD5CA',
+      background: 'var(--color-bg-surface)',
+      border: '1px solid var(--color-border)',
       borderRadius: 8,
       padding: '20px 22px',
       display: 'flex',
       flexDirection: 'column',
       gap: 14,
-      boxShadow: '0 1px 3px rgba(42, 36, 32, 0.04)',
+      boxShadow: 'var(--shadow-card)',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
         <div>
-          <div className="data-label" style={{ color: '#8C3D1A', fontWeight: 600 }}>12-Month Telemetry Record</div>
-          <h3 style={{ fontSize: 16, fontWeight: 600, color: '#2A2420', fontFamily: '"Fraunces", Georgia, serif', marginTop: 2 }}>
+          <div className="data-label" style={{ color: '#C4622D', fontWeight: 600 }}>12-Month Telemetry Record</div>
+          <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--color-text-primary)', fontFamily: '"Fraunces", Georgia, serif', marginTop: 2 }}>
             Investigation Activity Heatmap
           </h3>
         </div>
 
-        <div style={{ fontSize: 11, color: '#7A6F63', fontFamily: 'IBM Plex Mono, monospace' }}>
+        <div style={{ fontSize: 11, color: 'var(--color-text-secondary)', fontFamily: 'IBM Plex Mono, monospace' }}>
           52 Weeks · Daily correlation events & anomalies
         </div>
       </div>
@@ -330,7 +294,7 @@ function ActivityHeatmap({ cases }: { cases: CaseItem[] }) {
                   left: m.colIndex * 14.5,
                   fontSize: 9.5,
                   fontFamily: 'IBM Plex Mono, monospace',
-                  color: '#7A6F63',
+                  color: 'var(--color-text-secondary)',
                 }}
               >
                 {m.month}
@@ -348,7 +312,7 @@ function ActivityHeatmap({ cases }: { cases: CaseItem[] }) {
               height: 7 * 13,
               fontSize: 9,
               fontFamily: 'IBM Plex Mono, monospace',
-              color: '#A89F93',
+              color: 'var(--color-text-muted)',
               width: 22,
               paddingRight: 4,
             }}>
@@ -371,13 +335,13 @@ function ActivityHeatmap({ cases }: { cases: CaseItem[] }) {
                         height: 10.5,
                         borderRadius: 2,
                         background: levelColors[day.level],
-                        border: '1px solid #DDD5CA50',
+                        border: '1px solid var(--color-border)',
                         cursor: 'pointer',
                         transition: 'transform 100ms ease, box-shadow 100ms ease',
                       }}
                       onMouseOver={(e) => {
                         e.currentTarget.style.transform = 'scale(1.35)';
-                        e.currentTarget.style.boxShadow = '0 2px 6px rgba(42,36,32,0.2)';
+                        e.currentTarget.style.boxShadow = '0 2px 6px rgba(0,0,0,0.3)';
                         e.currentTarget.style.zIndex = '10';
                       }}
                       onMouseOut={(e) => {
@@ -395,26 +359,26 @@ function ActivityHeatmap({ cases }: { cases: CaseItem[] }) {
       </div>
 
       {/* Footer & Legend */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid #DDD5CA60', paddingTop: 10, flexWrap: 'wrap', gap: 10 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid var(--color-border)', paddingTop: 10, flexWrap: 'wrap', gap: 10 }}>
         {/* Dynamic Tooltip line */}
         <div style={{ minHeight: 18, fontSize: 11, fontFamily: 'Inter, sans-serif' }}>
           {hoveredDay ? (
-            <span style={{ color: '#2A2420' }}>
-              <strong style={{ fontFamily: 'IBM Plex Mono, monospace', color: '#8C3D1A' }}>
+            <span style={{ color: 'var(--color-text-primary)' }}>
+              <strong style={{ fontFamily: 'IBM Plex Mono, monospace', color: '#C4622D' }}>
                 {new Date(hoveredDay.dateStr).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
               </strong>
               {' — '}
-              <span style={{ color: '#4A4340' }}>
+              <span style={{ color: 'var(--color-text-secondary)' }}>
                 {hoveredDay.caseCount} case update{hoveredDay.caseCount !== 1 ? 's' : ''}, {hoveredDay.anomalyCount} anomal{hoveredDay.anomalyCount !== 1 ? 'ies' : 'y'} flagged
               </span>
             </span>
           ) : (
-            <span style={{ color: '#7A6F63', fontSize: 10.5 }}>Hover over any day cell to view incident metrics</span>
+            <span style={{ color: 'var(--color-text-secondary)', fontSize: 10.5 }}>Hover over any day cell to view incident metrics</span>
           )}
         </div>
 
         {/* Legend */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 10, color: '#7A6F63', fontFamily: 'IBM Plex Mono, monospace' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 10, color: 'var(--color-text-secondary)', fontFamily: 'IBM Plex Mono, monospace' }}>
           <span>Less</span>
           {levelColors.map((col, idx) => (
             <span
@@ -424,7 +388,7 @@ function ActivityHeatmap({ cases }: { cases: CaseItem[] }) {
                 height: 10,
                 borderRadius: 2,
                 background: col,
-                border: '1px solid #DDD5CA80',
+                border: '1px solid var(--color-border)',
                 display: 'inline-block',
               }}
             />
@@ -479,7 +443,7 @@ export const AnalyticsPage: React.FC = () => {
 
   // 1. Case Volume Over Time Trend Data (Weekly buckets)
   const volumeTrendData = useMemo(() => {
-    const points = [
+    return [
       { week: 'Week 1', opened: 4, closed: 2, anomalies: 8 },
       { week: 'Week 2', opened: 6, closed: 3, anomalies: 14 },
       { week: 'Week 3', opened: 5, closed: 4, anomalies: 11 },
@@ -489,7 +453,6 @@ export const AnalyticsPage: React.FC = () => {
       { week: 'Week 7', opened: 8, closed: 8, anomalies: 18 },
       { week: 'Week 8', opened: Math.max(3, filteredCases.length), closed: Math.max(2, closedCases), anomalies: totalAnomalies },
     ];
-    return points;
   }, [filteredCases, closedCases, totalAnomalies]);
 
   // 2. Case Status Breakdown (Donut)
@@ -499,10 +462,10 @@ export const AnalyticsPage: React.FC = () => {
       counts[c.status] = (counts[c.status] || 0) + 1;
     });
     return [
-      { name: 'Active', key: 'active', value: counts.active, color: STATUS_COLORS.active },
-      { name: 'Flagged', key: 'flagged', value: counts.flagged, color: STATUS_COLORS.flagged },
-      { name: 'Closed', key: 'closed', value: counts.closed, color: STATUS_COLORS.closed },
-      { name: 'Archived', key: 'archived', value: counts.archived || 0, color: STATUS_COLORS.archived },
+      { name: 'Active', key: 'active', value: counts.active, color: 'var(--color-status-active)' },
+      { name: 'Flagged', key: 'flagged', value: counts.flagged, color: 'var(--color-status-flagged)' },
+      { name: 'Closed', key: 'closed', value: counts.closed, color: 'var(--color-status-closed)' },
+      { name: 'Archived', key: 'archived', value: counts.archived || 0, color: 'var(--color-status-muted)' },
     ].filter(s => s.value > 0);
   }, [cases]);
 
@@ -513,10 +476,10 @@ export const AnalyticsPage: React.FC = () => {
       counts[c.priority] = (counts[c.priority] || 0) + 1;
     });
     return [
-      { priority: 'Critical', key: 'critical', count: counts.critical, color: PRIORITY_COLORS.critical },
-      { priority: 'High', key: 'high', count: counts.high, color: PRIORITY_COLORS.high },
-      { priority: 'Medium', key: 'medium', count: counts.medium, color: PRIORITY_COLORS.medium },
-      { priority: 'Low', key: 'low', count: counts.low, color: PRIORITY_COLORS.low },
+      { priority: 'Critical', key: 'critical', count: counts.critical, color: 'var(--color-status-flagged)' },
+      { priority: 'High', key: 'high', count: counts.high, color: 'var(--color-status-active)' },
+      { priority: 'Medium', key: 'medium', count: counts.medium, color: 'var(--color-status-warning)' },
+      { priority: 'Low', key: 'low', count: counts.low, color: 'var(--color-border-strong)' },
     ];
   }, [filteredCases]);
 
@@ -552,21 +515,26 @@ export const AnalyticsPage: React.FC = () => {
       .sort((a, b) => b.cases - a.cases);
   }, [cases]);
 
-  // 6. Anomaly Severity Over Time (Stacked Area)
-  const anomalySeverityData = useMemo(() => [
-    { period: 'May 26', critical: 3, high: 6, medium: 9, low: 5 },
-    { period: 'Jun 26', critical: 5, high: 9, medium: 12, low: 7 },
-    { period: 'Jul 26', critical: 8, high: 14, medium: 10, low: 6 },
-    { period: 'Aug 26', critical: flaggedCases * 2 + 4, high: activeCases + 6, medium: 8, low: 4 },
-  ], [flaggedCases, activeCases]);
+  // 6. Anomaly Severity Breakdown Stream Data
+  const anomalySeverityData = useMemo(() => {
+    return [
+      { period: 'Jul W1', critical: 3, high: 6, medium: 9, low: 5 },
+      { period: 'Jul W2', critical: 5, high: 8, medium: 12, low: 7 },
+      { period: 'Jul W3', critical: 4, high: 7, medium: 10, low: 6 },
+      { period: 'Jul W4', critical: 8, high: 11, medium: 15, low: 9 },
+      { period: 'Aug W1', critical: 6, high: 9, medium: 13, low: 8 },
+      { period: 'Aug W2', critical: 9, high: 14, medium: 18, low: 11 },
+      { period: 'Aug W3', critical: flaggedCases * 2, high: activeCases * 3, medium: totalAnomalies - (flaggedCases * 2), low: 10 },
+    ];
+  }, [flaggedCases, activeCases, totalAnomalies]);
 
-  const hasActiveFilters = Boolean(statusFilter || priorityFilter || categoryFilter || dateRange !== 'all');
+  const hasActiveFilters = dateRange !== 'all' || statusFilter !== null || priorityFilter !== null || categoryFilter !== null;
 
   const clearAllFilters = () => {
+    setDateRange('all');
     setStatusFilter(null);
     setPriorityFilter(null);
     setCategoryFilter(null);
-    setDateRange('all');
   };
 
   return (
@@ -578,27 +546,28 @@ export const AnalyticsPage: React.FC = () => {
         flexDirection: 'column',
         height: '100vh',
         overflowY: 'auto',
-        background: '#FAF6F0',
+        background: 'var(--color-bg-base)',
+        color: 'var(--color-text-primary)',
         position: 'relative',
       }}
     >
       {/* ─── 1. Header ─── */}
       <header style={{
         padding: '18px 24px 14px',
-        borderBottom: '1px solid #DDD5CA',
+        borderBottom: '1px solid var(--color-border)',
         display: 'flex',
         alignItems: 'flex-end',
         justifyContent: 'space-between',
         flexWrap: 'wrap',
         gap: 14,
-        background: '#FAF6F0',
+        background: 'var(--color-bg-surface)',
         position: 'sticky',
         top: 0,
         zIndex: 20,
       }}>
         <div>
           <div className="data-label" style={{ marginBottom: 4 }}>Phishield / Analytics</div>
-          <h1 style={{ fontSize: 22, fontWeight: 600, color: '#2A2420', letterSpacing: '-0.01em', fontFamily: '"Fraunces", Georgia, serif' }}>
+          <h1 style={{ fontSize: 22, fontWeight: 600, color: 'var(--color-text-primary)', letterSpacing: '-0.01em', fontFamily: '"Fraunces", Georgia, serif' }}>
             Analytics & Telemetry
           </h1>
         </div>
@@ -609,8 +578,8 @@ export const AnalyticsPage: React.FC = () => {
           <div style={{
             display: 'flex',
             alignItems: 'center',
-            background: '#FFFFFF',
-            border: '1px solid #DDD5CA',
+            background: 'var(--color-bg-raised)',
+            border: '1px solid var(--color-border)',
             borderRadius: 6,
             padding: '2px 4px',
             gap: 2,
@@ -633,9 +602,9 @@ export const AnalyticsPage: React.FC = () => {
                     fontSize: 10.5,
                     fontWeight: active ? 600 : 500,
                     fontFamily: 'Inter, sans-serif',
-                    color: active ? '#8C3D1A' : '#7A6F63',
-                    background: active ? '#FAF6F0' : 'transparent',
-                    border: active ? '1px solid #C4622D50' : '1px solid transparent',
+                    color: active ? '#C4622D' : 'var(--color-text-secondary)',
+                    background: active ? 'var(--color-bg-hover)' : 'transparent',
+                    border: active ? '1px solid #C4622D' : '1px solid transparent',
                     borderRadius: 4,
                     cursor: 'pointer',
                     transition: 'all 120ms ease',
@@ -647,28 +616,28 @@ export const AnalyticsPage: React.FC = () => {
             })}
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, borderLeft: '1px solid #DDD5CA', paddingLeft: 12 }}>
-            <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#3D7A4A', display: 'inline-block' }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, borderLeft: '1px solid var(--color-border)', paddingLeft: 12 }}>
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--color-status-closed)', display: 'inline-block' }} />
             <span className="data-label">Telemetry Live</span>
           </div>
         </div>
       </header>
 
       {/* ─── 2. Top Stats Strip ─── */}
-      <div style={{ display: 'flex', borderBottom: '1px solid #DDD5CA', flexWrap: 'wrap', background: '#F3EDE4' }}>
+      <div style={{ display: 'flex', borderBottom: '1px solid var(--color-border)', flexWrap: 'wrap', background: 'var(--color-bg-surface)' }}>
         {[
-          { label: 'Total Cases', value: totalCases, color: '#8C3D1A', trend: [10, 11, 12, 13, 14, 15, totalCases], isUp: true, isHeavy: false },
-          { label: 'Active Pipeline', value: activeCases, color: '#C4622D', trend: [6, 7, 8, 8, 9, 9, activeCases], isUp: true, isHeavy: true, dot: '#C4622D' },
-          { label: 'Avg Resolution', value: avgResolutionDays, suffix: 'd', isFloat: true, color: '#6B2E12', trend: [5.1, 4.9, 4.7, 4.5, 4.3, 4.2], isUp: false, isHeavy: false },
-          { label: 'Total Anomalies', value: totalAnomalies, color: '#B53924', trend: [24, 28, 31, 35, 40, totalAnomalies], isUp: true, isHeavy: true, dot: '#B53924', pulse: true },
+          { label: 'Total Cases', value: totalCases, color: '#C4622D', trend: [10, 11, 12, 13, 14, 15, totalCases], isUp: true, isHeavy: false },
+          { label: 'Active Pipeline', value: activeCases, color: '#C4622D', trend: [6, 7, 8, 8, 9, 9, activeCases], isUp: true, isHeavy: true, dot: 'var(--color-status-active)' },
+          { label: 'Avg Resolution', value: avgResolutionDays, suffix: 'd', isFloat: true, color: '#8C3D1A', trend: [5.1, 4.9, 4.7, 4.5, 4.3, 4.2], isUp: false, isHeavy: false },
+          { label: 'Total Anomalies', value: totalAnomalies, color: 'var(--color-status-flagged)', trend: [24, 28, 31, 35, 40, totalAnomalies], isUp: true, isHeavy: true, dot: 'var(--color-status-flagged)', pulse: true },
           { label: 'Entities Tracked', value: totalEntities, color: '#D4854A', trend: [120, 140, 160, 190, 210, totalEntities], isUp: true, isHeavy: false },
-          { label: 'Closure Rate', value: closureRate, suffix: '%', isFloat: true, color: '#3D7A4A', trend: [58, 60, 62, 64, 66, closureRate], isUp: true, isHeavy: false },
+          { label: 'Closure Rate', value: closureRate, suffix: '%', isFloat: true, color: 'var(--color-status-closed)', trend: [58, 60, 62, 64, 66, closureRate], isUp: true, isHeavy: false },
         ].map((s, i) => (
           <div key={s.label} style={{
             padding: '11px 18px',
-            borderRight: i < 5 ? '1px solid #DDD5CA' : 'none',
+            borderRight: i < 5 ? '1px solid var(--color-border)' : 'none',
             display: 'flex', flexDirection: 'column', gap: 4, minWidth: 130, flex: '1 1 130px',
-            background: s.isHeavy ? '#FAF6F0' : 'transparent',
+            background: s.isHeavy ? 'var(--color-bg-base)' : 'transparent',
             borderTop: s.isHeavy ? `2px solid ${s.color}` : '2px solid transparent',
           }}>
             <div className="data-label" style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
@@ -678,7 +647,7 @@ export const AnalyticsPage: React.FC = () => {
                   animation: s.pulse ? 'status-pulse 2.5s ease-in-out infinite' : 'none',
                 }} />
               )}
-              <span style={{ fontWeight: s.isHeavy ? 600 : 500, color: s.isHeavy ? '#2A2420' : '#7A6F63' }}>
+              <span style={{ fontWeight: s.isHeavy ? 600 : 500, color: s.isHeavy ? 'var(--color-text-primary)' : 'var(--color-text-secondary)' }}>
                 {s.label}
               </span>
             </div>
@@ -699,8 +668,8 @@ export const AnalyticsPage: React.FC = () => {
             transition={{ duration: 0.2, ease: EASE_SHARP }}
             style={{
               padding: '8px 24px',
-              background: '#FAF6F0',
-              borderBottom: '1px solid #DDD5CA',
+              background: 'var(--color-bg-surface)',
+              borderBottom: '1px solid var(--color-border)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
@@ -709,7 +678,7 @@ export const AnalyticsPage: React.FC = () => {
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#8C3D1A', fontSize: 11, fontWeight: 600 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#C4622D', fontSize: 11, fontWeight: 600 }}>
                 <Filter className="w-3.5 h-3.5 text-[#C4622D]" />
                 <span>Active Filters:</span>
               </div>
@@ -717,12 +686,12 @@ export const AnalyticsPage: React.FC = () => {
               {dateRange !== 'all' && (
                 <span style={{
                   display: 'flex', alignItems: 'center', gap: 4,
-                  background: '#FFFFFF', border: '1px solid #DDD5CA',
-                  borderRadius: 4, padding: '2px 8px', fontSize: 10.5, color: '#2A2420',
+                  background: 'var(--color-bg-raised)', border: '1px solid var(--color-border)',
+                  borderRadius: 4, padding: '2px 8px', fontSize: 10.5, color: 'var(--color-text-primary)',
                 }}>
                   <span>Date: {dateRange.toUpperCase()}</span>
                   <button type="button" onClick={() => setDateRange('all')} style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: 0 }}>
-                    <X className="w-3 h-3 text-[#A89F93] hover:text-[#B53924]" />
+                    <X className="w-3 h-3 text-[var(--color-text-muted)] hover:text-[var(--color-status-flagged)]" />
                   </button>
                 </span>
               )}
@@ -730,13 +699,13 @@ export const AnalyticsPage: React.FC = () => {
               {statusFilter && (
                 <span style={{
                   display: 'flex', alignItems: 'center', gap: 4,
-                  background: '#FFFFFF', border: '1px solid #DDD5CA',
-                  borderRadius: 4, padding: '2px 8px', fontSize: 10.5, color: '#2A2420',
+                  background: 'var(--color-bg-raised)', border: '1px solid var(--color-border)',
+                  borderRadius: 4, padding: '2px 8px', fontSize: 10.5, color: 'var(--color-text-primary)',
                 }}>
-                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: STATUS_COLORS[statusFilter] || '#C4622D' }} />
+                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: statusFilter === 'active' ? 'var(--color-status-active)' : statusFilter === 'flagged' ? 'var(--color-status-flagged)' : 'var(--color-status-closed)' }} />
                   <span>Status: {statusFilter}</span>
                   <button type="button" onClick={() => setStatusFilter(null)} style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: 0 }}>
-                    <X className="w-3 h-3 text-[#A89F93] hover:text-[#B53924]" />
+                    <X className="w-3 h-3 text-[var(--color-text-muted)] hover:text-[var(--color-status-flagged)]" />
                   </button>
                 </span>
               )}
@@ -744,12 +713,12 @@ export const AnalyticsPage: React.FC = () => {
               {priorityFilter && (
                 <span style={{
                   display: 'flex', alignItems: 'center', gap: 4,
-                  background: '#FFFFFF', border: '1px solid #DDD5CA',
-                  borderRadius: 4, padding: '2px 8px', fontSize: 10.5, color: '#2A2420',
+                  background: 'var(--color-bg-raised)', border: '1px solid var(--color-border)',
+                  borderRadius: 4, padding: '2px 8px', fontSize: 10.5, color: 'var(--color-text-primary)',
                 }}>
                   <span>Priority: {priorityFilter}</span>
                   <button type="button" onClick={() => setPriorityFilter(null)} style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: 0 }}>
-                    <X className="w-3 h-3 text-[#A89F93] hover:text-[#B53924]" />
+                    <X className="w-3 h-3 text-[var(--color-text-muted)] hover:text-[var(--color-status-flagged)]" />
                   </button>
                 </span>
               )}
@@ -757,12 +726,12 @@ export const AnalyticsPage: React.FC = () => {
               {categoryFilter && (
                 <span style={{
                   display: 'flex', alignItems: 'center', gap: 4,
-                  background: '#FFFFFF', border: '1px solid #DDD5CA',
-                  borderRadius: 4, padding: '2px 8px', fontSize: 10.5, color: '#2A2420',
+                  background: 'var(--color-bg-raised)', border: '1px solid var(--color-border)',
+                  borderRadius: 4, padding: '2px 8px', fontSize: 10.5, color: 'var(--color-text-primary)',
                 }}>
                   <span>Type: {categoryFilter}</span>
                   <button type="button" onClick={() => setCategoryFilter(null)} style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: 0 }}>
-                    <X className="w-3 h-3 text-[#A89F93] hover:text-[#B53924]" />
+                    <X className="w-3 h-3 text-[var(--color-text-muted)] hover:text-[var(--color-status-flagged)]" />
                   </button>
                 </span>
               )}
@@ -797,20 +766,20 @@ export const AnalyticsPage: React.FC = () => {
             transition={{ duration: 0.35, ease: EASE_SHARP }}
             style={{
               gridColumn: 'span 2',
-              background: '#FFFFFF',
-              border: '1px solid #DDD5CA',
+              background: 'var(--color-bg-surface)',
+              border: '1px solid var(--color-border)',
               borderRadius: 8,
               padding: '18px 20px',
               display: 'flex',
               flexDirection: 'column',
               gap: 14,
-              boxShadow: '0 1px 3px rgba(42, 36, 32, 0.04)',
+              boxShadow: 'var(--shadow-card)',
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div>
-                <div className="data-label" style={{ color: '#8C3D1A', fontWeight: 600 }}>Case Velocity & Telemetry</div>
-                <h3 style={{ fontSize: 16, fontWeight: 600, color: '#2A2420', fontFamily: '"Fraunces", Georgia, serif', marginTop: 2 }}>
+                <div className="data-label" style={{ color: '#C4622D', fontWeight: 600 }}>Case Velocity & Telemetry</div>
+                <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--color-text-primary)', fontFamily: '"Fraunces", Georgia, serif', marginTop: 2 }}>
                   Case Ingestion vs. Resolution Rate
                 </h3>
               </div>
@@ -818,11 +787,11 @@ export const AnalyticsPage: React.FC = () => {
               <div style={{ display: 'flex', alignItems: 'center', gap: 14, fontSize: 11, fontFamily: 'IBM Plex Mono, monospace' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                   <span style={{ width: 8, height: 2, background: '#C4622D', borderRadius: 1 }} />
-                  <span style={{ color: '#7A6F63' }}>Opened</span>
+                  <span style={{ color: 'var(--color-text-secondary)' }}>Opened</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                  <span style={{ width: 8, height: 2, background: '#3D7A4A', borderRadius: 1 }} />
-                  <span style={{ color: '#7A6F63' }}>Closed</span>
+                  <span style={{ width: 8, height: 2, background: 'var(--color-status-closed)', borderRadius: 1 }} />
+                  <span style={{ color: 'var(--color-text-secondary)' }}>Closed</span>
                 </div>
               </div>
             </div>
@@ -840,9 +809,9 @@ export const AnalyticsPage: React.FC = () => {
                       <stop offset="95%" stopColor="#3D7A4A" stopOpacity={0.0} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#DDD5CA50" vertical={false} />
-                  <XAxis dataKey="week" stroke="#A89F93" fontSize={10} tickLine={false} fontFamily="IBM Plex Mono, monospace" />
-                  <YAxis stroke="#A89F93" fontSize={10} tickLine={false} axisLine={false} fontFamily="IBM Plex Mono, monospace" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
+                  <XAxis dataKey="week" stroke="var(--color-text-muted)" fontSize={10} tickLine={false} fontFamily="IBM Plex Mono, monospace" />
+                  <YAxis stroke="var(--color-text-muted)" fontSize={10} tickLine={false} axisLine={false} fontFamily="IBM Plex Mono, monospace" />
                   <Tooltip content={<CustomChartTooltip />} />
                   <Area
                     type="monotone"
@@ -857,7 +826,7 @@ export const AnalyticsPage: React.FC = () => {
                     type="monotone"
                     dataKey="closed"
                     name="Closed Cases"
-                    stroke="#3D7A4A"
+                    stroke="#4E9A5E"
                     strokeWidth={2}
                     fillOpacity={1}
                     fill="url(#greenGradient)"
@@ -873,19 +842,19 @@ export const AnalyticsPage: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.08, duration: 0.35, ease: EASE_SHARP }}
             style={{
-              background: '#FFFFFF',
-              border: '1px solid #DDD5CA',
+              background: 'var(--color-bg-surface)',
+              border: '1px solid var(--color-border)',
               borderRadius: 8,
               padding: '18px 20px',
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'space-between',
-              boxShadow: '0 1px 3px rgba(42, 36, 32, 0.04)',
+              boxShadow: 'var(--shadow-card)',
             }}
           >
             <div>
-              <div className="data-label" style={{ color: '#8C3D1A', fontWeight: 600 }}>Status Distribution</div>
-              <h3 style={{ fontSize: 16, fontWeight: 600, color: '#2A2420', fontFamily: '"Fraunces", Georgia, serif', marginTop: 2 }}>
+              <div className="data-label" style={{ color: '#C4622D', fontWeight: 600 }}>Status Distribution</div>
+              <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--color-text-primary)', fontFamily: '"Fraunces", Georgia, serif', marginTop: 2 }}>
                 Case Pipeline Breakdown
               </h3>
             </div>
@@ -916,7 +885,7 @@ export const AnalyticsPage: React.FC = () => {
                       <Cell 
                         key={`cell-${index}`} 
                         fill={entry.color} 
-                        stroke={statusFilter === entry.key ? '#2A2420' : '#FFFFFF'} 
+                        stroke={statusFilter === entry.key ? '#C4622D' : 'var(--color-bg-surface)'} 
                         strokeWidth={statusFilter === entry.key ? 2 : 1}
                       />
                     ))}
@@ -933,86 +902,77 @@ export const AnalyticsPage: React.FC = () => {
                 justifyContent: 'center',
                 pointerEvents: 'none',
               }}>
-                <span style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 20, fontWeight: 600, color: '#2A2420', lineHeight: 1 }}>
+                <span style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 20, fontWeight: 600, color: 'var(--color-text-primary)', lineHeight: 1 }}>
                   {totalCases}
                 </span>
-                <span style={{ fontSize: 9, color: '#7A6F63', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 2 }}>
+                <span style={{ fontSize: 9, color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 2 }}>
                   Total Cases
                 </span>
               </div>
             </div>
 
             {/* Legend & Click Hint */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, borderTop: '1px solid #DDD5CA60', paddingTop: 10 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, borderTop: '1px solid var(--color-border)', paddingTop: 10 }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
                 {statusData.map((s) => (
                   <button
                     key={s.name}
                     type="button"
-                    onClick={() => setStatusFilter(statusFilter === s.key ? null : s.key)}
+                    onClick={() => setStatusFilter(prev => prev === s.key ? null : s.key)}
                     style={{
-                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                      padding: '4px 6px', borderRadius: 4, border: 'none',
-                      background: statusFilter === s.key ? '#FAF6F0' : 'transparent',
-                      cursor: 'pointer', textAlign: 'left',
+                      display: 'flex', alignItems: 'center', gap: 6,
+                      background: statusFilter === s.key ? 'var(--color-bg-hover)' : 'transparent',
+                      border: statusFilter === s.key ? '1px solid #C4622D' : '1px solid transparent',
+                      borderRadius: 4, padding: '3px 6px', cursor: 'pointer',
+                      textAlign: 'left',
                     }}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                      <span style={{ width: 6, height: 6, borderRadius: '50%', background: s.color }} />
-                      <span style={{ fontSize: 10.5, color: '#2A2420' }}>{s.name}</span>
-                    </div>
-                    <span style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 10.5, fontWeight: 600, color: '#7A6F63' }}>
-                      {s.value}
+                    <span style={{ width: 8, height: 8, borderRadius: '50%', background: s.color, flexShrink: 0 }} />
+                    <span style={{ fontSize: 11, color: 'var(--color-text-secondary)', fontFamily: 'Inter, sans-serif' }}>
+                      {s.name} ({s.value})
                     </span>
                   </button>
                 ))}
               </div>
-              <span style={{ fontSize: 9.5, color: '#A89F93', textAlign: 'center' }}>Click segment to filter table</span>
+              <span style={{ fontSize: 9, color: 'var(--color-text-muted)', textAlign: 'center', fontStyle: 'italic' }}>
+                Click a slice to filter dashboard
+              </span>
             </div>
           </motion.div>
         </div>
 
-        {/* Row 2: Priority Distribution (1/2) + Crime Type Breakdown (1/2) */}
+        {/* Row 2: Priority Distribution Bar (1/2) + Case Category Breakdown (1/2) */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 20 }}>
           
-          {/* Chart 3: Priority Distribution Horizontal Bars */}
+          {/* Chart 3: Priority Distribution Bar */}
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.12, duration: 0.35, ease: EASE_SHARP }}
             style={{
-              background: '#FFFFFF',
-              border: '1px solid #DDD5CA',
+              background: 'var(--color-bg-surface)',
+              border: '1px solid var(--color-border)',
               borderRadius: 8,
               padding: '18px 20px',
               display: 'flex',
               flexDirection: 'column',
               gap: 14,
-              boxShadow: '0 1px 3px rgba(42, 36, 32, 0.04)',
+              boxShadow: 'var(--shadow-card)',
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div>
-                <div className="data-label" style={{ color: '#8C3D1A', fontWeight: 600 }}>Severity Distribution</div>
-                <h3 style={{ fontSize: 16, fontWeight: 600, color: '#2A2420', fontFamily: '"Fraunces", Georgia, serif', marginTop: 2 }}>
-                  Case Priority Allocation
-                </h3>
-              </div>
-              <span style={{ fontSize: 10, color: '#7A6F63', fontFamily: 'IBM Plex Mono, monospace' }}>
-                {filteredCases.length} Filtered Cases
-              </span>
+            <div>
+              <div className="data-label" style={{ color: '#C4622D', fontWeight: 600 }}>Triage Severity</div>
+              <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--color-text-primary)', fontFamily: '"Fraunces", Georgia, serif', marginTop: 2 }}>
+                Cases by Priority Level
+              </h3>
             </div>
 
-            <div style={{ height: 180, width: '100%' }}>
+            <div style={{ height: 200, width: '100%' }}>
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  layout="vertical"
-                  data={priorityData}
-                  margin={{ top: 0, right: 20, left: 10, bottom: 0 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" stroke="#DDD5CA40" horizontal={false} />
-                  <XAxis type="number" stroke="#A89F93" fontSize={10} tickLine={false} axisLine={false} fontFamily="IBM Plex Mono, monospace" />
-                  <YAxis type="category" dataKey="priority" stroke="#2A2420" fontSize={11} tickLine={false} axisLine={false} width={65} />
+                <BarChart data={priorityData} layout="vertical" margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" horizontal={false} />
+                  <XAxis type="number" stroke="var(--color-text-muted)" fontSize={10} tickLine={false} fontFamily="IBM Plex Mono, monospace" />
+                  <YAxis type="category" dataKey="priority" stroke="var(--color-text-muted)" fontSize={11} tickLine={false} axisLine={false} fontFamily="Inter, sans-serif" />
                   <Tooltip content={<CustomChartTooltip />} />
                   <Bar
                     dataKey="count"
@@ -1021,17 +981,15 @@ export const AnalyticsPage: React.FC = () => {
                     cursor="pointer"
                     onClick={(data: any) => {
                       const k = data?.key || data?.payload?.key;
-                      if (k) {
-                        setPriorityFilter(prev => prev === k ? null : k);
-                      }
+                      if (k) setPriorityFilter(prev => prev === k ? null : k);
                     }}
                   >
                     {priorityData.map((entry, index) => (
-                      <Cell 
-                        key={`cell-${index}`} 
-                        fill={entry.color} 
-                        stroke={priorityFilter === entry.key ? '#2A2420' : 'none'}
-                        strokeWidth={1.5}
+                      <Cell
+                        key={`bar-${index}`}
+                        fill={entry.color}
+                        stroke={priorityFilter === entry.key ? '#C4622D' : 'transparent'}
+                        strokeWidth={2}
                       />
                     ))}
                   </Bar>
@@ -1040,65 +998,61 @@ export const AnalyticsPage: React.FC = () => {
             </div>
           </motion.div>
 
-          {/* Chart 4: Case Crime Type Categorization */}
+          {/* Chart 4: Case Category / Type Breakdown */}
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.16, duration: 0.35, ease: EASE_SHARP }}
             style={{
-              background: '#FFFFFF',
-              border: '1px solid #DDD5CA',
+              background: 'var(--color-bg-surface)',
+              border: '1px solid var(--color-border)',
               borderRadius: 8,
               padding: '18px 20px',
               display: 'flex',
               flexDirection: 'column',
-              gap: 14,
-              boxShadow: '0 1px 3px rgba(42, 36, 32, 0.04)',
+              gap: 12,
+              boxShadow: 'var(--shadow-card)',
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div>
-                <div className="data-label" style={{ color: '#8C3D1A', fontWeight: 600 }}>Classification</div>
-                <h3 style={{ fontSize: 16, fontWeight: 600, color: '#2A2420', fontFamily: '"Fraunces", Georgia, serif', marginTop: 2 }}>
-                  Offense & Target Categories
-                </h3>
-              </div>
+            <div>
+              <div className="data-label" style={{ color: '#C4622D', fontWeight: 600 }}>Classification</div>
+              <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--color-text-primary)', fontFamily: '"Fraunces", Georgia, serif', marginTop: 2 }}>
+                Threat Vector Distribution
+              </h3>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 9, maxHeight: 185, overflowY: 'auto' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, overflowY: 'auto', maxHeight: 200 }}>
               {categoryData.map((cat) => {
-                const pct = totalCases > 0 ? ((cat.value / totalCases) * 100).toFixed(0) : '0';
+                const pct = totalCases > 0 ? ((cat.value / totalCases) * 100).toFixed(0) : 0;
                 const isSelected = categoryFilter === cat.name;
                 return (
                   <div
                     key={cat.name}
-                    onClick={() => setCategoryFilter(isSelected ? null : cat.name)}
+                    onClick={() => setCategoryFilter(prev => prev === cat.name ? null : cat.name)}
                     style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: 3,
-                      cursor: 'pointer',
-                      padding: '4px 6px',
+                      padding: '6px 8px',
                       borderRadius: 4,
-                      background: isSelected ? '#FAF6F0' : 'transparent',
-                      transition: 'background 100ms ease',
+                      cursor: 'pointer',
+                      background: isSelected ? 'var(--color-bg-hover)' : 'transparent',
+                      border: isSelected ? '1px solid #C4622D' : '1px solid transparent',
+                      transition: 'all 120ms ease',
                     }}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 11.5 }}>
-                      <span style={{ fontWeight: 600, color: isSelected ? '#8C3D1A' : '#2A2420', fontFamily: 'Inter, sans-serif' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 3 }}>
+                      <span style={{ fontSize: 11.5, fontWeight: isSelected ? 600 : 500, color: 'var(--color-text-primary)', fontFamily: 'Inter, sans-serif' }}>
                         {cat.name}
                       </span>
-                      <span style={{ fontFamily: 'IBM Plex Mono, monospace', color: '#7A6F63', fontSize: 10.5 }}>
+                      <span style={{ fontSize: 11, fontFamily: 'IBM Plex Mono, monospace', color: 'var(--color-text-secondary)' }}>
                         {cat.value} ({pct}%)
                       </span>
                     </div>
-                    <div style={{ width: '100%', height: 5, background: '#F3EDE4', borderRadius: 3, overflow: 'hidden' }}>
+                    <div style={{ height: 4, width: '100%', background: 'var(--color-bg-base)', borderRadius: 2, overflow: 'hidden' }}>
                       <div
                         style={{
-                          width: `${pct}%`,
                           height: '100%',
+                          width: `${pct}%`,
                           background: cat.color,
-                          borderRadius: 3,
+                          borderRadius: 2,
                           transition: 'width 600ms ease',
                         }}
                       />
@@ -1120,36 +1074,36 @@ export const AnalyticsPage: React.FC = () => {
             transition={{ delay: 0.2, duration: 0.35, ease: EASE_SHARP }}
             style={{
               gridColumn: 'span 2',
-              background: '#FFFFFF',
-              border: '1px solid #DDD5CA',
+              background: 'var(--color-bg-surface)',
+              border: '1px solid var(--color-border)',
               borderRadius: 8,
               padding: '18px 20px',
               display: 'flex',
               flexDirection: 'column',
               gap: 14,
-              boxShadow: '0 1px 3px rgba(42, 36, 32, 0.04)',
+              boxShadow: 'var(--shadow-card)',
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
               <div>
-                <div className="data-label" style={{ color: '#8C3D1A', fontWeight: 600 }}>Severity Spikes</div>
-                <h3 style={{ fontSize: 16, fontWeight: 600, color: '#2A2420', fontFamily: '"Fraunces", Georgia, serif', marginTop: 2 }}>
+                <div className="data-label" style={{ color: '#C4622D', fontWeight: 600 }}>Severity Spikes</div>
+                <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--color-text-primary)', fontFamily: '"Fraunces", Georgia, serif', marginTop: 2 }}>
                   Anomaly Detection Severity Stream
                 </h3>
               </div>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 10.5, fontFamily: 'IBM Plex Mono, monospace' }}>
-                <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#B53924' }} /> Critical
+                <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'var(--color-text-secondary)' }}>
+                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--color-status-flagged)' }} /> Critical
                 </span>
-                <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#C4622D' }} /> High
+                <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'var(--color-text-secondary)' }}>
+                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--color-status-active)' }} /> High
                 </span>
-                <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#D4854A' }} /> Medium
+                <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'var(--color-text-secondary)' }}>
+                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--color-status-warning)' }} /> Medium
                 </span>
-                <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#7A6F63' }} /> Low
+                <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'var(--color-text-secondary)' }}>
+                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--color-status-muted)' }} /> Low
                 </span>
               </div>
             </div>
@@ -1157,14 +1111,14 @@ export const AnalyticsPage: React.FC = () => {
             <div style={{ height: 210, width: '100%' }}>
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={anomalySeverityData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#DDD5CA50" vertical={false} />
-                  <XAxis dataKey="period" stroke="#A89F93" fontSize={10} tickLine={false} fontFamily="IBM Plex Mono, monospace" />
-                  <YAxis stroke="#A89F93" fontSize={10} tickLine={false} axisLine={false} fontFamily="IBM Plex Mono, monospace" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
+                  <XAxis dataKey="period" stroke="var(--color-text-muted)" fontSize={10} tickLine={false} fontFamily="IBM Plex Mono, monospace" />
+                  <YAxis stroke="var(--color-text-muted)" fontSize={10} tickLine={false} axisLine={false} fontFamily="IBM Plex Mono, monospace" />
                   <Tooltip content={<CustomChartTooltip />} />
-                  <Area type="monotone" dataKey="critical" stackId="1" stroke="#B53924" fill="#B53924" fillOpacity={0.85} name="Critical" />
-                  <Area type="monotone" dataKey="high" stackId="1" stroke="#C4622D" fill="#C4622D" fillOpacity={0.75} name="High" />
-                  <Area type="monotone" dataKey="medium" stackId="1" stroke="#D4854A" fill="#D4854A" fillOpacity={0.65} name="Medium" />
-                  <Area type="monotone" dataKey="low" stackId="1" stroke="#A89F93" fill="#A89F93" fillOpacity={0.4} name="Low" />
+                  <Area type="monotone" dataKey="critical" stackId="1" stroke="var(--color-status-flagged)" fill="var(--color-status-flagged)" fillOpacity={0.85} name="Critical" />
+                  <Area type="monotone" dataKey="high" stackId="1" stroke="var(--color-status-active)" fill="var(--color-status-active)" fillOpacity={0.75} name="High" />
+                  <Area type="monotone" dataKey="medium" stackId="1" stroke="var(--color-status-warning)" fill="var(--color-status-warning)" fillOpacity={0.65} name="Medium" />
+                  <Area type="monotone" dataKey="low" stackId="1" stroke="var(--color-status-muted)" fill="var(--color-status-muted)" fillOpacity={0.4} name="Low" />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
@@ -1176,25 +1130,25 @@ export const AnalyticsPage: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.24, duration: 0.35, ease: EASE_SHARP }}
             style={{
-              background: '#FFFFFF',
-              border: '1px solid #DDD5CA',
+              background: 'var(--color-bg-surface)',
+              border: '1px solid var(--color-border)',
               borderRadius: 8,
               padding: '18px 20px',
               display: 'flex',
               flexDirection: 'column',
               gap: 12,
-              boxShadow: '0 1px 3px rgba(42, 36, 32, 0.04)',
+              boxShadow: 'var(--shadow-card)',
             }}
           >
             <div>
-              <div className="data-label" style={{ color: '#8C3D1A', fontWeight: 600 }}>Personnel Allocation</div>
-              <h3 style={{ fontSize: 16, fontWeight: 600, color: '#2A2420', fontFamily: '"Fraunces", Georgia, serif', marginTop: 2 }}>
+              <div className="data-label" style={{ color: '#C4622D', fontWeight: 600 }}>Personnel Allocation</div>
+              <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--color-text-primary)', fontFamily: '"Fraunces", Georgia, serif', marginTop: 2 }}>
                 Investigator Workload
               </h3>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, overflowY: 'auto', maxHeight: 210 }}>
-              {investigatorData.map((inv, idx) => (
+              {investigatorData.map((inv) => (
                 <div
                   key={inv.name}
                   style={{
@@ -1203,24 +1157,24 @@ export const AnalyticsPage: React.FC = () => {
                     justifyContent: 'space-between',
                     padding: '6px 8px',
                     borderRadius: 6,
-                    background: '#FAF6F0',
-                    border: '1px solid #DDD5CA60',
+                    background: 'var(--color-bg-raised)',
+                    border: '1px solid var(--color-border)',
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <div style={{
                       width: 26, height: 26, borderRadius: '50%',
-                      background: '#F3EDE4', border: '1px solid #DDD5CA',
+                      background: 'var(--color-bg-surface)', border: '1px solid var(--color-border)',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: 9.5, fontWeight: 600, color: '#8C3D1A',
+                      fontSize: 9.5, fontWeight: 600, color: '#C4622D',
                     }}>
                       {inv.initials}
                     </div>
                     <div>
-                      <div style={{ fontSize: 12, fontWeight: 600, color: '#2A2420', fontFamily: 'Inter, sans-serif' }}>
+                      <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text-primary)', fontFamily: 'Inter, sans-serif' }}>
                         {inv.name}
                       </div>
-                      <div style={{ fontSize: 9.5, color: '#7A6F63' }}>
+                      <div style={{ fontSize: 9.5, color: 'var(--color-text-secondary)' }}>
                         {inv.avgAnomalies} avg. anomalies/case
                       </div>
                     </div>
@@ -1230,7 +1184,7 @@ export const AnalyticsPage: React.FC = () => {
                     <span style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 14, fontWeight: 600, color: '#C4622D' }}>
                       {inv.cases}
                     </span>
-                    <span style={{ fontSize: 9.5, color: '#7A6F63' }}>cases</span>
+                    <span style={{ fontSize: 9.5, color: 'var(--color-text-secondary)' }}>cases</span>
                   </div>
                 </div>
               ))}

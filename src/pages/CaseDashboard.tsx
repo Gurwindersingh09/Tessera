@@ -49,25 +49,25 @@ function fmtAbsDate(iso: string) {
   return new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
-/* ─── Status Config — warm tonal ─── */
-const STATUS_CONFIG: Record<string, { color: string; darkColor: string; label: string; pulse?: boolean }> = {
-  active:   { color: '#C4622D', darkColor: '#8C3D1A', label: 'Active' },
-  flagged:  { color: '#B53924', darkColor: '#8A2517', label: 'Flagged', pulse: true },
-  closed:   { color: '#3D7A4A', darkColor: '#2B5A36', label: 'Closed' },
-  archived: { color: '#7A6F63', darkColor: '#4A4340', label: 'Archived' },
+/* ─── Status Config with CSS Variable References ─── */
+const STATUS_CONFIG: Record<string, { colorVar: string; label: string; pulse?: boolean }> = {
+  active:   { colorVar: 'var(--color-status-active)', label: 'Active' },
+  flagged:  { colorVar: 'var(--color-status-flagged)', label: 'Flagged', pulse: true },
+  closed:   { colorVar: 'var(--color-status-closed)', label: 'Closed' },
+  archived: { colorVar: 'var(--color-status-muted)', label: 'Archived' },
 };
 
 function StatusCell({ status }: { status: string }) {
-  const cfg = STATUS_CONFIG[status] ?? { color: '#DDD5CA', darkColor: '#C8BFB3', label: status };
+  const cfg = STATUS_CONFIG[status] ?? { colorVar: 'var(--color-border)', label: status };
   return (
     <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
       <span style={{
         width: 6, height: 6, borderRadius: '50%',
-        background: cfg.color, display: 'inline-block', flexShrink: 0,
+        background: cfg.colorVar, display: 'inline-block', flexShrink: 0,
         boxShadow: 'none',
         animation: cfg.pulse ? 'status-pulse 2.5s ease-in-out infinite' : 'none',
       }} />
-      <span style={{ fontSize: 11, color: '#7A6F63', letterSpacing: '0.02em', textTransform: 'capitalize' }}>
+      <span style={{ fontSize: 11, color: 'var(--color-text-secondary)', letterSpacing: '0.02em', textTransform: 'capitalize' }}>
         {cfg.label}
       </span>
     </span>
@@ -109,7 +109,7 @@ function MiniSparkline({ data, color, isUp }: { data: number[]; color: string; i
           fill={color}
         />
       </svg>
-      <span style={{ fontSize: 9, fontFamily: 'IBM Plex Mono, monospace', color: '#7A6F63' }}>
+      <span style={{ fontSize: 9, fontFamily: 'IBM Plex Mono, monospace', color: 'var(--color-text-muted)' }}>
         {isUp ? '↑ 7d' : '↓ 7d'}
       </span>
     </div>
@@ -154,7 +154,7 @@ function StatStrip({ cases }: { cases: CaseItem[] }) {
     {
       label: 'Total Cases',
       value: cases.length,
-      color: '#8C3D1A',
+      color: '#C4622D',
       trend: [14, 15, 15, 16, 17, 18, cases.length],
       isUp: true,
       isHeavy: false,
@@ -166,7 +166,7 @@ function StatStrip({ cases }: { cases: CaseItem[] }) {
       trend: [8, 9, 10, 9, 11, 11, active],
       isUp: true,
       isHeavy: true,
-      dotColor: '#C4622D',
+      dotColor: 'var(--color-status-active)',
     },
     {
       label: 'Flagged',
@@ -175,7 +175,7 @@ function StatStrip({ cases }: { cases: CaseItem[] }) {
       trend: [2, 3, 2, 4, 3, 5, flagged],
       isUp: true,
       isHeavy: true,
-      dotColor: '#B53924',
+      dotColor: 'var(--color-status-flagged)',
       pulse: true,
     },
     {
@@ -189,7 +189,7 @@ function StatStrip({ cases }: { cases: CaseItem[] }) {
     {
       label: 'Entities Tracked',
       value: entities,
-      color: '#6B2E12',
+      color: '#8C3D1A',
       trend: [38, 42, 45, 48, 50, 52, entities],
       isUp: true,
       isHeavy: false,
@@ -239,7 +239,7 @@ function StatStrip({ cases }: { cases: CaseItem[] }) {
   );
 }
 
-/* ─── Priority Queue: 3 Compact Cards for Highest-Anomaly Active Cases with CaseActionsMenu ─── */
+/* ─── Priority Queue: 3 Compact Cards for Highest-Anomaly Active Cases ─── */
 function PriorityQueue({ 
   cases, 
   onOpen,
@@ -269,24 +269,24 @@ function PriorityQueue({
   return (
     <div style={{
       padding: '12px 20px',
-      borderBottom: '1px solid #DDD5CA',
-      background: '#FAF6F0',
+      borderBottom: '1px solid var(--color-border)',
+      background: 'var(--color-bg-base)',
       transition: 'all 200ms ease',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: collapsed ? 0 : 10 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <span style={{
             width: 6, height: 6, borderRadius: '50%',
-            background: '#B53924', display: 'inline-block',
+            background: 'var(--color-status-flagged)', display: 'inline-block',
             animation: 'status-pulse 2.5s ease-in-out infinite'
           }} />
-          <span className="data-label" style={{ color: '#8C3D1A', fontWeight: 600, letterSpacing: '0.1em' }}>
+          <span className="data-label" style={{ color: '#C4622D', fontWeight: 600, letterSpacing: '0.1em' }}>
             Priority Queue · Highest Risk Active Cases
           </span>
         </div>
         
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 10, fontFamily: 'IBM Plex Mono, monospace', color: '#7A6F63' }}>
+          <span style={{ fontSize: 10, fontFamily: 'IBM Plex Mono, monospace', color: 'var(--color-text-muted)' }}>
             3 cases surfaced
           </span>
 
@@ -298,16 +298,16 @@ function PriorityQueue({
               display: 'flex',
               alignItems: 'center',
               gap: 3,
-              border: '1px solid #DDD5CA',
+              border: '1px solid var(--color-border)',
               borderRadius: 3,
-              background: '#FFFFFF',
+              background: 'var(--color-bg-surface)',
               padding: '2px 6px',
               fontSize: 9.5,
-              color: '#7A6F63',
+              color: 'var(--color-text-secondary)',
               cursor: 'pointer',
             }}
           >
-            {collapsed ? <ChevronDown className="w-3 h-3 text-[#C4622D]" /> : <ChevronUp className="w-3 h-3 text-[#7A6F63]" />}
+            {collapsed ? <ChevronDown className="w-3 h-3 text-[#C4622D]" /> : <ChevronUp className="w-3 h-3 text-[var(--color-text-secondary)]" />}
             <span>{collapsed ? 'Expand' : 'Compress'}</span>
           </button>
         </div>
@@ -320,7 +320,7 @@ function PriorityQueue({
               ? c.investigator.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
               : 'RO';
             const isCritical = c.priority === 'critical';
-            const borderColor = isCritical ? '#B53924' : '#C4622D';
+            const borderColor = isCritical ? 'var(--color-status-flagged)' : 'var(--color-status-active)';
 
             return (
               <motion.div
@@ -328,20 +328,20 @@ function PriorityQueue({
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.06, duration: 0.3, ease: EASE_SHARP }}
-                whileHover={{ y: -2, boxShadow: '0 4px 12px rgba(42,36,32,0.08)' }}
+                whileHover={{ y: -2, boxShadow: 'var(--shadow-dropdown)' }}
                 onClick={() => onOpen(c)}
                 tabIndex={0}
                 role="button"
                 aria-label={`Open high-priority case ${c.id}: ${c.title}`}
                 onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpen(c); } }}
                 style={{
-                  background: '#FFFFFF',
-                  border: '1px solid #DDD5CA',
+                  background: 'var(--color-bg-surface)',
+                  border: '1px solid var(--color-border)',
                   borderLeft: `3px solid ${borderColor}`,
                   borderRadius: 8,
                   padding: '12px 14px',
                   cursor: 'pointer',
-                  boxShadow: '0 1px 3px rgba(42,36,32,0.04)',
+                  boxShadow: 'var(--shadow-card)',
                   display: 'flex',
                   flexDirection: 'column',
                   gap: 8,
@@ -354,7 +354,7 @@ function PriorityQueue({
                       fontFamily: 'IBM Plex Mono, monospace',
                       fontSize: 11,
                       fontWeight: 600,
-                      color: '#8C3D1A',
+                      color: '#C4622D',
                     }}>
                       {c.id}
                     </span>
@@ -365,9 +365,9 @@ function PriorityQueue({
                       fontWeight: 600,
                       padding: '1px 5px',
                       borderRadius: 2,
-                      background: isCritical ? '#B5392415' : '#C4622D15',
-                      color: isCritical ? '#B53924' : '#C4622D',
-                      border: `1px solid ${isCritical ? '#B5392440' : '#C4622D40'}`,
+                      background: isCritical ? 'var(--color-status-flagged-bg)' : 'var(--color-status-warning-bg)',
+                      color: isCritical ? 'var(--color-status-flagged)' : 'var(--color-status-warning)',
+                      border: `1px solid ${isCritical ? 'var(--color-status-flagged-border)' : 'var(--color-status-warning-border)'}`,
                     }}>
                       {c.priority}
                     </span>
@@ -378,9 +378,9 @@ function PriorityQueue({
                       title={`Assigned: ${c.investigator}`}
                       style={{
                         width: 22, height: 22, borderRadius: '50%',
-                        background: '#F3EDE4', border: '1px solid #DDD5CA',
+                        background: 'var(--color-bg-raised)', border: '1px solid var(--color-border)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: 9, fontWeight: 600, color: '#7A6F63',
+                        fontSize: 9, fontWeight: 600, color: 'var(--color-text-secondary)',
                         fontFamily: 'Inter, sans-serif',
                       }}
                     >
@@ -402,7 +402,7 @@ function PriorityQueue({
                 <div style={{
                   fontSize: 13.5,
                   fontWeight: 600,
-                  color: '#2A2420',
+                  color: 'var(--color-text-primary)',
                   fontFamily: '"Fraunces", Georgia, serif',
                   lineHeight: 1.25,
                   whiteSpace: 'nowrap',
@@ -418,33 +418,33 @@ function PriorityQueue({
                       fontFamily: 'IBM Plex Mono, monospace',
                       fontSize: 19,
                       fontWeight: 600,
-                      color: '#B53924',
+                      color: 'var(--color-status-flagged)',
                       lineHeight: 1,
                     }}>
                       {String(c.anomalyCount).padStart(2, '0')}
                     </span>
-                    <span style={{ fontSize: 9.5, color: '#7A6F63', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    <span style={{ fontSize: 9.5, color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                       anomalies
                     </span>
                   </div>
-                  <span style={{ fontSize: 10, color: '#7A6F63', fontFamily: 'Inter, sans-serif' }}>
+                  <span style={{ fontSize: 10, color: 'var(--color-text-secondary)', fontFamily: 'Inter, sans-serif' }}>
                     {c.entityCount} entities · {c.status}
                   </span>
                 </div>
 
                 <div style={{
                   fontSize: 10,
-                  color: '#8C3D1A',
-                  background: '#FAF6F0',
+                  color: 'var(--color-text-primary)',
+                  background: 'var(--color-bg-raised)',
                   padding: '4px 7px',
                   borderRadius: 4,
-                  border: '1px solid #DDD5CA80',
+                  border: '1px solid var(--color-border)',
                   lineHeight: 1.3,
                   display: 'flex',
                   alignItems: 'center',
                   gap: 5,
                 }}>
-                  <span style={{ width: 4, height: 4, borderRadius: '50%', background: '#B53924', flexShrink: 0 }} />
+                  <span style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--color-status-flagged)', flexShrink: 0 }} />
                   <span>
                     {c.anomalyCount >= 10
                       ? `${c.anomalyCount} anomalies · Rapid transaction volume`
@@ -480,14 +480,14 @@ function FilterBar({
     <div style={{
       display: 'flex', alignItems: 'center', gap: 8,
       padding: '10px 20px',
-      borderBottom: '1px solid #DDD5CA',
+      borderBottom: '1px solid var(--color-border)',
       flexWrap: 'wrap',
-      background: '#FAF6F0',
+      background: 'var(--color-bg-surface)',
     }}>
       <div style={{ position: 'relative', flex: '1 1 200px', minWidth: 160 }}>
         <span style={{
           position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)',
-          color: filters.search ? '#C4622D' : '#C8BFB3', fontSize: 11,
+          color: filters.search ? '#C4622D' : 'var(--color-text-faint)', fontSize: 11,
           transition: 'color 120ms',
         }}>⌕</span>
         <input
@@ -560,8 +560,8 @@ function TableHeader({
     <div style={{
       display: 'flex', alignItems: 'center',
       padding: '7px 20px',
-      borderBottom: '1px solid #DDD5CA',
-      background: '#F3EDE4',
+      borderBottom: '1px solid var(--color-border)',
+      background: 'var(--color-bg-surface)',
       position: 'sticky', top: 0, zIndex: 10,
     }}>
       <div style={COL.select}>
@@ -571,7 +571,7 @@ function TableHeader({
           title={allSelected ? "Deselect all" : "Select all"}
           style={{
             border: 'none', background: 'transparent', cursor: 'pointer', padding: 0,
-            display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#7A6F63'
+            display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-text-secondary)'
           }}
         >
           {allSelected ? (
@@ -581,7 +581,7 @@ function TableHeader({
               <span style={{ width: 8, height: 2, background: '#C4622D', borderRadius: 1 }} />
             </div>
           ) : (
-            <Square className="w-3.5 h-3.5 text-[#DDD5CA] hover:text-[#7A6F63]" />
+            <Square className="w-3.5 h-3.5 text-[var(--color-border-strong)] hover:text-[var(--color-text-primary)]" />
           )}
         </button>
       </div>
@@ -644,11 +644,11 @@ function CaseRow({
 
   // Consistent status-driven & priority-driven left border on every row
   const getBorderColor = () => {
-    if (caseData.status === 'flagged' || caseData.priority === 'critical') return '#B53924';
-    if (caseData.status === 'active' || caseData.priority === 'high') return '#C4622D';
-    if (caseData.priority === 'medium') return '#D4854A';
-    if (caseData.status === 'closed') return '#3D7A4A';
-    return '#DDD5CA';
+    if (caseData.status === 'flagged' || caseData.priority === 'critical') return 'var(--color-status-flagged)';
+    if (caseData.status === 'active' || caseData.priority === 'high') return 'var(--color-status-active)';
+    if (caseData.priority === 'medium') return 'var(--color-status-warning)';
+    if (caseData.status === 'closed') return 'var(--color-status-closed)';
+    return 'var(--color-border)';
   };
 
   const borderColor = getBorderColor();
@@ -667,7 +667,7 @@ function CaseRow({
         initial="hidden"
         animate="visible"
         exit="exit"
-        whileHover={{ y: -2, boxShadow: '0 4px 12px rgba(42,36,32,0.08)' }}
+        whileHover={{ y: -2, boxShadow: 'var(--shadow-dropdown)' }}
         role="row" tabIndex={0}
         aria-label={`Open featured case ${caseData.id}: ${caseData.title}`}
         onClick={() => onOpen(caseData)}
@@ -679,11 +679,11 @@ function CaseRow({
         style={{
           margin: '12px 16px',
           padding: '16px 20px',
-          background: isSelected ? '#FAF6F0' : '#FFFFFF',
-          border: `1px solid ${isSelected ? '#C4622D' : (isHighlit ? '#E8B896' : '#DDD5CA')}`,
+          background: isSelected ? 'var(--color-bg-hover)' : 'var(--color-bg-surface)',
+          border: `1px solid ${isSelected ? '#C4622D' : (isHighlit ? 'var(--color-border-strong)' : 'var(--color-border)')}`,
           borderLeft: `3.5px solid ${borderColor}`,
           borderRadius: 10,
-          boxShadow: '0 1px 3px rgba(42,36,32,0.06), 0 1px 2px rgba(42,36,32,0.04)',
+          boxShadow: 'var(--shadow-card)',
           cursor: 'pointer',
           outline: focused ? '2px solid #C4622D' : 'none',
           outlineOffset: 2,
@@ -706,7 +706,7 @@ function CaseRow({
               {isSelected ? (
                 <CheckSquare className="w-4 h-4 text-[#C4622D]" />
               ) : (
-                <Square className="w-4 h-4 text-[#DDD5CA] hover:text-[#7A6F63]" />
+                <Square className="w-4 h-4 text-[var(--color-border-strong)] hover:text-[var(--color-text-primary)]" />
               )}
             </button>
 
@@ -716,14 +716,14 @@ function CaseRow({
             <StatusCell status={caseData.status} />
             <span style={{
               fontSize: 9.5, textTransform: 'uppercase', fontFamily: 'IBM Plex Mono, monospace',
-              color: '#8C3D1A', background: '#F3EDE4', padding: '1px 6px', borderRadius: 3, border: '1px solid #DDD5CA',
+              color: '#C4622D', background: 'var(--color-bg-raised)', padding: '1px 6px', borderRadius: 3, border: '1px solid var(--color-border)',
             }}>
               {caseData.priority} Priority
             </span>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 10.5, color: '#7A6F63' }}>
+            <span style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 10.5, color: 'var(--color-text-muted)' }}>
               {fmtTimestamp(caseData.lastUpdated)}
             </span>
 
@@ -740,19 +740,19 @@ function CaseRow({
         </div>
 
         <div>
-          <span style={{ fontSize: 16, fontWeight: 600, color: '#2A2420', fontFamily: '"Fraunces", Georgia, serif' }}>
+          <span style={{ fontSize: 16, fontWeight: 600, color: 'var(--color-text-primary)', fontFamily: '"Fraunces", Georgia, serif' }}>
             {caseData.title}
           </span>
           {caseData.investigator && (
-            <span style={{ fontSize: 11, color: '#7A6F63', marginLeft: 10, fontFamily: 'Inter, sans-serif' }}>
+            <span style={{ fontSize: 11, color: 'var(--color-text-secondary)', marginLeft: 10, fontFamily: 'Inter, sans-serif' }}>
               Investigator: {caseData.investigator}
             </span>
           )}
         </div>
 
-        <div style={{ display: 'flex', gap: 16, fontSize: 11, color: '#7A6F63' }}>
-          <span><span style={{ fontFamily: 'IBM Plex Mono, monospace', color: '#8C3D1A', fontWeight: 600 }}>{caseData.entityCount}</span> entities tracked</span>
-          <span><span style={{ fontFamily: 'IBM Plex Mono, monospace', color: caseData.anomalyCount > 0 ? '#B53924' : '#3D7A4A', fontWeight: 600 }}>{caseData.anomalyCount}</span> anomalies detected</span>
+        <div style={{ display: 'flex', gap: 16, fontSize: 11, color: 'var(--color-text-secondary)' }}>
+          <span><span style={{ fontFamily: 'IBM Plex Mono, monospace', color: '#C4622D', fontWeight: 600 }}>{caseData.entityCount}</span> entities tracked</span>
+          <span><span style={{ fontFamily: 'IBM Plex Mono, monospace', color: caseData.anomalyCount > 0 ? 'var(--color-status-flagged)' : 'var(--color-status-closed)', fontWeight: 600 }}>{caseData.anomalyCount}</span> anomalies detected</span>
         </div>
       </motion.div>
     );
@@ -767,7 +767,7 @@ function CaseRow({
       initial="hidden"
       animate="visible"
       exit="exit"
-      whileHover={{ y: -1, boxShadow: '0 2px 8px rgba(42,36,32,0.06)' }}
+      whileHover={{ y: -1, boxShadow: 'var(--shadow-card)' }}
       className="case-row"
       role="row" tabIndex={0}
       aria-label={`Open case ${caseData.id}: ${caseData.title}`}
@@ -780,8 +780,8 @@ function CaseRow({
       style={{
         display: 'flex', alignItems: 'center',
         padding: `${rowVerticalPadding} 20px`,
-        borderBottom: '1px solid #DDD5CA',
-        background: isSelected ? '#FAF6F0' : (isHighlit ? '#EDE5D8' : (isHighAnomaly ? '#FFFDFB' : 'transparent')),
+        borderBottom: '1px solid var(--color-border)',
+        background: isSelected ? 'var(--color-bg-hover)' : (isHighlit ? 'var(--color-bg-hover)' : (isHighAnomaly ? 'var(--color-bg-surface)' : 'transparent')),
         borderLeft: `3.5px solid ${borderColor}`,
         transition: 'background 80ms, border-left-color 80ms, padding 120ms',
         cursor: 'pointer',
@@ -807,7 +807,7 @@ function CaseRow({
           {isSelected ? (
             <CheckSquare className="w-3.5 h-3.5 text-[#C4622D]" />
           ) : (
-            <Square className="w-3.5 h-3.5 text-[#DDD5CA] hover:text-[#7A6F63]" />
+            <Square className="w-3.5 h-3.5 text-[var(--color-border-strong)] hover:text-[var(--color-text-primary)]" />
           )}
         </button>
       </div>
@@ -817,7 +817,7 @@ function CaseRow({
           fontFamily: 'IBM Plex Mono, monospace',
           fontSize: 11,
           letterSpacing: '0.03em',
-          color: isHighlit ? '#C4622D' : '#7A6F63',
+          color: isHighlit ? '#C4622D' : 'var(--color-text-secondary)',
           fontWeight: isHighAnomaly ? 600 : 400,
           transition: 'color 80ms',
         }}>
@@ -830,12 +830,12 @@ function CaseRow({
           fontSize: isHighAnomaly ? 13 : 12.5,
           fontWeight: isHighAnomaly ? 600 : 500,
           transition: 'color 80ms',
-          color: isHighlit ? '#2A2420' : (isHighAnomaly ? '#2A2420' : '#4A4340'),
+          color: isHighlit ? '#C4622D' : 'var(--color-text-primary)',
         }}>
           {caseData.title}
         </span>
         {caseData.investigator && (
-          <span style={{ fontSize: 10.5, color: '#7A6F63', marginLeft: 8, fontFamily: 'Inter, sans-serif' }}>
+          <span style={{ fontSize: 10.5, color: 'var(--color-text-secondary)', marginLeft: 8, fontFamily: 'Inter, sans-serif' }}>
             {caseData.investigator}
           </span>
         )}
@@ -844,7 +844,7 @@ function CaseRow({
       <div style={COL.status}><StatusCell status={caseData.status} /></div>
 
       <div style={COL.entities}>
-        <span style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 11, color: '#7A6F63' }}>
+        <span style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 11, color: 'var(--color-text-secondary)' }}>
           {String(caseData.entityCount).padStart(3, '\u2007')}
         </span>
       </div>
@@ -854,14 +854,14 @@ function CaseRow({
           fontFamily: 'IBM Plex Mono, monospace',
           fontSize: 11,
           fontWeight: isHighAnomaly ? 600 : 400,
-          color: caseData.anomalyCount >= 10 ? '#B53924' : (caseData.anomalyCount > 0 ? '#D4854A' : '#3D7A4A'),
+          color: caseData.anomalyCount >= 10 ? 'var(--color-status-flagged)' : (caseData.anomalyCount > 0 ? 'var(--color-status-warning)' : 'var(--color-status-closed)'),
         }}>
           {String(caseData.anomalyCount).padStart(3, '\u2007')}
         </span>
       </div>
 
       <div style={COL.updated} title={fmtAbsDate(caseData.lastUpdated)}>
-        <span style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 10.5, color: '#7A6F63' }}>
+        <span style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 10.5, color: 'var(--color-text-muted)' }}>
           {fmtTimestamp(caseData.lastUpdated)}
         </span>
       </div>
@@ -897,14 +897,14 @@ function EmptyState({ hasFilters }: { hasFilters: boolean }) {
   return (
     <div role="status" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 20px', gap: 14 }}>
       <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
-        <rect x="1" y="1" width="34" height="34" rx="4" stroke="#DDD5CA" strokeWidth="1"/>
-        <circle cx="18" cy="15" r="6" stroke="#C8BFB3" strokeWidth="1.2"/>
-        <line x1="23" y1="20" x2="30" y2="27" stroke="#C8BFB3" strokeWidth="1.2" strokeLinecap="square"/>
-        <line x1="10" y1="27" x2="26" y2="27" stroke="#C8BFB3" strokeWidth="1" strokeDasharray="2 2"/>
+        <rect x="1" y="1" width="34" height="34" rx="4" stroke="var(--color-border)" strokeWidth="1"/>
+        <circle cx="18" cy="15" r="6" stroke="var(--color-border-strong)" strokeWidth="1.2"/>
+        <line x1="23" y1="20" x2="30" y2="27" stroke="var(--color-border-strong)" strokeWidth="1.2" strokeLinecap="square"/>
+        <line x1="10" y1="27" x2="26" y2="27" stroke="var(--color-border-strong)" strokeWidth="1" strokeDasharray="2 2"/>
       </svg>
-      <div style={{ color: '#7A6F63', fontSize: 11.5, textAlign: 'center', letterSpacing: '0.02em', fontFamily: 'Inter, sans-serif' }}>
+      <div style={{ color: 'var(--color-text-secondary)', fontSize: 11.5, textAlign: 'center', letterSpacing: '0.02em', fontFamily: 'Inter, sans-serif' }}>
         {hasFilters
-          ? (<>No cases match the current filters.<br/><span style={{ color: '#A89F93', fontSize: 10.5 }}>Adjust or reset filters to see results.</span></>)
+          ? (<>No cases match the current filters.<br/><span style={{ color: 'var(--color-text-muted)', fontSize: 10.5 }}>Adjust or reset filters to see results.</span></>)
           : 'No cases found.'}
       </div>
     </div>
@@ -982,18 +982,6 @@ export const CaseDashboard: React.FC = () => {
   const allFilteredSelected = filteredCases.length > 0 && filteredCases.every(c => selectedCaseIds.has(c.id));
   const someFilteredSelected = filteredCases.some(c => selectedCaseIds.has(c.id)) && !allFilteredSelected;
 
-  const handleToggleSelect = (id: string) => {
-    setSelectedCaseIds(prev => {
-      const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-      return next;
-    });
-  };
-
   const handleToggleSelectAll = () => {
     if (allFilteredSelected) {
       setSelectedCaseIds(new Set());
@@ -1002,42 +990,85 @@ export const CaseDashboard: React.FC = () => {
     }
   };
 
-  const handleOpenCase = (caseData: CaseItem) => {
-    setCaseId(caseData.id);
-    pushNavHistory({ id: `case-${caseData.id}`, label: `Case: ${caseData.title}`, path: `/case/${caseData.id}`, depth: 1 });
-    navigate(`/case/${caseData.id}`);
+  const handleToggleSelect = (caseId: string) => {
+    setSelectedCaseIds(prev => {
+      const next = new Set(prev);
+      if (next.has(caseId)) {
+        next.delete(caseId);
+      } else {
+        next.add(caseId);
+      }
+      return next;
+    });
+  };
+
+  const handleOpenCase = (c: CaseItem) => {
+    setCaseId(c.id);
+    pushNavHistory({
+      id: `case-${c.id}`,
+      label: `Case: ${c.title}`,
+      path: `/case/${c.id}`,
+      depth: 1,
+    });
+    navigate(`/case/${c.id}`);
   };
 
   const handleNewCase = () => {
-    pushNavHistory({ id: 'new-case', label: 'New Case', path: '/new-case', depth: 1 });
+    pushNavHistory({
+      id: 'new-case',
+      label: 'New Investigation',
+      path: '/new-case',
+      depth: 1,
+    });
     navigate('/new-case');
   };
 
-  // Case Action Handlers
+  // Row-level Actions
   const handleStatusChange = (caseId: string, status: CaseItem['status']) => {
+    const prevCase = cases.find(c => c.id === caseId);
+    const prevStatus = prevCase?.status;
     updateCase(caseId, { status });
+
     addToast({
       title: 'Case Status Updated',
-      description: `${caseId} status marked as ${status.toUpperCase()}.`,
+      description: `${caseId} marked as ${status.toUpperCase()}.`,
       type: 'success',
+      onUndo: () => {
+        if (prevStatus) updateCase(caseId, { status: prevStatus });
+      },
+      undoLabel: 'Undo',
     });
   };
 
   const handlePriorityChange = (caseId: string, priority: CaseItem['priority']) => {
+    const prevCase = cases.find(c => c.id === caseId);
+    const prevPriority = prevCase?.priority;
     updateCase(caseId, { priority });
+
     addToast({
-      title: 'Priority Tier Changed',
-      description: `${caseId} updated to ${priority.toUpperCase()} priority.`,
+      title: 'Priority Updated',
+      description: `${caseId} priority set to ${priority.toUpperCase()}.`,
       type: 'info',
+      onUndo: () => {
+        if (prevPriority) updateCase(caseId, { priority: prevPriority });
+      },
+      undoLabel: 'Undo',
     });
   };
 
   const handleReassign = (caseId: string, investigator: string) => {
+    const prevCase = cases.find(c => c.id === caseId);
+    const prevInvestigator = prevCase?.investigator;
     updateCase(caseId, { investigator });
+
     addToast({
       title: 'Case Reassigned',
-      description: `${caseId} assigned to lead investigator ${investigator}.`,
+      description: `${caseId} assigned to ${investigator}.`,
       type: 'success',
+      onUndo: () => {
+        if (prevInvestigator) updateCase(caseId, { investigator: prevInvestigator });
+      },
+      undoLabel: 'Undo',
     });
   };
 
@@ -1107,7 +1138,7 @@ export const CaseDashboard: React.FC = () => {
     updateBulkCases(ids, { priority });
     addToast({
       title: 'Bulk Priority Updated',
-      description: `${ids.length} cases set to ${priority.toUpperCase()} priority.`,
+      description: `${ids.length} cases set to ${priority.toUpperCase()}.`,
       type: 'info',
     });
   };
@@ -1116,7 +1147,7 @@ export const CaseDashboard: React.FC = () => {
     const ids = Array.from(selectedCaseIds);
     updateBulkCases(ids, { investigator });
     addToast({
-      title: 'Bulk Reassigned',
+      title: 'Bulk Reassignment',
       description: `${ids.length} cases assigned to ${investigator}.`,
       type: 'success',
     });
@@ -1212,8 +1243,8 @@ export const CaseDashboard: React.FC = () => {
       </div>
 
       {/* 6. Footer */}
-      <div style={{ padding: '8px 20px', borderTop: '1px solid #DDD5CA', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative', zIndex: 1, background: '#FAF6F0' }}>
-        <span style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 10.5, color: '#7A6F63' }}>
+      <div style={{ padding: '8px 20px', borderTop: '1px solid var(--color-border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative', zIndex: 1, background: 'var(--color-bg-surface)' }}>
+        <span style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 10.5, color: 'var(--color-text-secondary)' }}>
           {filteredCases.length === cases.length
             ? `${cases.length} cases`
             : `${filteredCases.length} of ${cases.length} cases`
@@ -1238,12 +1269,12 @@ export const CaseDashboard: React.FC = () => {
               left: '50%',
               transform: 'translateX(-50%)',
               zIndex: 800,
-              background: '#FFFFFF',
-              border: '1px solid #DDD5CA',
+              background: 'var(--color-bg-raised)',
+              border: '1px solid var(--color-border)',
               borderTop: '2px solid #C4622D',
               borderRadius: 8,
               padding: '8px 16px',
-              boxShadow: '0 8px 32px rgba(42, 36, 32, 0.18)',
+              boxShadow: 'var(--shadow-dropdown)',
               display: 'flex',
               alignItems: 'center',
               gap: 12,
@@ -1252,7 +1283,7 @@ export const CaseDashboard: React.FC = () => {
             }}
           >
             {/* Selection Count */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, paddingRight: 10, borderRight: '1px solid #DDD5CA' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, paddingRight: 10, borderRight: '1px solid var(--color-border)' }}>
               <span style={{
                 background: '#C4622D', color: '#FFFFFF',
                 fontSize: 10.5, fontFamily: 'IBM Plex Mono, monospace', fontWeight: 600,
@@ -1260,7 +1291,7 @@ export const CaseDashboard: React.FC = () => {
               }}>
                 {selectedCaseIds.size}
               </span>
-              <span style={{ fontSize: 11.5, fontWeight: 600, color: '#2A2420', fontFamily: 'Inter, sans-serif' }}>
+              <span style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--color-text-primary)', fontFamily: 'Inter, sans-serif' }}>
                 Selected
               </span>
             </div>
@@ -1282,7 +1313,7 @@ export const CaseDashboard: React.FC = () => {
             </div>
 
             {/* Bulk Priority */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 4, paddingLeft: 6, borderLeft: '1px solid #DDD5CA' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4, paddingLeft: 6, borderLeft: '1px solid var(--color-border)' }}>
               <span className="data-label" style={{ fontSize: '0.6rem' }}>Priority:</span>
               {(['critical', 'high', 'medium'] as const).map(pr => (
                 <button
@@ -1298,19 +1329,19 @@ export const CaseDashboard: React.FC = () => {
             </div>
 
             {/* Bulk Delete */}
-            <div style={{ paddingLeft: 6, borderLeft: '1px solid #DDD5CA' }}>
+            <div style={{ paddingLeft: 6, borderLeft: '1px solid var(--color-border)' }}>
               <button
                 type="button"
                 onClick={handleBulkDeleteRequest}
                 style={{
                   display: 'flex', alignItems: 'center', gap: 5,
-                  background: '#B5392415', border: '1px solid #B5392440',
-                  color: '#B53924', borderRadius: 4, padding: '4px 10px',
+                  background: 'var(--color-status-flagged-bg)', border: '1px solid var(--color-status-flagged-border)',
+                  color: 'var(--color-status-flagged)', borderRadius: 4, padding: '4px 10px',
                   fontSize: 10.5, fontWeight: 600, cursor: 'pointer',
                   fontFamily: 'Inter, sans-serif',
                 }}
               >
-                <Trash2 className="w-3.5 h-3.5 text-[#B53924]" />
+                <Trash2 className="w-3.5 h-3.5 text-[var(--color-status-flagged)]" />
                 <span>Delete ({selectedCaseIds.size})</span>
               </button>
             </div>
@@ -1321,7 +1352,7 @@ export const CaseDashboard: React.FC = () => {
               onClick={() => setSelectedCaseIds(new Set())}
               style={{
                 border: 'none', background: 'transparent',
-                color: '#7A6F63', cursor: 'pointer', padding: '4px',
+                color: 'var(--color-text-secondary)', cursor: 'pointer', padding: '4px',
                 display: 'flex', alignItems: 'center', gap: 3,
                 fontSize: 11,
               }}
@@ -1351,3 +1382,4 @@ export const CaseDashboard: React.FC = () => {
     </div>
   );
 };
+export default CaseDashboard;

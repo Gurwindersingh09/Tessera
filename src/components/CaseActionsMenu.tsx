@@ -88,8 +88,8 @@ export const CaseActionsMenu: React.FC<CaseActionsMenuProps> = ({
           height: 26,
           borderRadius: 4,
           border: isOpen ? '1px solid #C4622D' : '1px solid transparent',
-          background: isOpen ? '#EDE5D8' : 'transparent',
-          color: isOpen ? '#C4622D' : '#7A6F63',
+          background: isOpen ? 'var(--color-bg-hover)' : 'transparent',
+          color: isOpen ? '#C4622D' : 'var(--color-text-secondary)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -98,16 +98,16 @@ export const CaseActionsMenu: React.FC<CaseActionsMenuProps> = ({
         }}
         onMouseEnter={(e) => {
           if (!isOpen) {
-            e.currentTarget.style.borderColor = '#DDD5CA';
-            e.currentTarget.style.background = '#EDE5D8';
-            e.currentTarget.style.color = '#2A2420';
+            e.currentTarget.style.borderColor = 'var(--color-border)';
+            e.currentTarget.style.background = 'var(--color-bg-hover)';
+            e.currentTarget.style.color = 'var(--color-text-primary)';
           }
         }}
         onMouseLeave={(e) => {
           if (!isOpen) {
             e.currentTarget.style.borderColor = 'transparent';
             e.currentTarget.style.background = 'transparent';
-            e.currentTarget.style.color = '#7A6F63';
+            e.currentTarget.style.color = 'var(--color-text-secondary)';
           }
         }}
       >
@@ -129,10 +129,10 @@ export const CaseActionsMenu: React.FC<CaseActionsMenuProps> = ({
               left: alignRight ? 'auto' : 0,
               marginTop: 4,
               width: 210,
-              background: '#FFFFFF',
-              border: '1px solid #DDD5CA',
+              background: 'var(--color-bg-raised)',
+              border: '1px solid var(--color-border)',
               borderRadius: 6,
-              boxShadow: '0 6px 20px rgba(42, 36, 32, 0.12)',
+              boxShadow: 'var(--shadow-dropdown)',
               zIndex: 900,
               overflow: 'visible',
               display: 'flex',
@@ -143,15 +143,15 @@ export const CaseActionsMenu: React.FC<CaseActionsMenuProps> = ({
             {/* Header / Case ID tag */}
             <div style={{
               padding: '6px 12px 4px',
-              borderBottom: '1px solid #DDD5CA60',
+              borderBottom: '1px solid var(--color-border)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
             }}>
-              <span className="data-label" style={{ fontSize: '0.58rem', color: '#8C3D1A' }}>
+              <span className="data-label" style={{ fontSize: '0.58rem', color: '#C4622D' }}>
                 Case Action Menu
               </span>
-              <span style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 10, color: '#7A6F63' }}>
+              <span style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 10, color: 'var(--color-text-muted)' }}>
                 {caseData.id}
               </span>
             </div>
@@ -169,7 +169,7 @@ export const CaseActionsMenu: React.FC<CaseActionsMenuProps> = ({
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                   width: '100%', padding: '7px 12px', fontSize: 11.5,
                   border: 'none', background: 'transparent', textAlign: 'left',
-                  cursor: 'pointer', color: '#2A2420', fontFamily: 'Inter, sans-serif',
+                  cursor: 'pointer', color: 'var(--color-text-primary)', fontFamily: 'Inter, sans-serif',
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -191,19 +191,19 @@ export const CaseActionsMenu: React.FC<CaseActionsMenuProps> = ({
                 style={{
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                   width: '100%', padding: '7px 12px', fontSize: 11.5,
-                  border: 'none', background: activeSubmenu === 'status' ? '#FAF6F0' : 'transparent',
-                  textAlign: 'left', cursor: 'pointer', color: '#2A2420', fontFamily: 'Inter, sans-serif',
+                  border: 'none', background: activeSubmenu === 'status' ? 'var(--color-bg-hover)' : 'transparent',
+                  textAlign: 'left', cursor: 'pointer', color: 'var(--color-text-primary)', fontFamily: 'Inter, sans-serif',
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <Activity className="w-3.5 h-3.5 text-[#8C3D1A]" />
+                  <Activity className="w-3.5 h-3.5 text-[#C4622D]" />
                   <span>Change Status</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <span style={{ fontSize: 10, color: '#7A6F63', textTransform: 'capitalize' }}>
+                  <span style={{ fontSize: 10, color: 'var(--color-text-secondary)', textTransform: 'capitalize' }}>
                     {caseData.status}
                   </span>
-                  <ChevronRight className="w-3 h-3 text-[#A89F93]" />
+                  <ChevronRight className="w-3 h-3 text-[var(--color-text-muted)]" />
                 </div>
               </button>
 
@@ -221,19 +221,19 @@ export const CaseActionsMenu: React.FC<CaseActionsMenuProps> = ({
                     marginRight: 4,
                     marginLeft: 4,
                     width: 140,
-                    background: '#FFFFFF',
-                    border: '1px solid #DDD5CA',
+                    background: 'var(--color-bg-raised)',
+                    border: '1px solid var(--color-border)',
                     borderRadius: 6,
-                    boxShadow: '0 4px 16px rgba(42, 36, 32, 0.12)',
+                    boxShadow: 'var(--shadow-dropdown)',
                     padding: '4px 0',
                     zIndex: 910,
                   }}
                 >
                   {[
-                    { key: 'active', label: 'Active', color: '#C4622D' },
-                    { key: 'flagged', label: 'Flagged', color: '#B53924' },
-                    { key: 'closed', label: 'Closed', color: '#3D7A4A' },
-                    { key: 'archived', label: 'Archived', color: '#7A6F63' },
+                    { key: 'active', label: 'Active', color: 'var(--color-status-active)' },
+                    { key: 'flagged', label: 'Flagged', color: 'var(--color-status-flagged)' },
+                    { key: 'closed', label: 'Closed', color: 'var(--color-status-closed)' },
+                    { key: 'archived', label: 'Archived', color: 'var(--color-status-muted)' },
                   ].map((st) => (
                     <button
                       key={st.key}
@@ -247,8 +247,8 @@ export const CaseActionsMenu: React.FC<CaseActionsMenuProps> = ({
                       style={{
                         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                         width: '100%', padding: '6px 12px', fontSize: 11,
-                        border: 'none', background: caseData.status === st.key ? '#FAF6F0' : 'transparent',
-                        cursor: 'pointer', color: '#2A2420', fontFamily: 'Inter, sans-serif',
+                        border: 'none', background: caseData.status === st.key ? 'var(--color-bg-hover)' : 'transparent',
+                        cursor: 'pointer', color: 'var(--color-text-primary)', fontFamily: 'Inter, sans-serif',
                       }}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -274,8 +274,8 @@ export const CaseActionsMenu: React.FC<CaseActionsMenuProps> = ({
                 style={{
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                   width: '100%', padding: '7px 12px', fontSize: 11.5,
-                  border: 'none', background: activeSubmenu === 'priority' ? '#FAF6F0' : 'transparent',
-                  textAlign: 'left', cursor: 'pointer', color: '#2A2420', fontFamily: 'Inter, sans-serif',
+                  border: 'none', background: activeSubmenu === 'priority' ? 'var(--color-bg-hover)' : 'transparent',
+                  textAlign: 'left', cursor: 'pointer', color: 'var(--color-text-primary)', fontFamily: 'Inter, sans-serif',
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -283,10 +283,10 @@ export const CaseActionsMenu: React.FC<CaseActionsMenuProps> = ({
                   <span>Change Priority</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <span style={{ fontSize: 10, color: '#7A6F63', textTransform: 'capitalize' }}>
+                  <span style={{ fontSize: 10, color: 'var(--color-text-secondary)', textTransform: 'capitalize' }}>
                     {caseData.priority}
                   </span>
-                  <ChevronRight className="w-3 h-3 text-[#A89F93]" />
+                  <ChevronRight className="w-3 h-3 text-[var(--color-text-muted)]" />
                 </div>
               </button>
 
@@ -304,19 +304,19 @@ export const CaseActionsMenu: React.FC<CaseActionsMenuProps> = ({
                     marginRight: 4,
                     marginLeft: 4,
                     width: 140,
-                    background: '#FFFFFF',
-                    border: '1px solid #DDD5CA',
+                    background: 'var(--color-bg-raised)',
+                    border: '1px solid var(--color-border)',
                     borderRadius: 6,
-                    boxShadow: '0 4px 16px rgba(42, 36, 32, 0.12)',
+                    boxShadow: 'var(--shadow-dropdown)',
                     padding: '4px 0',
                     zIndex: 910,
                   }}
                 >
                   {[
-                    { key: 'critical', label: 'Critical', color: '#B53924' },
-                    { key: 'high', label: 'High', color: '#C4622D' },
-                    { key: 'medium', label: 'Medium', color: '#D4854A' },
-                    { key: 'low', label: 'Low', color: '#7A6F63' },
+                    { key: 'critical', label: 'Critical', color: 'var(--color-status-flagged)' },
+                    { key: 'high', label: 'High', color: 'var(--color-status-active)' },
+                    { key: 'medium', label: 'Medium', color: 'var(--color-status-warning)' },
+                    { key: 'low', label: 'Low', color: 'var(--color-border-strong)' },
                   ].map((pr) => (
                     <button
                       key={pr.key}
@@ -330,8 +330,8 @@ export const CaseActionsMenu: React.FC<CaseActionsMenuProps> = ({
                       style={{
                         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                         width: '100%', padding: '6px 12px', fontSize: 11,
-                        border: 'none', background: caseData.priority === pr.key ? '#FAF6F0' : 'transparent',
-                        cursor: 'pointer', color: '#2A2420', fontFamily: 'Inter, sans-serif',
+                        border: 'none', background: caseData.priority === pr.key ? 'var(--color-bg-hover)' : 'transparent',
+                        cursor: 'pointer', color: 'var(--color-text-primary)', fontFamily: 'Inter, sans-serif',
                       }}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -357,23 +357,23 @@ export const CaseActionsMenu: React.FC<CaseActionsMenuProps> = ({
                 style={{
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                   width: '100%', padding: '7px 12px', fontSize: 11.5,
-                  border: 'none', background: activeSubmenu === 'reassign' ? '#FAF6F0' : 'transparent',
-                  textAlign: 'left', cursor: 'pointer', color: '#2A2420', fontFamily: 'Inter, sans-serif',
+                  border: 'none', background: activeSubmenu === 'reassign' ? 'var(--color-bg-hover)' : 'transparent',
+                  textAlign: 'left', cursor: 'pointer', color: 'var(--color-text-primary)', fontFamily: 'Inter, sans-serif',
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <UserPlus className="w-3.5 h-3.5 text-[#6B2E12]" />
-                  <span>Reassign Lead</span>
+                  <UserPlus className="w-3.5 h-3.5 text-[#C4622D]" />
+                  <span>Reassign</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <span style={{ fontSize: 10, color: '#7A6F63' }}>
-                    {caseData.investigator?.split(' ')[0] || 'Lead'}
+                  <span style={{ fontSize: 10, color: 'var(--color-text-secondary)', maxWidth: 65, textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+                    {caseData.investigator || 'Unassigned'}
                   </span>
-                  <ChevronRight className="w-3 h-3 text-[#A89F93]" />
+                  <ChevronRight className="w-3 h-3 text-[var(--color-text-muted)]" />
                 </div>
               </button>
 
-              {/* Investigator Picker Submenu */}
+              {/* Reassign Submenu */}
               {activeSubmenu === 'reassign' && (
                 <motion.div
                   initial={{ opacity: 0, x: -6 }}
@@ -381,43 +381,44 @@ export const CaseActionsMenu: React.FC<CaseActionsMenuProps> = ({
                   transition={{ duration: 0.12 }}
                   style={{
                     position: 'absolute',
-                    top: -40,
+                    top: 0,
                     right: alignRight ? '100%' : 'auto',
                     left: alignRight ? 'auto' : '100%',
                     marginRight: 4,
                     marginLeft: 4,
                     width: 220,
-                    background: '#FFFFFF',
-                    border: '1px solid #DDD5CA',
+                    background: 'var(--color-bg-raised)',
+                    border: '1px solid var(--color-border)',
                     borderRadius: 6,
-                    boxShadow: '0 4px 20px rgba(42, 36, 32, 0.14)',
-                    padding: '8px',
+                    boxShadow: 'var(--shadow-dropdown)',
+                    padding: '6px 0',
                     zIndex: 910,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 6,
                   }}
                 >
-                  <div style={{ position: 'relative' }}>
-                    <Search className="w-3 h-3 text-[#A89F93] absolute left-2 top-2" />
-                    <input
-                      type="text"
-                      placeholder="Search investigator..."
-                      value={investigatorQuery}
-                      onChange={(e) => setInvestigatorQuery(e.target.value)}
-                      onClick={(e) => e.stopPropagation()}
-                      style={{
-                        width: '100%',
-                        padding: '4px 6px 4px 20px',
-                        fontSize: 10.5,
-                        borderRadius: 4,
-                        border: '1px solid #DDD5CA',
-                      }}
-                      autoFocus
-                    />
+                  {/* Search Filter input */}
+                  <div style={{ padding: '0 8px 6px', borderBottom: '1px solid var(--color-border)' }}>
+                    <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                      <Search className="w-3 h-3 text-[var(--color-text-muted)] absolute left-2" />
+                      <input
+                        type="text"
+                        placeholder="Search analyst..."
+                        value={investigatorQuery}
+                        onChange={(e) => setInvestigatorQuery(e.target.value)}
+                        onClick={(e) => e.stopPropagation()}
+                        style={{
+                          width: '100%',
+                          fontSize: 10.5,
+                          padding: '4px 6px 4px 22px',
+                          border: '1px solid var(--color-border)',
+                          borderRadius: 4,
+                          background: 'var(--color-bg-surface)',
+                          color: 'var(--color-text-primary)',
+                        }}
+                      />
+                    </div>
                   </div>
 
-                  <div style={{ maxHeight: 150, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <div style={{ maxHeight: 180, overflowY: 'auto' }}>
                     {filteredInvestigators.map((inv) => (
                       <button
                         key={inv.name}
@@ -427,32 +428,29 @@ export const CaseActionsMenu: React.FC<CaseActionsMenuProps> = ({
                           setIsOpen(false);
                           setActiveSubmenu('none');
                         }}
+                        className="case-menu-item"
                         style={{
-                          display: 'flex', alignItems: 'center', gap: 8,
-                          padding: '5px 8px', borderRadius: 4,
-                          border: 'none', background: caseData.investigator === inv.name ? '#FAF6F0' : 'transparent',
-                          cursor: 'pointer', textAlign: 'left',
+                          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                          width: '100%', padding: '6px 12px', fontSize: 11,
+                          border: 'none', background: caseData.investigator === inv.name ? 'var(--color-bg-hover)' : 'transparent',
+                          cursor: 'pointer', color: 'var(--color-text-primary)', textAlign: 'left',
                         }}
-                        onMouseEnter={(e) => { e.currentTarget.style.background = '#F3EDE4'; }}
-                        onMouseLeave={(e) => { e.currentTarget.style.background = caseData.investigator === inv.name ? '#FAF6F0' : 'transparent'; }}
                       >
-                        <div style={{
-                          width: 20, height: 20, borderRadius: '50%',
-                          background: '#F3EDE4', border: '1px solid #DDD5CA',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          fontSize: 8.5, fontWeight: 600, color: '#7A6F63', flexShrink: 0,
-                        }}>
-                          {inv.initials}
-                        </div>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: 11, fontWeight: 600, color: '#2A2420', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            {inv.name}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                          <div style={{
+                            width: 18, height: 18, borderRadius: '50%',
+                            background: 'var(--color-bg-surface)', border: '1px solid var(--color-border)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            fontSize: 8.5, fontWeight: 600, color: '#C4622D',
+                          }}>
+                            {inv.initials}
                           </div>
-                          <div style={{ fontSize: 9, color: '#7A6F63', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            {inv.role}
+                          <div>
+                            <div style={{ fontWeight: 500, color: 'var(--color-text-primary)' }}>{inv.name}</div>
+                            <div style={{ fontSize: 9, color: 'var(--color-text-secondary)' }}>{inv.role}</div>
                           </div>
                         </div>
-                        {caseData.investigator === inv.name && <Check className="w-3 h-3 text-[#C4622D] flex-shrink-0" />}
+                        {caseData.investigator === inv.name && <Check className="w-3 h-3 text-[#C4622D]" />}
                       </button>
                     ))}
                   </div>
@@ -460,15 +458,13 @@ export const CaseActionsMenu: React.FC<CaseActionsMenuProps> = ({
               )}
             </div>
 
-            {/* Hairline divider */}
-            <div style={{ height: 1, background: '#DDD5CA', margin: '4px 0' }} />
+            <div style={{ height: 1, background: 'var(--color-border)', margin: '3px 0' }} />
 
             {/* Option: Delete Case */}
             <button
               type="button"
               onClick={() => {
                 setIsOpen(false);
-                setActiveSubmenu('none');
                 onDeleteRequest(caseData);
               }}
               className="case-menu-item-destructive"
@@ -476,11 +472,11 @@ export const CaseActionsMenu: React.FC<CaseActionsMenuProps> = ({
                 display: 'flex', alignItems: 'center', gap: 8,
                 width: '100%', padding: '7px 12px', fontSize: 11.5,
                 border: 'none', background: 'transparent', textAlign: 'left',
-                cursor: 'pointer', color: '#B53924', fontFamily: 'Inter, sans-serif',
+                cursor: 'pointer', color: 'var(--color-status-flagged)', fontFamily: 'Inter, sans-serif',
               }}
             >
-              <Trash2 className="w-3.5 h-3.5 text-[#B53924]" />
-              <span>Delete Case</span>
+              <Trash2 className="w-3.5 h-3.5 text-[var(--color-status-flagged)]" />
+              <span>Delete Case File</span>
             </button>
           </motion.div>
         )}

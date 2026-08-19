@@ -73,9 +73,9 @@ export const AlertsPage: React.FC = () => {
       case 'footprint':
         return <Fingerprint className="w-4 h-4 text-[#D4854A]" />;
       case 'anomaly':
-        return <AlertTriangle className="w-4 h-4 text-[#B53924] dark:text-[#E05A44]" />;
+        return <AlertTriangle className="w-4 h-4 text-[var(--color-status-flagged)]" />;
       case 'status_change':
-        return <RefreshCw className="w-4 h-4 text-[#7A6F63] dark:text-[#A8998A]" />;
+        return <RefreshCw className="w-4 h-4 text-[var(--color-text-secondary)]" />;
     }
   };
 
@@ -88,9 +88,9 @@ export const AlertsPage: React.FC = () => {
             fontFamily: 'IBM Plex Mono, monospace',
             padding: '2px 7px',
             borderRadius: 3,
-            background: 'rgba(181, 57, 36, 0.12)',
+            background: 'var(--color-status-flagged-bg)',
             color: 'var(--color-status-flagged)',
-            border: '1px solid rgba(181, 57, 36, 0.25)',
+            border: '1px solid var(--color-status-flagged-border)',
             fontWeight: 600,
           }}>
             CRITICAL
@@ -103,9 +103,9 @@ export const AlertsPage: React.FC = () => {
             fontFamily: 'IBM Plex Mono, monospace',
             padding: '2px 7px',
             borderRadius: 3,
-            background: 'rgba(212, 133, 74, 0.12)',
+            background: 'var(--color-status-warning-bg)',
             color: 'var(--color-status-warning)',
-            border: '1px solid rgba(212, 133, 74, 0.25)',
+            border: '1px solid var(--color-status-warning-border)',
             fontWeight: 600,
           }}>
             HIGH
@@ -118,9 +118,9 @@ export const AlertsPage: React.FC = () => {
             fontFamily: 'IBM Plex Mono, monospace',
             padding: '2px 7px',
             borderRadius: 3,
-            background: 'rgba(196, 98, 45, 0.1)',
-            color: '#C4622D',
-            border: '1px solid rgba(196, 98, 45, 0.2)',
+            background: 'var(--color-status-active-bg)',
+            color: 'var(--color-status-active)',
+            border: '1px solid var(--color-status-active-border)',
             fontWeight: 500,
           }}>
             MED
@@ -168,6 +168,7 @@ export const AlertsPage: React.FC = () => {
                 fontFamily: '"Fraunces", Georgia, serif',
                 letterSpacing: '-0.02em',
                 lineHeight: 1.2,
+                color: 'var(--color-text-primary)',
               }}
             >
               Alerts & Triggers
@@ -180,9 +181,9 @@ export const AlertsPage: React.FC = () => {
                   fontWeight: 600,
                   padding: '3px 8px',
                   borderRadius: 12,
-                  background: 'rgba(196, 98, 45, 0.15)',
-                  color: '#C4622D',
-                  border: '1px solid rgba(196, 98, 45, 0.3)',
+                  background: 'var(--color-status-active-bg)',
+                  color: 'var(--color-status-active)',
+                  border: '1px solid var(--color-status-active-border)',
                 }}
               >
                 {unreadCount} unread
@@ -287,7 +288,7 @@ export const AlertsPage: React.FC = () => {
             >
               <ShieldAlert className="w-5 h-5" style={{ color: 'var(--color-text-muted)' }} />
             </div>
-            <h3 style={{ fontSize: 16, fontWeight: 600, fontFamily: 'Inter, sans-serif' }}>
+            <h3 style={{ fontSize: 16, fontWeight: 600, fontFamily: 'Inter, sans-serif', color: 'var(--color-text-primary)' }}>
               No alerts in this view
             </h3>
             <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', marginTop: 4, maxWidth: 320 }}>
@@ -324,7 +325,7 @@ export const AlertsPage: React.FC = () => {
                 {/* Rows Container */}
                 <div 
                   className="rounded-md border overflow-hidden shadow-sm"
-                  style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-raised)' }}
+                  style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-surface)' }}
                 >
                   {items.map((alert, idx) => {
                     const isExpanded = expandedId === alert.id;
@@ -335,7 +336,7 @@ export const AlertsPage: React.FC = () => {
                         key={alert.id}
                         style={{
                           borderBottom: idx < items.length - 1 ? '1px solid var(--color-border)' : 'none',
-                          background: alert.isRead ? 'var(--color-bg-raised)' : 'var(--color-bg-surface)',
+                          background: alert.isRead ? 'var(--color-bg-surface)' : 'var(--color-bg-raised)',
                           transition: 'background-color 150ms ease',
                         }}
                       >
@@ -352,7 +353,7 @@ export const AlertsPage: React.FC = () => {
                                   width: 7,
                                   height: 7,
                                   borderRadius: '50%',
-                                  background: alert.severity === 'critical' ? 'var(--color-status-flagged)' : '#C4622D',
+                                  background: alert.severity === 'critical' ? 'var(--color-status-flagged)' : 'var(--color-status-active)',
                                 }} 
                               />
                             ) : (
@@ -398,10 +399,10 @@ export const AlertsPage: React.FC = () => {
                                     fontSize: '0.62rem',
                                     fontFamily: 'IBM Plex Mono, monospace',
                                     color: '#C4622D',
-                                    background: 'rgba(196, 98, 45, 0.1)',
+                                    background: 'var(--color-status-active-bg)',
                                     padding: '1px 5px',
                                     borderRadius: 3,
-                                    border: '1px solid rgba(196, 98, 45, 0.2)',
+                                    border: '1px solid var(--color-status-active-border)',
                                   }}
                                 >
                                   {alert.caseId}
@@ -447,7 +448,7 @@ export const AlertsPage: React.FC = () => {
                           >
                             <button
                               onClick={() => setActiveKebabId(isKebabOpen ? null : alert.id)}
-                              className="p-1 rounded opacity-60 hover:opacity-100 hover:bg-[var(--color-bg-surface)] text-[var(--color-text-secondary)] transition-opacity"
+                              className="p-1 rounded opacity-60 hover:opacity-100 hover:bg-[var(--color-bg-hover)] text-[var(--color-text-secondary)] transition-opacity"
                             >
                               <MoreVertical className="w-4 h-4" />
                             </button>
@@ -462,7 +463,7 @@ export const AlertsPage: React.FC = () => {
                                   background: 'var(--color-bg-raised)',
                                   border: '1px solid var(--color-border)',
                                   borderRadius: 4,
-                                  boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15)',
+                                  boxShadow: 'var(--shadow-dropdown)',
                                   zIndex: 30,
                                   overflow: 'hidden',
                                 }}
@@ -552,8 +553,8 @@ export const AlertsPage: React.FC = () => {
                                         fontSize: 12,
                                         fontWeight: 600,
                                         color: '#C4622D',
-                                        background: 'rgba(196, 98, 45, 0.12)',
-                                        border: '1px solid rgba(196, 98, 45, 0.25)',
+                                        background: 'var(--color-status-active-bg)',
+                                        border: '1px solid var(--color-status-active-border)',
                                         padding: '2px 8px',
                                         borderRadius: 3,
                                       }}>
@@ -581,7 +582,7 @@ export const AlertsPage: React.FC = () => {
                                     {alert.details.bankAccounts && (
                                       <div>
                                         <div className="data-label">Associated Accounts</div>
-                                        <div style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 11, color: '#8C3D1A', marginTop: 2 }}>
+                                        <div style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 11, color: 'var(--color-status-flagged)', marginTop: 2 }}>
                                           {alert.details.bankAccounts.join(', ')}
                                         </div>
                                       </div>
@@ -599,7 +600,7 @@ export const AlertsPage: React.FC = () => {
                                     {alert.details.ipAddresses && (
                                       <div>
                                         <div className="data-label">Gateway IP Leases</div>
-                                        <div style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 11, color: '#6B2E12', marginTop: 2 }}>
+                                        <div style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 11, color: '#8C3D1A', marginTop: 2 }}>
                                           {alert.details.ipAddresses.join(', ')}
                                         </div>
                                       </div>

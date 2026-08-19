@@ -38,8 +38,8 @@ export const CaseDeleteModal: React.FC<CaseDeleteModalProps> = ({
           style={{
             position: 'fixed',
             inset: 0,
-            background: 'rgba(42, 36, 32, 0.55)',
-            backdropFilter: 'blur(2px)',
+            background: 'rgba(0, 0, 0, 0.65)',
+            backdropFilter: 'blur(3px)',
           }}
         />
 
@@ -55,15 +55,15 @@ export const CaseDeleteModal: React.FC<CaseDeleteModalProps> = ({
           style={{
             position: 'relative',
             zIndex: 10000,
-            background: '#FFFFFF',
-            border: '1px solid #DDD5CA',
-            borderTop: '3px solid #B53924',
+            background: 'var(--color-bg-surface)',
+            border: '1px solid var(--color-border)',
+            borderTop: '3px solid var(--color-status-flagged)',
             borderRadius: 8,
             width: '100%',
             maxWidth: 440,
             margin: '0 20px',
             padding: '24px 26px',
-            boxShadow: '0 8px 30px rgba(42, 36, 32, 0.18)',
+            boxShadow: 'var(--shadow-dropdown)',
             display: 'flex',
             flexDirection: 'column',
             gap: 16,
@@ -74,14 +74,14 @@ export const CaseDeleteModal: React.FC<CaseDeleteModalProps> = ({
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <div style={{
                 width: 36, height: 36, borderRadius: 6,
-                background: '#B5392415', border: '1px solid #B5392435',
+                background: 'var(--color-status-flagged-bg)', border: '1px solid var(--color-status-flagged-border)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
-                <Trash2 className="w-5 h-5 text-[#B53924]" />
+                <Trash2 className="w-5 h-5 text-[var(--color-status-flagged)]" />
               </div>
               <div>
-                <span className="data-label" style={{ color: '#B53924', fontWeight: 600 }}>Permanent Action</span>
-                <h3 id="delete-case-title" style={{ fontSize: 16, fontWeight: 600, color: '#2A2420', fontFamily: '"Fraunces", Georgia, serif', marginTop: 1 }}>
+                <span className="data-label" style={{ color: 'var(--color-status-flagged)', fontWeight: 600 }}>Permanent Action</span>
+                <h3 id="delete-case-title" style={{ fontSize: 16, fontWeight: 600, color: 'var(--color-text-primary)', fontFamily: '"Fraunces", Georgia, serif', marginTop: 1 }}>
                   {isBulk ? `Delete ${count} Selected Cases` : 'Delete Case File'}
                 </h3>
               </div>
@@ -90,21 +90,21 @@ export const CaseDeleteModal: React.FC<CaseDeleteModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              style={{ border: 'none', background: 'transparent', color: '#7A6F63', cursor: 'pointer', padding: 2 }}
+              style={{ border: 'none', background: 'transparent', color: 'var(--color-text-secondary)', cursor: 'pointer', padding: 2 }}
             >
-              <X className="w-4 h-4 hover:text-[#2A2420]" />
+              <X className="w-4 h-4 hover:text-[var(--color-text-primary)]" />
             </button>
           </div>
 
           {/* Description */}
-          <div style={{ fontSize: 12.5, color: '#4A4340', lineHeight: 1.5, fontFamily: 'Inter, sans-serif' }}>
+          <div style={{ fontSize: 12.5, color: 'var(--color-text-secondary)', lineHeight: 1.5, fontFamily: 'Inter, sans-serif' }}>
             {isBulk ? (
               <>
-                Are you sure you want to delete <strong style={{ color: '#2A2420' }}>{count} selected case files</strong>? This will remove all associated graph relationships and anomalies from the active workspace. This cannot be undone.
+                Are you sure you want to delete <strong style={{ color: 'var(--color-text-primary)' }}>{count} selected case files</strong>? This will remove all associated graph relationships and anomalies from the active workspace. This cannot be undone.
               </>
             ) : targetCase ? (
               <>
-                Delete <strong style={{ color: '#8C3D1A', fontFamily: 'IBM Plex Mono, monospace' }}>{targetCase.id}</strong> — <strong style={{ color: '#2A2420' }}>{targetCase.title}</strong>? This cannot be undone.
+                Delete <strong style={{ color: '#C4622D', fontFamily: 'IBM Plex Mono, monospace' }}>{targetCase.id}</strong> — <strong style={{ color: 'var(--color-text-primary)' }}>{targetCase.title}</strong>? This cannot be undone.
               </>
             ) : null}
           </div>
@@ -112,11 +112,11 @@ export const CaseDeleteModal: React.FC<CaseDeleteModalProps> = ({
           {/* Warning Banner */}
           <div style={{
             display: 'flex', alignItems: 'center', gap: 8,
-            background: '#FAF6F0', border: '1px solid #DDD5CA',
+            background: 'var(--color-bg-base)', border: '1px solid var(--color-border)',
             borderRadius: 4, padding: '8px 12px',
           }}>
-            <AlertTriangle className="w-4 h-4 text-[#D4854A] flex-shrink-0" />
-            <span style={{ fontSize: 11, color: '#7A6F63' }}>
+            <AlertTriangle className="w-4 h-4 text-[var(--color-status-warning)] flex-shrink-0" />
+            <span style={{ fontSize: 11, color: 'var(--color-text-secondary)' }}>
               You will have an undo window of 5 seconds to revert this deletion.
             </span>
           </div>
@@ -138,22 +138,23 @@ export const CaseDeleteModal: React.FC<CaseDeleteModalProps> = ({
                 onClose();
               }}
               style={{
-                background: '#B53924',
+                background: 'var(--color-status-flagged)',
+                border: '1px solid var(--color-status-flagged)',
                 color: '#FFFFFF',
-                border: '1px solid #B53924',
                 borderRadius: 4,
-                padding: '8px 18px',
+                padding: '8px 16px',
                 fontSize: 11.5,
                 fontWeight: 600,
-                letterSpacing: '0.04em',
                 cursor: 'pointer',
-                transition: 'background-color 150ms ease',
                 fontFamily: 'Inter, sans-serif',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                transition: 'opacity 120ms',
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = '#8A2517'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = '#B53924'; }}
             >
-              {isBulk ? `Delete ${count} Cases` : 'Delete Case'}
+              <Trash2 className="w-3.5 h-3.5" />
+              <span>Confirm Deletion</span>
             </button>
           </div>
         </motion.div>

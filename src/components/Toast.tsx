@@ -43,22 +43,22 @@ export const ToastContainer: React.FC<ToastContainerProps> = ({ toasts, onDismis
             transition={{ duration: 0.25, ease: EASE_SHARP }}
             style={{
               pointerEvents: 'auto',
-              background: '#FFFFFF',
-              border: '1px solid #DDD5CA',
+              background: 'var(--color-bg-raised)',
+              border: '1px solid var(--color-border)',
               borderLeft: `4px solid ${
                 t.type === 'error'
-                  ? '#B53924'
+                  ? 'var(--color-status-flagged)'
                   : t.type === 'warning'
-                  ? '#D4854A'
+                  ? 'var(--color-status-warning)'
                   : t.type === 'success'
-                  ? '#3D7A4A'
+                  ? 'var(--color-status-closed)'
                   : '#C4622D'
               }`,
               borderRadius: 6,
               padding: '10px 14px',
               minWidth: 280,
               maxWidth: 380,
-              boxShadow: '0 4px 16px rgba(42, 36, 32, 0.12)',
+              boxShadow: 'var(--shadow-dropdown)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
@@ -68,21 +68,21 @@ export const ToastContainer: React.FC<ToastContainerProps> = ({ toasts, onDismis
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
               <div style={{ marginTop: 2, flexShrink: 0 }}>
                 {t.type === 'error' ? (
-                  <AlertCircle className="w-4 h-4 text-[#B53924]" />
+                  <AlertCircle className="w-4 h-4 text-[var(--color-status-flagged)]" />
                 ) : t.type === 'warning' ? (
-                  <AlertCircle className="w-4 h-4 text-[#D4854A]" />
+                  <AlertCircle className="w-4 h-4 text-[var(--color-status-warning)]" />
                 ) : t.type === 'success' ? (
-                  <CheckCircle2 className="w-4 h-4 text-[#3D7A4A]" />
+                  <CheckCircle2 className="w-4 h-4 text-[var(--color-status-closed)]" />
                 ) : (
                   <Info className="w-4 h-4 text-[#C4622D]" />
                 )}
               </div>
               <div>
-                <div style={{ fontSize: 12, fontWeight: 600, color: '#2A2420', fontFamily: 'Inter, sans-serif' }}>
+                <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text-primary)', fontFamily: 'Inter, sans-serif' }}>
                   {t.title}
                 </div>
                 {t.description && (
-                  <div style={{ fontSize: 10.5, color: '#7A6F63', marginTop: 2, lineHeight: 1.3 }}>
+                  <div style={{ fontSize: 10.5, color: 'var(--color-text-secondary)', marginTop: 2, lineHeight: 1.3 }}>
                     {t.description}
                   </div>
                 )}
@@ -101,10 +101,10 @@ export const ToastContainer: React.FC<ToastContainerProps> = ({ toasts, onDismis
                     display: 'flex',
                     alignItems: 'center',
                     gap: 4,
-                    background: '#FAF6F0',
+                    background: 'var(--color-bg-surface)',
                     border: '1px solid #C4622D',
                     borderRadius: 4,
-                    color: '#8C3D1A',
+                    color: '#C4622D',
                     fontSize: 10,
                     fontWeight: 600,
                     padding: '3px 8px',
@@ -124,13 +124,13 @@ export const ToastContainer: React.FC<ToastContainerProps> = ({ toasts, onDismis
                 style={{
                   border: 'none',
                   background: 'transparent',
-                  color: '#A89F93',
+                  color: 'var(--color-text-muted)',
                   cursor: 'pointer',
                   padding: 2,
                 }}
                 title="Dismiss"
               >
-                <X className="w-3.5 h-3.5 hover:text-[#2A2420]" />
+                <X className="w-3.5 h-3.5 hover:text-[var(--color-text-primary)]" />
               </button>
             </div>
           </motion.div>
