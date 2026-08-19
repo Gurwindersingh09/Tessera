@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { usePhishieldStore } from '../store/usePhishieldStore';
+import { useTesseraStore } from '../store/useTesseraStore';
 
 interface PlaceholderProps {
   title: string;
@@ -10,7 +10,7 @@ interface PlaceholderProps {
 
 function PlaceholderPage({ title, path, description }: PlaceholderProps) {
   const navigate = useNavigate();
-  const { pushNavHistory } = usePhishieldStore();
+  const { pushNavHistory } = useTesseraStore();
 
   useEffect(() => {
     pushNavHistory({ id: title.toLowerCase(), label: title, path, depth: 0 });
@@ -19,7 +19,7 @@ function PlaceholderPage({ title, path, description }: PlaceholderProps) {
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: '#FAF6F0', height: '100vh', overflowY: 'auto' }}>
       <header style={{ padding: '18px 24px 14px', borderBottom: '1px solid #DDD5CA' }}>
-        <div className="data-label" style={{ marginBottom: 4 }}>Phishield / {title}</div>
+        <div className="data-label" style={{ marginBottom: 4 }}>Tessera / {title}</div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <h1 style={{ fontSize: 22, fontWeight: 600, color: '#2A2420', letterSpacing: '-0.01em', fontFamily: '"Fraunces", Georgia, serif' }}>
             {title}

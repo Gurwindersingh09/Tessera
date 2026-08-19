@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { usePhishieldStore } from '../store/usePhishieldStore';
+import { useTesseraStore } from '../store/useTesseraStore';
 import { useAnalyticsStore } from '../store/useAnalyticsStore';
 import { CaseItem } from '../types/schema';
 import { motion, useMotionValue, useTransform, animate, AnimatePresence } from 'framer-motion';
@@ -925,7 +925,7 @@ export const CaseDashboard: React.FC = () => {
     deleteBulkCases,
     restoreCase,
     restoreBulkCases,
-  } = usePhishieldStore();
+  } = useTesseraStore();
   const { setCaseId } = useAnalyticsStore();
   const clock = useLiveClock(60_000);
 
@@ -1164,7 +1164,7 @@ export const CaseDashboard: React.FC = () => {
       {/* 1. Header */}
       <header style={{ padding: '18px 24px 14px', borderBottom: '1px solid var(--color-border)', background: 'var(--color-bg-surface)', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, position: 'relative', zIndex: 1 }}>
         <div>
-          <div className="data-label" style={{ marginBottom: 4 }}>Phishield / Dashboard</div>
+          <div className="data-label" style={{ marginBottom: 4 }}>Tessera / Dashboard</div>
           <h1 style={{ fontSize: 22, fontWeight: 600, color: 'var(--color-text-primary)', letterSpacing: '-0.01em', fontFamily: '"Fraunces", Georgia, serif' }}>
             Case Overview
           </h1>

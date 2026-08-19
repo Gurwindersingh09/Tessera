@@ -154,10 +154,10 @@ interface AlertsState {
 }
 
 export const useAlertsStore = create<AlertsState>((set) => {
-  // Load initial from localStorage if available
+  // Load initial from localStorage if available (with backward-compatible migration fallback)
   let stored: AlertItem[] = INITIAL_ALERTS;
   try {
-    const raw = localStorage.getItem('phishield-alerts');
+    const raw = localStorage.getItem('tessera-alerts') || localStorage.getItem('phishield-alerts');
     if (raw) {
       stored = JSON.parse(raw);
     }
@@ -167,7 +167,7 @@ export const useAlertsStore = create<AlertsState>((set) => {
 
   const save = (alerts: AlertItem[]) => {
     try {
-      localStorage.setItem('phishield-alerts', JSON.stringify(alerts));
+      localStorage.setItem('tessera-alerts', JSON.stringify(alerts));
     } catch {
       // ignore
     }

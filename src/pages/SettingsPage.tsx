@@ -104,7 +104,7 @@ export const SettingsPage: React.FC = () => {
   const handleDownloadAuditLog = () => {
     const logData = {
       agency: 'State Cyber Crime Investigation Division',
-      node: 'PHISHIELD-PROD-DEL-01',
+      node: 'TESSERA-PROD-DEL-01',
       analyst: profile.name,
       badgeId: profile.badgeId,
       exportedAt: new Date().toISOString(),
@@ -121,7 +121,7 @@ export const SettingsPage: React.FC = () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `phishield-audit-log-${profile.badgeId}-${Date.now()}.json`;
+    a.download = `tessera-audit-log-${profile.badgeId}-${Date.now()}.json`;
     a.click();
     URL.revokeObjectURL(url);
     addToast('Activity audit log downloaded (.json)', 'info');
@@ -139,7 +139,7 @@ export const SettingsPage: React.FC = () => {
       >
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="data-label">PHISHIELD</span>
+            <span className="data-label">TESSERA</span>
             <span style={{ color: 'var(--color-text-muted)', fontSize: 10 }}>/</span>
             <span className="data-label" style={{ color: '#C4622D' }}>PREFERENCES & SECURITY</span>
           </div>

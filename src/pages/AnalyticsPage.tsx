@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { usePhishieldStore } from '../store/usePhishieldStore';
+import { useTesseraStore } from '../store/useTesseraStore';
 import { CaseItem } from '../types/schema';
 import { motion, useMotionValue, useTransform, animate, AnimatePresence } from 'framer-motion';
 import {
@@ -403,7 +403,7 @@ function ActivityHeatmap({ cases }: { cases: CaseItem[] }) {
 /* ─── Main AnalyticsPage Component ─── */
 export const AnalyticsPage: React.FC = () => {
   const navigate = useNavigate();
-  const { cases, pushNavHistory } = usePhishieldStore();
+  const { cases, pushNavHistory } = useTesseraStore();
 
   // Filter States
   const [dateRange, setDateRange] = useState<'7d' | '30d' | '90d' | 'all'>('30d');
@@ -566,7 +566,7 @@ export const AnalyticsPage: React.FC = () => {
         zIndex: 20,
       }}>
         <div>
-          <div className="data-label" style={{ marginBottom: 4 }}>Phishield / Analytics</div>
+          <div className="data-label" style={{ marginBottom: 4 }}>Tessera / Analytics</div>
           <h1 style={{ fontSize: 22, fontWeight: 600, color: 'var(--color-text-primary)', letterSpacing: '-0.01em', fontFamily: '"Fraunces", Georgia, serif' }}>
             Analytics & Telemetry
           </h1>

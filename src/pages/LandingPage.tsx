@@ -17,7 +17,8 @@ import {
   ChevronDown
 } from 'lucide-react';
 import { tsParticles } from '@tsparticles/engine';
-import { usePhishieldStore } from '../store/usePhishieldStore';
+import { useTesseraStore } from '../store/useTesseraStore';
+import { TesseraMark } from '../components/TesseraMark';
 import { ToastContainer, ToastMessage } from '../components/Toast';
 
 const EASE_SHARP: [number, number, number, number] = [0.4, 0, 0.2, 1];
@@ -83,7 +84,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   posterUrl = defaultPosterUrl
 }) => {
   const navigate = useNavigate();
-  const { hasRequestedAccess, setHasRequestedAccess } = usePhishieldStore();
+  const { hasRequestedAccess, setHasRequestedAccess } = useTesseraStore();
   const [init, setInit] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [mousePos, setMousePos] = useState({ x: -1000, y: -1000 });
@@ -194,19 +195,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           <div
             onClick={handleLogoClick}
             className="flex items-center gap-3 cursor-pointer group"
-            title="Phishield Home"
+            title="Tessera Home"
           >
-            <div style={{
-              width: 28, height: 28, borderRadius: 6,
-              background: isScrolledPastHero ? '#F3EDE4' : 'rgba(255, 255, 255, 0.18)',
-              border: isScrolledPastHero ? '1px solid #DDD5CA' : '1px solid rgba(255, 255, 255, 0.28)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              transition: 'background-color 250ms ease, border-color 250ms ease',
-            }}>
-              <span style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 13, fontWeight: 700, color: '#C4622D' }}>
-                Ψ
-              </span>
-            </div>
+            <TesseraMark size={28} />
             <div>
               <span style={{
                 fontSize: 13,
@@ -218,7 +209,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 textShadow: isScrolledPastHero ? 'none' : '0 1px 6px rgba(0, 0, 0, 0.4)',
                 transition: 'color 250ms ease, text-shadow 250ms ease',
               }}>
-                Phishield
+                Tessera
               </span>
               <span
                 className="hidden sm:inline-block ml-2 text-[10px] font-mono uppercase tracking-wider"
@@ -670,7 +661,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div style={{ display: 'flex', flexDirection: 'column', gap: 2, textAlign: 'left' }}>
             <div style={{ fontFamily: 'IBM Plex Mono, monospace', color: '#2A2420', fontWeight: 600 }}>
-              Phishield Core v2.4.0-prod · Build 8820
+              Tessera Core v2.4.0-prod · Build 8820
             </div>
             <div style={{ fontSize: 10.5, color: '#7A6F63' }}>
               Deployed for State Cyber Crime Investigation Division · Authorized Law Enforcement Personnel Only
@@ -902,7 +893,7 @@ const GetStartedDrawer = ({
               id="drawer-title"
               style={{ fontSize: 24, fontWeight: 600, color: '#2A2420', fontFamily: '"Fraunces", Georgia, serif' }}
             >
-              Request Phishield Access
+              Request Tessera Access
             </h2>
             <p style={{ fontSize: 11.5, color: '#7A6F63', marginTop: 4 }}>
               Submit agency credentials for authorized investigative access.

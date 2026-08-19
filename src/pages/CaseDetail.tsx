@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAnalyticsStore } from '../store/useAnalyticsStore';
-import { usePhishieldStore } from '../store/usePhishieldStore';
+import { useTesseraStore } from '../store/useTesseraStore';
 import { CommandBar } from '../components/CommandBar';
 import { AnomalyFeed } from '../components/AnomalyFeed';
 import { NetworkGraph } from '../components/NetworkGraph';
@@ -69,7 +69,7 @@ export const CaseDetail: React.FC = () => {
     anomalies, 
     events 
   } = useAnalyticsStore();
-  const { cases, pushNavHistory } = usePhishieldStore();
+  const { cases, pushNavHistory } = useTesseraStore();
 
   const caseData = cases.find(c => c.id === caseId);
 

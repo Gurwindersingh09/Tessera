@@ -1,13 +1,13 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAnalyticsStore } from '../store/useAnalyticsStore';
-import { usePhishieldStore } from '../store/usePhishieldStore';
+import { useTesseraStore } from '../store/useTesseraStore';
 import { Download, Search, ChevronRight, Layers } from 'lucide-react';
 
 export const CommandBar: React.FC = () => {
   const navigate = useNavigate();
   const { caseId, setCaseId } = useAnalyticsStore();
-  const { cases } = usePhishieldStore();
+  const { cases } = useTesseraStore();
 
   const currentCase = cases.find(c => c.id === caseId);
 

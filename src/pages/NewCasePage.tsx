@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { usePhishieldStore } from '../store/usePhishieldStore';
+import { useTesseraStore } from '../store/useTesseraStore';
 import { motion } from 'framer-motion';
 import { 
   PhoneCall, 
@@ -97,7 +97,7 @@ const INITIAL_SOURCES: DataSourceItem[] = [
 
 export const NewCasePage: React.FC = () => {
   const navigate = useNavigate();
-  const { addCase, pushNavHistory } = usePhishieldStore();
+  const { addCase, pushNavHistory } = useTesseraStore();
 
   const [title, setTitle] = useState('');
   const [priority, setPriority] = useState<'critical' | 'high' | 'medium' | 'low'>('high');
@@ -295,7 +295,7 @@ export const NewCasePage: React.FC = () => {
         style={{ padding: '16px 24px', borderBottom: '1px solid var(--color-border)', position: 'relative', zIndex: 1, background: 'var(--color-bg-surface)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
       >
         <div>
-          <div className="data-label" style={{ marginBottom: 4 }}>Phishield / Case Intake</div>
+          <div className="data-label" style={{ marginBottom: 4 }}>Tessera / Case Intake</div>
           <h1 style={{ fontSize: 22, fontWeight: 600, color: 'var(--color-text-primary)', letterSpacing: '-0.01em', fontFamily: '"Fraunces", Georgia, serif' }}>
             Initialize New Investigation
           </h1>
@@ -420,7 +420,7 @@ export const NewCasePage: React.FC = () => {
               </div>
 
               <p style={{ fontSize: 11, color: 'var(--color-text-secondary)', marginBottom: 16 }}>
-                Select files from your own computer or drag & drop them into the categories below. Phishield automatically sanitizes schemas and extracts knowledge graph nodes.
+                Select files from your own computer or drag & drop them into the categories below. Tessera automatically sanitizes schemas and extracts knowledge graph nodes.
               </p>
 
               {/* Grid of Dropzones */}

@@ -1,7 +1,8 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { usePhishieldStore } from '../store/usePhishieldStore';
+import { useTesseraStore } from '../store/useTesseraStore';
 import { useAnalyticsStore } from '../store/useAnalyticsStore';
+import { TesseraMark } from './TesseraMark';
 import { PanelLeftClose, PanelLeftOpen, ChevronLeft, ChevronRight } from 'lucide-react';
 
 /* ─── SVG Icons for 4 primary nav items ─────────────────────────────────────── */
@@ -36,23 +37,6 @@ const IconSettings = () => (
   </svg>
 );
 
-const PhishieldMark = () => (
-  <div style={{
-    width: 28, height: 28,
-    border: '1.5px solid #C4622D',
-    borderRadius: 4,
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    flexShrink: 0,
-    background: '#FAF6F0',
-  }}>
-    <span style={{
-      color: '#C4622D', fontSize: 13,
-      fontFamily: '"Fraunces", Georgia, serif',
-      fontWeight: 600, letterSpacing: '-0.05em',
-    }}>P</span>
-  </div>
-);
-
 const NAV_ITEMS = [
   { id: 'dashboard', label: 'Dashboard', path: '/dashboard', icon: IconDashboard },
   { id: 'analytics', label: 'Analytics', path: '/analytics', icon: IconAnalytics },
@@ -77,7 +61,7 @@ const ONLINE_TEAM = [
 export const Sidebar: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { navigationHistory, truncateNavAt, pushNavHistory, cases, sidebarCollapsed, toggleSidebarCollapse } = usePhishieldStore();
+  const { navigationHistory, truncateNavAt, pushNavHistory, cases, sidebarCollapsed, toggleSidebarCollapse } = useTesseraStore();
   const { setCaseId } = useAnalyticsStore();
 
   const currentPath = location.pathname;
@@ -140,13 +124,13 @@ export const Sidebar: React.FC = () => {
           style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}
           title="Return to Landing Page"
         >
-          <PhishieldMark />
+          <TesseraMark size={28} />
           {!sidebarCollapsed && (
             <div>
               <div style={{ color: 'var(--color-text-primary)', fontSize: 12, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', fontFamily: 'Inter, sans-serif' }}>
-                Phishield
+                Tessera
               </div>
-              <div className="data-label" style={{ marginTop: 1, fontSize: '0.58rem' }}>Intelligence Platform</div>
+              <div className="data-label" style={{ marginTop: 1, fontSize: '0.58rem' }}>Intelligence Core</div>
             </div>
           )}
         </div>

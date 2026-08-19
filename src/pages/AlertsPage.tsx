@@ -18,14 +18,14 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { useAlertsStore, AlertItem } from '../store/useAlertsStore';
-import { usePhishieldStore } from '../store/usePhishieldStore';
+import { useTesseraStore } from '../store/useTesseraStore';
 
 type FilterCategory = 'all' | 'unread' | 'lead' | 'footprint' | 'critical';
 
 export const AlertsPage: React.FC = () => {
   const navigate = useNavigate();
   const { alerts, markAsRead, markAsUnread, markAllAsRead, dismissAlert } = useAlertsStore();
-  const { pushNavHistory } = usePhishieldStore();
+  const { pushNavHistory } = useTesseraStore();
 
   const [activeFilter, setActiveFilter] = useState<FilterCategory>('all');
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -156,7 +156,7 @@ export const AlertsPage: React.FC = () => {
       >
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="data-label">PHISHIELD</span>
+            <span className="data-label">TESSERA</span>
             <span style={{ color: 'var(--color-text-muted)', fontSize: 10 }}>/</span>
             <span className="data-label" style={{ color: '#C4622D' }}>INTELLIGENCE ALERTS</span>
           </div>
