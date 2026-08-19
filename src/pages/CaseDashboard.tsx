@@ -205,13 +205,13 @@ function StatStrip({ cases }: { cases: CaseItem[] }) {
   ];
 
   return (
-    <div style={{ display: 'flex', borderBottom: '1px solid #DDD5CA', flexWrap: 'wrap', background: '#F3EDE4' }}>
+    <div style={{ display: 'flex', borderBottom: '1px solid var(--color-border)', flexWrap: 'wrap', background: 'var(--color-bg-surface)' }}>
       {stats.map((s, i) => (
         <div key={s.label} style={{
           padding: '11px 18px',
-          borderRight: i < stats.length - 1 ? '1px solid #DDD5CA' : 'none',
+          borderRight: i < stats.length - 1 ? '1px solid var(--color-border)' : 'none',
           display: 'flex', flexDirection: 'column', gap: 4, minWidth: 125, flex: '1 1 125px',
-          background: s.isHeavy ? '#FAF6F0' : 'transparent',
+          background: s.isHeavy ? 'var(--color-bg-base)' : 'transparent',
           borderTop: s.isHeavy ? `2px solid ${s.color}` : '2px solid transparent',
           position: 'relative',
         }}>
@@ -224,7 +224,7 @@ function StatStrip({ cases }: { cases: CaseItem[] }) {
                   animation: s.pulse ? 'status-pulse 2.5s ease-in-out infinite' : 'none',
                 }} />
               )}
-              <span style={{ fontWeight: s.isHeavy ? 600 : 500, color: s.isHeavy ? '#2A2420' : '#7A6F63' }}>
+              <span style={{ fontWeight: s.isHeavy ? 600 : 500, color: s.isHeavy ? 'var(--color-text-primary)' : 'var(--color-text-secondary)' }}>
                 {s.label}
               </span>
             </div>
@@ -1132,24 +1132,24 @@ export const CaseDashboard: React.FC = () => {
   return (
     <div
       className="grain-texture"
-      style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100vh', overflowY: 'auto', background: '#FAF6F0', position: 'relative' }}
+      style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100vh', overflowY: 'auto', background: 'var(--color-bg-base)', color: 'var(--color-text-primary)', position: 'relative' }}
     >
       {/* 1. Header */}
-      <header style={{ padding: '18px 24px 14px', borderBottom: '1px solid #DDD5CA', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, position: 'relative', zIndex: 1 }}>
+      <header style={{ padding: '18px 24px 14px', borderBottom: '1px solid var(--color-border)', background: 'var(--color-bg-surface)', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, position: 'relative', zIndex: 1 }}>
         <div>
           <div className="data-label" style={{ marginBottom: 4 }}>Phishield / Dashboard</div>
-          <h1 style={{ fontSize: 22, fontWeight: 600, color: '#2A2420', letterSpacing: '-0.01em', fontFamily: '"Fraunces", Georgia, serif' }}>
+          <h1 style={{ fontSize: 22, fontWeight: 600, color: 'var(--color-text-primary)', letterSpacing: '-0.01em', fontFamily: '"Fraunces", Georgia, serif' }}>
             Case Overview
           </h1>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#3D7A4A', display: 'inline-block', boxShadow: 'none' }} />
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--color-status-closed)', display: 'inline-block', boxShadow: 'none' }} />
             <span className="data-label">System Nominal</span>
           </div>
           <time
             dateTime={clock.toISOString()}
-            style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 10.5, color: '#7A6F63' }}
+            style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 10.5, color: 'var(--color-text-secondary)' }}
           >
             {clock.toUTCString().replace('GMT', 'UTC').slice(0, -4)}
           </time>

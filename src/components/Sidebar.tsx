@@ -109,8 +109,8 @@ export const Sidebar: React.FC = () => {
       style={{
         width,
         minWidth: width,
-        background: '#F3EDE4',
-        borderRight: '1px solid #DDD5CA',
+        background: 'var(--color-bg-surface)',
+        borderRight: '1px solid var(--color-border)',
         display: 'flex',
         flexDirection: 'column',
         height: '100vh',
@@ -120,19 +120,19 @@ export const Sidebar: React.FC = () => {
         overflowX: 'hidden',
         flexShrink: 0,
         zIndex: 40,
-        transition: 'width 200ms cubic-bezier(0.4, 0, 0.2, 1), min-width 200ms cubic-bezier(0.4, 0, 0.2, 1)',
+        transition: 'width 200ms cubic-bezier(0.4, 0, 0.2, 1), min-width 200ms cubic-bezier(0.4, 0, 0.2, 1), background-color 200ms ease, border-color 200ms ease',
       }}
     >
       {/* Top Header with Brand & Collapse Toggle Button */}
       <div 
         style={{
           padding: sidebarCollapsed ? '16px 12px' : '16px 14px',
-          borderBottom: '1px solid #DDD5CA',
+          borderBottom: '1px solid var(--color-border)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: sidebarCollapsed ? 'center' : 'space-between',
           gap: 8,
-          background: '#F3EDE4',
+          background: 'var(--color-bg-surface)',
         }}
       >
         <div 
@@ -143,7 +143,7 @@ export const Sidebar: React.FC = () => {
           <PhishieldMark />
           {!sidebarCollapsed && (
             <div>
-              <div style={{ color: '#2A2420', fontSize: 12, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', fontFamily: 'Inter, sans-serif' }}>
+              <div style={{ color: 'var(--color-text-primary)', fontSize: 12, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', fontFamily: 'Inter, sans-serif' }}>
                 Phishield
               </div>
               <div className="data-label" style={{ marginTop: 1, fontSize: '0.58rem' }}>Intelligence Platform</div>
@@ -162,10 +162,10 @@ export const Sidebar: React.FC = () => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            border: '1px solid #DDD5CA',
+            border: '1px solid var(--color-border)',
             borderRadius: 4,
-            background: '#FFFFFF',
-            color: '#7A6F63',
+            background: 'var(--color-bg-raised)',
+            color: 'var(--color-text-secondary)',
             cursor: 'pointer',
             flexShrink: 0,
             transition: 'all 120ms ease',
@@ -175,8 +175,8 @@ export const Sidebar: React.FC = () => {
             e.currentTarget.style.color = '#C4622D';
           }}
           onMouseLeave={e => {
-            e.currentTarget.style.borderColor = '#DDD5CA';
-            e.currentTarget.style.color = '#7A6F63';
+            e.currentTarget.style.borderColor = 'var(--color-border)';
+            e.currentTarget.style.color = 'var(--color-text-secondary)';
           }}
         >
           {sidebarCollapsed ? (
@@ -188,7 +188,7 @@ export const Sidebar: React.FC = () => {
       </div>
 
       {/* Primary Nav Items */}
-      <nav style={{ padding: '8px 0', borderBottom: '1px solid #DDD5CA' }}>
+      <nav style={{ padding: '8px 0', borderBottom: '1px solid var(--color-border)' }}>
         {NAV_ITEMS.map((item) => {
           const Icon = item.icon;
           const isActive = currentPath === item.path;
@@ -204,18 +204,18 @@ export const Sidebar: React.FC = () => {
                 justifyContent: sidebarCollapsed ? 'center' : 'flex-start',
                 gap: 10,
                 padding: sidebarCollapsed ? '10px 0' : '7px 16px',
-                background: isActive ? '#EDE5D8' : 'transparent',
+                background: isActive ? 'var(--color-bg-hover)' : 'transparent',
                 border: 'none',
                 borderLeft: `3px solid ${isActive ? '#C4622D' : 'transparent'}`,
-                color: isActive ? '#C4622D' : '#7A6F63',
+                color: isActive ? '#C4622D' : 'var(--color-text-secondary)',
                 cursor: 'pointer',
                 textAlign: 'left',
                 transition: 'color 100ms, background 100ms, border-left-color 100ms',
                 fontFamily: 'Inter, sans-serif',
                 fontWeight: isActive ? 600 : 500,
               }}
-              onMouseEnter={e => { if (!isActive) { e.currentTarget.style.color = '#2A2420'; e.currentTarget.style.background = '#EDE5D8'; } }}
-              onMouseLeave={e => { if (!isActive) { e.currentTarget.style.color = '#7A6F63'; e.currentTarget.style.background = 'transparent'; } }}
+              onMouseEnter={e => { if (!isActive) { e.currentTarget.style.color = 'var(--color-text-primary)'; e.currentTarget.style.background = 'var(--color-bg-hover)'; } }}
+              onMouseLeave={e => { if (!isActive) { e.currentTarget.style.color = 'var(--color-text-secondary)'; e.currentTarget.style.background = 'transparent'; } }}
             >
               <Icon />
               {!sidebarCollapsed && (
@@ -231,7 +231,7 @@ export const Sidebar: React.FC = () => {
         <div style={{ flex: 1, padding: '10px 0', overflowY: 'auto' }}>
           {hasSubPageHistory ? (
             <div>
-              <div className="data-label" style={{ padding: '4px 16px 8px', borderBottom: '1px solid #DDD5CA', marginBottom: 4 }}>
+              <div className="data-label" style={{ padding: '4px 16px 8px', borderBottom: '1px solid var(--color-border)', marginBottom: 4 }}>
                 Navigation History
               </div>
 
@@ -259,7 +259,7 @@ export const Sidebar: React.FC = () => {
                         left: indentPx - 10, top: '50%',
                         transform: 'translateY(-50%)',
                         width: 8, height: 1,
-                        background: '#DDD5CA',
+                        background: 'var(--color-border)',
                         display: 'block',
                       }} />
                     )}
@@ -267,14 +267,14 @@ export const Sidebar: React.FC = () => {
                       <span style={{
                         position: 'absolute',
                         left: indentPx - 10, top: 0, bottom: '50%',
-                        width: 1, background: '#DDD5CA',
+                        width: 1, background: 'var(--color-border)',
                         display: 'block',
                       }} />
                     )}
 
                     <span style={{
                       fontSize: 11, letterSpacing: '0.01em',
-                      color: isLast ? '#C4622D' : '#7A6F63',
+                      color: isLast ? '#C4622D' : 'var(--color-text-secondary)',
                       fontFamily: entry.id?.startsWith('case-')
                         ? 'IBM Plex Mono, monospace'
                         : 'Inter, sans-serif',
@@ -295,7 +295,7 @@ export const Sidebar: React.FC = () => {
             </div>
           ) : (
             <div>
-              <div className="data-label" style={{ padding: '4px 16px 8px', borderBottom: '1px solid #DDD5CA', marginBottom: 8, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div className="data-label" style={{ padding: '4px 16px 8px', borderBottom: '1px solid var(--color-border)', marginBottom: 8, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <span>Recent Activity</span>
                 <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#C4622D' }} />
               </div>
@@ -308,8 +308,8 @@ export const Sidebar: React.FC = () => {
                     style={{
                       padding: '6px 8px',
                       borderRadius: 4,
-                      background: '#FAF6F0',
-                      border: '1px solid #DDD5CA',
+                      background: 'var(--color-bg-base)',
+                      border: '1px solid var(--color-border)',
                       cursor: 'pointer',
                       transition: 'all 120ms ease',
                       display: 'flex',
@@ -318,11 +318,11 @@ export const Sidebar: React.FC = () => {
                     }}
                     onMouseEnter={e => {
                       e.currentTarget.style.borderColor = '#C4622D';
-                      e.currentTarget.style.background = '#FFFFFF';
+                      e.currentTarget.style.background = 'var(--color-bg-raised)';
                     }}
                     onMouseLeave={e => {
-                      e.currentTarget.style.borderColor = '#DDD5CA';
-                      e.currentTarget.style.background = '#FAF6F0';
+                      e.currentTarget.style.borderColor = 'var(--color-border)';
+                      e.currentTarget.style.background = 'var(--color-bg-base)';
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
@@ -330,14 +330,14 @@ export const Sidebar: React.FC = () => {
                         width: 5, height: 5, borderRadius: '50%',
                         background: act.dotColor, display: 'inline-block', flexShrink: 0,
                       }} />
-                      <span style={{ fontSize: 10.5, color: '#2A2420', fontWeight: 500, fontFamily: 'Inter, sans-serif' }}>
+                      <span style={{ fontSize: 10.5, color: 'var(--color-text-primary)', fontWeight: 500, fontFamily: 'Inter, sans-serif' }}>
                         {act.user}
                       </span>
-                      <span style={{ fontSize: 10, color: '#7A6F63', marginLeft: 'auto', fontFamily: 'IBM Plex Mono, monospace' }}>
+                      <span style={{ fontSize: 10, color: 'var(--color-text-muted)', marginLeft: 'auto', fontFamily: 'IBM Plex Mono, monospace' }}>
                         {act.time}
                       </span>
                     </div>
-                    <div style={{ fontSize: 10, color: '#7A6F63', lineHeight: 1.3, paddingLeft: 10 }}>
+                    <div style={{ fontSize: 10, color: 'var(--color-text-secondary)', lineHeight: 1.3, paddingLeft: 10 }}>
                       {act.action} <span style={{ fontFamily: 'IBM Plex Mono, monospace', color: '#8C3D1A', fontWeight: 500 }}>{act.target}</span>
                     </div>
                   </div>
@@ -356,16 +356,16 @@ export const Sidebar: React.FC = () => {
       {!sidebarCollapsed ? (
         <div style={{
           padding: '10px 16px',
-          borderTop: '1px solid #DDD5CA',
+          borderTop: '1px solid var(--color-border)',
           display: 'flex',
           flexDirection: 'column',
           gap: 8,
-          background: '#FAF6F0',
+          background: 'var(--color-bg-surface)',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <span className="data-label" style={{ fontSize: '0.62rem' }}>Team Online</span>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 9.5, color: '#3D7A4A', fontFamily: 'IBM Plex Mono, monospace', fontWeight: 600 }}>
-              <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#3D7A4A', display: 'inline-block' }} />
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 9.5, color: 'var(--color-status-closed)', fontFamily: 'IBM Plex Mono, monospace', fontWeight: 600 }}>
+              <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--color-status-closed)', display: 'inline-block' }} />
               4 ACTIVE
             </span>
           </div>
@@ -379,8 +379,8 @@ export const Sidebar: React.FC = () => {
                   width: 25,
                   height: 25,
                   borderRadius: '50%',
-                  background: '#FFFFFF',
-                  border: '1px solid #DDD5CA',
+                  background: 'var(--color-bg-raised)',
+                  border: '1px solid var(--color-border)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -389,7 +389,7 @@ export const Sidebar: React.FC = () => {
                   color: member.color,
                   fontFamily: 'Inter, sans-serif',
                   cursor: 'default',
-                  boxShadow: '0 1px 2px rgba(42, 36, 32, 0.04)',
+                  boxShadow: '0 1px 2px rgba(0, 0, 0, 0.06)',
                 }}
               >
                 {member.initial}
@@ -402,7 +402,7 @@ export const Sidebar: React.FC = () => {
                     height: 6.5,
                     borderRadius: '50%',
                     background: member.status === 'online' ? '#3D7A4A' : '#D4854A',
-                    border: '1.5px solid #FFFFFF',
+                    border: '1.5px solid var(--color-bg-raised)',
                     display: 'inline-block',
                   }}
                 />
@@ -413,7 +413,7 @@ export const Sidebar: React.FC = () => {
       ) : (
         <div style={{
           padding: '10px 0',
-          borderTop: '1px solid #DDD5CA',
+          borderTop: '1px solid var(--color-border)',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
@@ -428,8 +428,8 @@ export const Sidebar: React.FC = () => {
                 width: 22,
                 height: 22,
                 borderRadius: '50%',
-                background: '#FFFFFF',
-                border: '1px solid #DDD5CA',
+                background: 'var(--color-bg-raised)',
+                border: '1px solid var(--color-border)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -448,7 +448,7 @@ export const Sidebar: React.FC = () => {
                   height: 5,
                   borderRadius: '50%',
                   background: member.status === 'online' ? '#3D7A4A' : '#D4854A',
-                  border: '1px solid #FFFFFF',
+                  border: '1px solid var(--color-bg-raised)',
                   display: 'inline-block',
                 }}
               />
@@ -460,26 +460,26 @@ export const Sidebar: React.FC = () => {
       {/* User Profile Footer */}
       <div style={{
         padding: sidebarCollapsed ? '12px 0' : '12px 16px',
-        borderTop: '1px solid #DDD5CA',
+        borderTop: '1px solid var(--color-border)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: sidebarCollapsed ? 'center' : 'flex-start',
         gap: 8,
-        background: '#F3EDE4',
+        background: 'var(--color-bg-surface)',
       }}>
         <div style={{
           width: 24, height: 24,
-          background: '#FFFFFF',
-          border: '1px solid #DDD5CA',
+          background: 'var(--color-bg-raised)',
+          border: '1px solid var(--color-border)',
           borderRadius: 4,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 10, color: '#7A6F63', fontWeight: 600, flexShrink: 0,
+          fontSize: 10, color: 'var(--color-text-secondary)', fontWeight: 600, flexShrink: 0,
         }} title="R. Okafor (Lead Investigator)">
           RO
         </div>
         {!sidebarCollapsed && (
           <div>
-            <div style={{ fontSize: 11, color: '#2A2420', fontWeight: 500, fontFamily: 'Inter, sans-serif' }}>R. Okafor</div>
+            <div style={{ fontSize: 11, color: 'var(--color-text-primary)', fontWeight: 500, fontFamily: 'Inter, sans-serif' }}>R. Okafor</div>
             <div className="data-label">Lead Investigator</div>
           </div>
         )}
