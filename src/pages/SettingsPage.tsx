@@ -93,11 +93,9 @@ export const SettingsPage: React.FC = () => {
   };
 
   const handle2FAToggle = () => {
-    setSecurity((prev) => {
-      const next = !prev.twoFactorEnabled;
-      addToast(next ? 'Two-factor authentication enabled' : 'Two-factor authentication disabled', next ? 'success' : 'warning');
-      return { ...prev, twoFactorEnabled: next };
-    });
+    const next = !security.twoFactorEnabled;
+    setSecurity((prev) => ({ ...prev, twoFactorEnabled: next }));
+    addToast(next ? 'Two-factor authentication enabled' : 'Two-factor authentication disabled', next ? 'success' : 'warning');
   };
 
   const handleSecuritySubmit = (e: React.FormEvent) => {
