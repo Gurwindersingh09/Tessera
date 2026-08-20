@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTesseraStore } from '../store/useTesseraStore';
+import { useAuth } from '../context/AuthContext';
 import { motion } from 'framer-motion';
 import { 
   PhoneCall, 
@@ -98,10 +99,11 @@ const INITIAL_SOURCES: DataSourceItem[] = [
 export const NewCasePage: React.FC = () => {
   const navigate = useNavigate();
   const { addCase, pushNavHistory } = useTesseraStore();
+  const { displayName } = useAuth();
 
   const [title, setTitle] = useState('');
   const [priority, setPriority] = useState<'critical' | 'high' | 'medium' | 'low'>('high');
-  const [investigator, setInvestigator] = useState('R. Okafor');
+  const [investigator, setInvestigator] = useState(displayName || 'Guest');
   const [status, setStatus] = useState<'active' | 'flagged' | 'closed'>('active');
   const [dataSources, setDataSources] = useState<DataSourceItem[]>(INITIAL_SOURCES);
   const [customSourceName, setCustomSourceName] = useState('');

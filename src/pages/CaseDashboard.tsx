@@ -20,6 +20,7 @@ import {
 import { CaseActionsMenu, INVESTIGATORS_LIST } from '../components/CaseActionsMenu';
 import { CaseDeleteModal } from '../components/CaseDeleteModal';
 import { ToastContainer, ToastMessage } from '../components/Toast';
+import { getInitials } from '../context/AuthContext';
 
 /* ─── Easing ─── */
 const EASE_SHARP: [number, number, number, number] = [0.4, 0, 0.2, 1];
@@ -316,9 +317,7 @@ function PriorityQueue({
       {!collapsed && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 12 }}>
           {priorityCases.map((c, i) => {
-            const initials = c.investigator
-              ? c.investigator.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
-              : 'RO';
+            const initials = getInitials(c.investigator);
             const isCritical = c.priority === 'critical';
             const borderColor = isCritical ? 'var(--color-status-flagged)' : 'var(--color-status-active)';
 

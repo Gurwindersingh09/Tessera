@@ -19,10 +19,12 @@ import {
   Info
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
+import { useAuth, getInitials } from '../context/AuthContext';
 import { ToastContainer, ToastMessage } from '../components/Toast';
 
 export const SettingsPage: React.FC = () => {
   const { theme, setTheme, toggleTheme } = useTheme();
+  const { currentUser, updateUser } = useAuth();
 
   // Toast notification state
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
@@ -37,15 +39,15 @@ export const SettingsPage: React.FC = () => {
   };
 
   // Profile Form State
-  const [profile, setProfile] = useState({
-    name: 'Girish Garg',
-    role: 'Senior Cyber Forensics Analyst',
-    email: 'girishgarg@state.cybercrime.gov.in',
-    badgeId: 'INV-0001-DEL',
-    department: 'Cybercrime Investigation Cell',
-    avatarInitials: 'GG',
+  const [profile, setProfile] = useState(() => ({
+    name: currentUser?.displayName || 'R. Okafor',
+    role: currentUser?.role || 'Lead Investigator',
+    email: currentUser?.email || 'r.okafor@state.cybercrime.gov.in',
+    badgeId: currentUser?.badgeId || 'INV-4092-CYBER',
+    department: currentUser?.department || 'Cyber Forensics & Incident Response',
+    avatarInitials: getInitials(currentUser?.displayName || 'R. Okafor'),
     avatarBg: '#8C3D1A',
-  });
+  }));
 
   // Notification toggles state
   const [notifications, setNotifications] = useState({
@@ -67,6 +69,13 @@ export const SettingsPage: React.FC = () => {
 
   const handleProfileSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    updateUser({
+      displayName: profile.name,
+      role: profile.role,
+      email: profile.email,
+      badgeId: profile.badgeId,
+      department: profile.department,
+    });
     addToast('Profile changes saved successfully', 'success');
   };
 
@@ -368,7 +377,7 @@ export const SettingsPage: React.FC = () => {
                 <input
                   type="text"
                   value={profile.name}
-                  onChange={(e) => setProfile({ ...profile, name: e.target.value })}
+                  onChange={(e) => setProfile({ ...profile, name: e.target.value, avatarInitials: getInitials(e.target.value) })}
                   required
                 />
               </div>

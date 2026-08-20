@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { tsParticles } from '@tsparticles/engine';
 import { useTesseraStore } from '../store/useTesseraStore';
+import { useAuth } from '../context/AuthContext';
 import { TesseraMark } from '../components/TesseraMark';
 import { ToastContainer, ToastMessage } from '../components/Toast';
 
@@ -817,11 +818,29 @@ const GetStartedDrawer = ({
   onClose: () => void;
   onRequestSuccess: () => void;
 }) => {
+  const { login } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    department: '',
+    badge: '',
+    justification: '',
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+
+    const fullName = `${formData.firstName.trim()} ${formData.lastName.trim()}`.trim() || 'Investigator';
+    login(fullName, {
+      department: formData.department.trim() || 'State Cyber Crime Investigation Division',
+      email: formData.email.trim() || undefined,
+      badgeId: formData.badge.trim() || undefined,
+      role: 'Lead Investigator',
+    });
+
     setTimeout(() => {
       setLoading(false);
       onClose();
@@ -829,7 +848,7 @@ const GetStartedDrawer = ({
     }, 600);
   };
 
-  const formFields = [
+  const formFields: Array<{ id: keyof typeof formData; label: string; type: string; required: boolean }> = [
     { id: 'firstName', label: 'First Name', type: 'text', required: true },
     { id: 'lastName', label: 'Last Name', type: 'text', required: true },
     { id: 'email', label: 'Official Agency Email Address', type: 'email', required: true },
@@ -916,6 +935,8 @@ const GetStartedDrawer = ({
                   type={field.type}
                   id={field.id}
                   required={field.required}
+                  value={formData[field.id]}
+                  onChange={(e) => setFormData(prev => ({ ...prev, [field.id]: e.target.value }))}
                   style={{
                     background: '#FFFFFF',
                     border: '1px solid #DDD5CA',

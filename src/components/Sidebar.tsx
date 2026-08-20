@@ -1,11 +1,24 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useTesseraStore } from '../store/useTesseraStore';
 import { useAnalyticsStore } from '../store/useAnalyticsStore';
+import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { TesseraMark } from './TesseraMark';
-import { PanelLeftClose, PanelLeftOpen, ChevronLeft, ChevronRight } from 'lucide-react';
+import { 
+  PanelLeftClose, 
+  PanelLeftOpen, 
+  Sun, 
+  Moon, 
+  LogOut, 
+  ChevronsUpDown, 
+  ChevronRight,
+  Settings as SettingsIcon,
+  Shield
+} from 'lucide-react';
 
-/* ─── SVG Icons for 4 primary nav items ─────────────────────────────────────── */
+/* ─── SVG Icons for primary nav items (Dashboard, Analytics, Alerts) ───────── */
 const IconDashboard = () => (
   <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
     <rect x="1" y="1" width="6" height="6" rx="0.5" stroke="currentColor" strokeWidth="1.2"/>
@@ -37,18 +50,18 @@ const IconSettings = () => (
   </svg>
 );
 
+// Main navigation items: Dashboard, Analytics, Alerts (Settings moved to profile popover)
 const NAV_ITEMS = [
   { id: 'dashboard', label: 'Dashboard', path: '/dashboard', icon: IconDashboard },
   { id: 'analytics', label: 'Analytics', path: '/analytics', icon: IconAnalytics },
   { id: 'alerts',    label: 'Alerts',    path: '/alerts',    icon: IconAlerts },
-  { id: 'settings',  label: 'Settings',  path: '/settings',  icon: IconSettings },
 ];
 
 const RECENT_ACTIVITIES = [
   { id: 'act-1', user: 'S. Petrov', action: 'flagged', target: 'CASE-0038', time: '2h ago', dotColor: '#B53924', caseId: 'CASE-0038' },
   { id: 'act-2', user: 'A. Lin', action: 'linked 3 entities in', target: 'CASE-0041', time: '4h ago', dotColor: '#C4622D', caseId: 'CASE-0041' },
   { id: 'act-3', user: 'M. Kelly', action: 'closed', target: 'CASE-0029', time: '1d ago', dotColor: '#3D7A4A', caseId: 'CASE-0029' },
-  { id: 'act-4', user: 'R. Okafor', action: 'triaged anomalies in', target: 'CASE-0035', time: '2d ago', dotColor: '#D4854A', caseId: 'CASE-0035' },
+  { id: 'act-4', user: 'A. Patel', action: 'triaged anomalies in', target: 'CASE-0035', time: '2d ago', dotColor: '#D4854A', caseId: 'CASE-0035' },
 ];
 
 const ONLINE_TEAM = [
@@ -58,13 +71,44 @@ const ONLINE_TEAM = [
   { initial: 'DK', name: 'D. Kim', status: 'idle', color: '#7A6F63' },
 ];
 
+const EASE_SHARP: [number, number, number, number] = [0.4, 0, 0.2, 1];
+
 export const Sidebar: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { navigationHistory, truncateNavAt, pushNavHistory, cases, sidebarCollapsed, toggleSidebarCollapse } = useTesseraStore();
   const { setCaseId } = useAnalyticsStore();
+  const { currentUser, displayName, initials, role, logout } = useAuth();
+  const { theme, setTheme } = useTheme();
+
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const profileContainerRef = useRef<HTMLDivElement>(null);
 
   const currentPath = location.pathname;
+
+  // Close profile popover on outside click
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (profileContainerRef.current && !profileContainerRef.current.contains(e.target as Node)) {
+        setProfileMenuOpen(false);
+      }
+    };
+    if (profileMenuOpen) {
+      document.addEventListener('mousedown', handleOutsideClick);
+    }
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
+  }, [profileMenuOpen]);
+
+  // Close profile popover on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && profileMenuOpen) {
+        setProfileMenuOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [profileMenuOpen]);
 
   const handleNavClick = (item: typeof NAV_ITEMS[0]) => {
     pushNavHistory({ id: item.id, label: item.label, path: item.path, depth: 0 });
@@ -85,6 +129,18 @@ export const Sidebar: React.FC = () => {
     }
   };
 
+  const handleOpenSettings = () => {
+    setProfileMenuOpen(false);
+    pushNavHistory({ id: 'settings', label: 'Settings', path: '/settings', depth: 0 });
+    navigate('/settings');
+  };
+
+  const handleSignOut = () => {
+    setProfileMenuOpen(false);
+    logout();
+    navigate('/');
+  };
+
   const hasSubPageHistory = navigationHistory.length > 1;
   const width = sidebarCollapsed ? 60 : 224;
 
@@ -100,8 +156,8 @@ export const Sidebar: React.FC = () => {
         height: '100vh',
         position: 'sticky',
         top: 0,
-        overflowY: 'auto',
-        overflowX: 'hidden',
+        overflowY: 'visible',
+        overflowX: 'visible',
         flexShrink: 0,
         zIndex: 40,
         transition: 'width 200ms cubic-bezier(0.4, 0, 0.2, 1), min-width 200ms cubic-bezier(0.4, 0, 0.2, 1), background-color 200ms ease, border-color 200ms ease',
@@ -171,7 +227,7 @@ export const Sidebar: React.FC = () => {
         </button>
       </div>
 
-      {/* Primary Nav Items */}
+      {/* Primary Nav Items (Dashboard, Analytics, Alerts) */}
       <nav style={{ padding: '8px 0', borderBottom: '1px solid var(--color-border)' }}>
         {NAV_ITEMS.map((item) => {
           const Icon = item.icon;
@@ -441,32 +497,350 @@ export const Sidebar: React.FC = () => {
         </div>
       )}
 
-      {/* User Profile Footer */}
-      <div style={{
-        padding: sidebarCollapsed ? '12px 0' : '12px 16px',
-        borderTop: '1px solid var(--color-border)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: sidebarCollapsed ? 'center' : 'flex-start',
-        gap: 8,
-        background: 'var(--color-bg-surface)',
-      }}>
-        <div style={{
-          width: 24, height: 24,
-          background: 'var(--color-bg-raised)',
-          border: '1px solid var(--color-border)',
-          borderRadius: 4,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 10, color: 'var(--color-text-secondary)', fontWeight: 600, flexShrink: 0,
-        }} title="R. Okafor (Lead Investigator)">
-          RO
-        </div>
-        {!sidebarCollapsed && (
-          <div>
-            <div style={{ fontSize: 11, color: 'var(--color-text-primary)', fontWeight: 500, fontFamily: 'Inter, sans-serif' }}>R. Okafor</div>
-            <div className="data-label">Lead Investigator</div>
+      {/* ─── Bottom User Profile Card & Upward Profile Popover Menu ─────────── */}
+      <div 
+        ref={profileContainerRef}
+        style={{
+          position: 'relative',
+          borderTop: '1px solid var(--color-border)',
+          background: 'var(--color-bg-surface)',
+        }}
+      >
+        {/* Profile Trigger Button */}
+        <button
+          type="button"
+          onClick={() => setProfileMenuOpen(prev => !prev)}
+          aria-haspopup="true"
+          aria-expanded={profileMenuOpen}
+          title={`${displayName} (${role}) — Click for profile & settings`}
+          style={{
+            width: '100%',
+            padding: sidebarCollapsed ? '12px 0' : '10px 12px',
+            background: profileMenuOpen ? 'var(--color-bg-hover)' : 'transparent',
+            border: 'none',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: sidebarCollapsed ? 'center' : 'space-between',
+            gap: 8,
+            cursor: 'pointer',
+            textAlign: 'left',
+            transition: 'background-color 150ms ease',
+            fontFamily: 'Inter, sans-serif',
+          }}
+          onMouseEnter={e => {
+            if (!profileMenuOpen) e.currentTarget.style.background = 'var(--color-bg-hover)';
+          }}
+          onMouseLeave={e => {
+            if (!profileMenuOpen) e.currentTarget.style.background = 'transparent';
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 9, minWidth: 0, flex: 1, justifyContent: sidebarCollapsed ? 'center' : 'flex-start' }}>
+            {/* Dynamic Avatar Initials Badge */}
+            <div 
+              style={{
+                width: 26, 
+                height: 26,
+                background: 'var(--color-bg-raised)',
+                border: '1px solid var(--color-border)',
+                borderRadius: 5,
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center',
+                fontSize: 10.5, 
+                color: '#8C3D1A', 
+                fontWeight: 700, 
+                fontFamily: 'IBM Plex Mono, monospace',
+                flexShrink: 0,
+                boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
+              }}
+            >
+              {initials}
+            </div>
+
+            {/* Dynamic Name & Role */}
+            {!sidebarCollapsed && (
+              <div style={{ overflow: 'hidden', flex: 1, minWidth: 0 }}>
+                <div 
+                  style={{ 
+                    fontSize: 11.5, 
+                    color: 'var(--color-text-primary)', 
+                    fontWeight: 600, 
+                    fontFamily: 'Inter, sans-serif',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}
+                >
+                  {displayName}
+                </div>
+                <div 
+                  className="data-label" 
+                  style={{ 
+                    fontSize: '0.56rem', 
+                    letterSpacing: '0.06em',
+                    color: 'var(--color-text-secondary)',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}
+                >
+                  {role.toUpperCase()}
+                </div>
+              </div>
+            )}
           </div>
-        )}
+
+          {!sidebarCollapsed && (
+            <ChevronsUpDown className="w-3.5 h-3.5 text-[var(--color-text-muted)] flex-shrink-0" />
+          )}
+        </button>
+
+        {/* Upward Popover Menu (Claude / Notion style) */}
+        <AnimatePresence>
+          {profileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: 8, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 8, scale: 0.96 }}
+              transition={{ duration: 0.16, ease: EASE_SHARP }}
+              style={{
+                position: 'absolute',
+                bottom: 'calc(100% + 8px)',
+                left: sidebarCollapsed ? '8px' : '8px',
+                width: sidebarCollapsed ? '230px' : 'calc(100% - 16px)',
+                background: 'var(--color-bg-surface)',
+                border: '1px solid var(--color-border)',
+                borderRadius: 8,
+                boxShadow: '0 12px 32px rgba(0, 0, 0, 0.16), 0 2px 6px rgba(0, 0, 0, 0.06)',
+                padding: '6px',
+                zIndex: 60,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 2,
+              }}
+            >
+              {/* 1. Header repeating User's Name + Role for context */}
+              <div 
+                style={{
+                  padding: '8px 10px',
+                  background: 'var(--color-bg-raised)',
+                  border: '1px solid var(--color-border)',
+                  borderRadius: 6,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 9,
+                  marginBottom: 4,
+                }}
+              >
+                <div 
+                  style={{
+                    width: 30,
+                    height: 30,
+                    borderRadius: 6,
+                    background: 'var(--color-bg-surface)',
+                    border: '1px solid var(--color-border)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontFamily: 'IBM Plex Mono, monospace',
+                    fontSize: 11.5,
+                    fontWeight: 700,
+                    color: '#8C3D1A',
+                    flexShrink: 0,
+                  }}
+                >
+                  {initials}
+                </div>
+                <div style={{ overflow: 'hidden', minWidth: 0 }}>
+                  <div 
+                    style={{ 
+                      fontSize: 12, 
+                      fontWeight: 600, 
+                      color: 'var(--color-text-primary)',
+                      fontFamily: 'Inter, sans-serif',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                    }}
+                  >
+                    {displayName}
+                  </div>
+                  <div 
+                    className="data-label" 
+                    style={{ 
+                      fontSize: '0.56rem', 
+                      color: '#8C3D1A',
+                      fontWeight: 600,
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                    }}
+                  >
+                    {role.toUpperCase()}
+                  </div>
+                </div>
+              </div>
+
+              {/* 2. Settings item */}
+              <button
+                type="button"
+                onClick={handleOpenSettings}
+                style={{
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '7px 10px',
+                  borderRadius: 5,
+                  border: 'none',
+                  background: currentPath === '/settings' ? 'var(--color-bg-hover)' : 'transparent',
+                  color: currentPath === '/settings' ? '#C4622D' : 'var(--color-text-primary)',
+                  fontSize: 12,
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  transition: 'background-color 100ms ease, color 100ms ease',
+                  fontFamily: 'Inter, sans-serif',
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.background = 'var(--color-bg-hover)';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.background = currentPath === '/settings' ? 'var(--color-bg-hover)' : 'transparent';
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <IconSettings />
+                  <span>Settings</span>
+                </div>
+                <ChevronRight className="w-3.5 h-3.5 text-[var(--color-text-muted)]" />
+              </button>
+
+              {/* 3. Appearance: Quick-access light/dark toggle inline */}
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '6px 10px',
+                  borderRadius: 5,
+                  fontSize: 12,
+                  color: 'var(--color-text-primary)',
+                  fontFamily: 'Inter, sans-serif',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  {theme === 'dark' ? (
+                    <Moon className="w-4 h-4 text-[#C4622D]" />
+                  ) : (
+                    <Sun className="w-4 h-4 text-[#C4622D]" />
+                  )}
+                  <span>Appearance</span>
+                </div>
+
+                {/* Inline Segmented Theme Switch */}
+                <div
+                  style={{
+                    display: 'flex',
+                    background: 'var(--color-bg-base)',
+                    border: '1px solid var(--color-border)',
+                    borderRadius: 4,
+                    padding: 2,
+                    gap: 2,
+                  }}
+                >
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setTheme('light');
+                    }}
+                    title="Switch to Light Theme"
+                    style={{
+                      padding: '2px 7px',
+                      fontSize: 10.5,
+                      fontFamily: 'Inter, sans-serif',
+                      fontWeight: theme === 'light' ? 600 : 400,
+                      borderRadius: 3,
+                      border: 'none',
+                      background: theme === 'light' ? 'var(--color-bg-raised)' : 'transparent',
+                      color: theme === 'light' ? 'var(--color-text-primary)' : 'var(--color-text-muted)',
+                      cursor: 'pointer',
+                      boxShadow: theme === 'light' ? '0 1px 2px rgba(0,0,0,0.08)' : 'none',
+                      transition: 'all 120ms ease',
+                    }}
+                  >
+                    Light
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setTheme('dark');
+                    }}
+                    title="Switch to Dark Theme"
+                    style={{
+                      padding: '2px 7px',
+                      fontSize: 10.5,
+                      fontFamily: 'Inter, sans-serif',
+                      fontWeight: theme === 'dark' ? 600 : 400,
+                      borderRadius: 3,
+                      border: 'none',
+                      background: theme === 'dark' ? 'var(--color-bg-raised)' : 'transparent',
+                      color: theme === 'dark' ? 'var(--color-text-primary)' : 'var(--color-text-muted)',
+                      cursor: 'pointer',
+                      boxShadow: theme === 'dark' ? '0 1px 2px rgba(0,0,0,0.08)' : 'none',
+                      transition: 'all 120ms ease',
+                    }}
+                  >
+                    Dark
+                  </button>
+                </div>
+              </div>
+
+              {/* 4. Hairline divider */}
+              <div 
+                style={{ 
+                  height: 1, 
+                  background: 'var(--color-border)', 
+                  margin: '4px 0',
+                }} 
+              />
+
+              {/* 5. Sign out: styled in muted/neutral tone (not destructive red) */}
+              <button
+                type="button"
+                onClick={handleSignOut}
+                style={{
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  padding: '7px 10px',
+                  borderRadius: 5,
+                  border: 'none',
+                  background: 'transparent',
+                  color: 'var(--color-text-secondary)',
+                  fontSize: 12,
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  transition: 'background-color 100ms ease, color 100ms ease',
+                  fontFamily: 'Inter, sans-serif',
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.background = 'var(--color-bg-hover)';
+                  e.currentTarget.style.color = 'var(--color-text-primary)';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.background = 'transparent';
+                  e.currentTarget.style.color = 'var(--color-text-secondary)';
+                }}
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                <span>Sign out</span>
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </aside>
   );
