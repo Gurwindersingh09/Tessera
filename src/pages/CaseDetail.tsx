@@ -1,5 +1,6 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
+import { Group, Panel, usePanelRef } from 'react-resizable-panels';
 import { useAnalyticsStore } from '../store/useAnalyticsStore';
 import { useTesseraStore } from '../store/useTesseraStore';
 import { CommandBar } from '../components/CommandBar';
@@ -8,12 +9,16 @@ import { NetworkGraph } from '../components/NetworkGraph';
 import { EntityDossier } from '../components/EntityDossier';
 import { TimelineTable } from '../components/TimelineTable';
 import { GeoMap } from '../components/GeoMap';
+import { ResizeHandle } from '../components/ui/ResizeHandle';
 import { 
   PanelLeftOpen, 
   ChevronDown, 
   ChevronUp, 
-  Activity,
-  Table
+  Activity, 
+  Table,
+  Network,
+  MapPin,
+  Maximize2
 } from 'lucide-react';
 
 /* ─── Inline Mini Sparkline for Stats ─── */
@@ -58,20 +63,55 @@ function MiniSparkline({ data, color, isUp }: { data: number[]; color: string; i
   );
 }
 
+// Helpers for localStorage layout persistence
+const getPersistedLayout = (key: string, fallback?: Record<string, number>): Record<string, number> | undefined => {
+  try {
+    const raw = localStorage.getItem(key);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === 'object') return parsed;
+    }
+  } catch {
+    // ignore json parse error
+  }
+  return fallback;
+};
+
+const persistLayout = (key: string, layout: Record<string, number>) => {
+  try {
+    localStorage.setItem(key, JSON.stringify(layout));
+  } catch {
+    // ignore storage error
+  }
+};
+
 export const CaseDetail: React.FC = () => {
   const { caseId } = useParams<{ caseId: string }>();
   const { 
     setCaseId, 
     panelState, 
-    toggleSidebar, 
-    toggleBottomPane,
     entities, 
+    edges,
     anomalies, 
     events 
   } = useAnalyticsStore();
   const { cases, pushNavHistory } = useTesseraStore();
 
   const caseData = cases.find(c => c.id === caseId);
+
+  // Panel Imperative Handles for smooth collapse/expand
+  const anomalyPanelRef = usePanelRef();
+  const graphPanelRef = usePanelRef();
+  const bottomPanelRef = usePanelRef();
+  const timelinePanelRef = usePanelRef();
+  const mapPanelRef = usePanelRef();
+
+  // Collapsed state tracking (triggered by drag-to-collapse or quick preset)
+  const [isAnomalyCollapsed, setIsAnomalyCollapsed] = useState(false);
+  const [isGraphCollapsed, setIsGraphCollapsed] = useState(false);
+  const [isBottomCollapsed, setIsBottomCollapsed] = useState(false);
+  const [isTimelineCollapsed, setIsTimelineCollapsed] = useState(false);
+  const [isMapCollapsed, setIsMapCollapsed] = useState(false);
 
   useEffect(() => {
     if (caseId) {
@@ -128,7 +168,43 @@ export const CaseDetail: React.FC = () => {
     },
   ];
 
-  const isBottomCollapsed = panelState.bottomPaneCollapsed;
+  // Layout persistence keys (per-case with fallback)
+  const mainLayoutKey = `tessera_layout_${caseId || 'default'}_main`;
+  const verticalLayoutKey = `tessera_layout_${caseId || 'default'}_vertical`;
+  const bottomLayoutKey = `tessera_layout_${caseId || 'default'}_bottom`;
+
+  const handleMainLayoutChanged = useCallback((layout: Record<string, number>) => {
+    persistLayout(mainLayoutKey, layout);
+  }, [mainLayoutKey]);
+
+  const handleVerticalLayoutChanged = useCallback((layout: Record<string, number>) => {
+    persistLayout(verticalLayoutKey, layout);
+  }, [verticalLayoutKey]);
+
+  const handleBottomLayoutChanged = useCallback((layout: Record<string, number>) => {
+    persistLayout(bottomLayoutKey, layout);
+  }, [bottomLayoutKey]);
+
+  // Quick Preset Actions
+  const toggleAnomalyPanel = () => {
+    if (anomalyPanelRef.current) {
+      if (isAnomalyCollapsed) {
+        anomalyPanelRef.current.expand();
+      } else {
+        anomalyPanelRef.current.collapse();
+      }
+    }
+  };
+
+  const toggleBottomPanel = () => {
+    if (bottomPanelRef.current) {
+      if (isBottomCollapsed) {
+        bottomPanelRef.current.expand();
+      } else {
+        bottomPanelRef.current.collapse();
+      }
+    }
+  };
 
   return (
     <div 
@@ -208,12 +284,12 @@ export const CaseDetail: React.FC = () => {
           <button
             type="button"
             className="btn-ghost"
-            onClick={toggleSidebar}
+            onClick={toggleAnomalyPanel}
             style={{
               display: 'flex', alignItems: 'center', gap: 5, padding: '4px 8px', fontSize: '10px',
-              background: panelState.sidebarOpen ? 'var(--color-bg-hover)' : 'transparent',
-              borderColor: panelState.sidebarOpen ? '#C4622D' : 'var(--color-border)',
-              color: panelState.sidebarOpen ? '#C4622D' : 'var(--color-text-secondary)',
+              background: !isAnomalyCollapsed ? 'var(--color-bg-hover)' : 'transparent',
+              borderColor: !isAnomalyCollapsed ? '#C4622D' : 'var(--color-border)',
+              color: !isAnomalyCollapsed ? '#C4622D' : 'var(--color-text-secondary)',
             }}
             title="Toggle Anomaly Feed Panel"
           >
@@ -224,7 +300,7 @@ export const CaseDetail: React.FC = () => {
           <button
             type="button"
             className="btn-ghost"
-            onClick={toggleBottomPane}
+            onClick={toggleBottomPanel}
             style={{
               display: 'flex', alignItems: 'center', gap: 5, padding: '4px 8px', fontSize: '10px',
               background: !isBottomCollapsed ? 'var(--color-bg-hover)' : 'transparent',
@@ -239,126 +315,274 @@ export const CaseDetail: React.FC = () => {
         </div>
       </div>
 
-      {/* 3. Main Workspace Area */}
-      <div className="flex flex-1 overflow-hidden relative">
-        
-        {/* Left Drawer - Anomaly Feed */}
-        {panelState.sidebarOpen ? (
-          <div 
-            className="w-[280px] flex-shrink-0 z-30 border-r transition-all duration-200 flex flex-col"
-            style={{ background: 'var(--color-bg-surface)', borderColor: 'var(--color-border)' }}
-          >
-            <AnomalyFeed />
-          </div>
-        ) : (
-          /* Slim Floating Expand Tab when Anomaly Feed is Collapsed */
-          <div
-            onClick={toggleSidebar}
-            title="Expand Anomaly Feed Panel"
-            style={{
-              width: 28,
-              borderRight: '1px solid var(--color-border)',
-              background: 'var(--color-bg-surface)',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              paddingTop: 12,
-              cursor: 'pointer',
-              gap: 8,
-              zIndex: 30,
-              flexShrink: 0,
+      {/* 3. Main Workspace Area: Resizable Outer Group */}
+      <div className="flex flex-1 overflow-hidden relative min-h-0 w-full">
+        <Group
+          id="case-analysis-main-horizontal"
+          orientation="horizontal"
+          className="w-full h-full"
+          defaultLayout={getPersistedLayout(mainLayoutKey, { 'panel-anomaly-feed': 22, 'panel-main-workspace': 78 })}
+          onLayoutChanged={handleMainLayoutChanged}
+        >
+          {/* Left Column: Anomaly Feed (Collapsible with no artificial expansion ceiling) */}
+          <Panel
+            id="panel-anomaly-feed"
+            panelRef={anomalyPanelRef}
+            collapsible={true}
+            minSize={120}
+            collapsedSize="28px"
+            defaultSize="22%"
+            onResize={(size) => {
+              setIsAnomalyCollapsed(size.inPixels <= 35);
             }}
+            className="h-full flex flex-col z-30 overflow-hidden"
+            style={{ background: 'var(--color-bg-surface)' }}
           >
-            <PanelLeftOpen className="w-3.5 h-3.5 text-[var(--color-text-secondary)] hover:text-[#C4622D]" />
-            <span style={{
-              writingMode: 'vertical-rl',
-              fontSize: 9.5,
-              letterSpacing: '0.1em',
-              textTransform: 'uppercase',
-              color: '#C4622D',
-              fontFamily: 'Inter, sans-serif',
-              fontWeight: 600,
-            }}>
-              Anomalies ({anomalies.length})
-            </span>
-          </div>
-        )}
-
-        {/* Center Canvas & Bottom Split */}
-        <div className="flex-1 flex flex-col min-w-0 relative">
-          
-          {/* Top Canvas: Network Graph */}
-          <div className="flex-1 relative z-10">
-            <NetworkGraph />
-          </div>
-
-          {/* Bottom Split Pane (Timeline + Map) with Expand / Compress Toggle */}
-          <div 
-            className="flex flex-col flex-shrink-0 border-t z-20 transition-all duration-200"
-            style={{ 
-              height: isBottomCollapsed ? 32 : panelState.bottomPaneHeight,
-              borderColor: 'var(--color-border)',
-              background: 'var(--color-bg-base)'
-            }}
-          >
-            {/* Split Pane Compression Header Bar */}
-            <div style={{
-              height: 32,
-              background: 'var(--color-bg-surface)',
-              borderBottom: isBottomCollapsed ? 'none' : '1px solid var(--color-border)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: '0 12px',
-              flexShrink: 0,
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <span className="data-label" style={{ fontSize: '0.62rem', color: '#C4622D', fontWeight: 600 }}>
-                  Event Timeline & Geospatial Trajectory
-                </span>
-                <span style={{ fontSize: 9.5, fontFamily: 'IBM Plex Mono, monospace', color: 'var(--color-text-secondary)' }}>
-                  {events.length} events · {entities.length} nodes
+            {isAnomalyCollapsed ? (
+              /* Minimized vertical strip with quick click-to-expand */
+              <div
+                onClick={() => anomalyPanelRef.current?.expand()}
+                title="Click to expand Anomaly Feed"
+                className="w-full h-full flex flex-col items-center pt-3 cursor-pointer select-none bg-[var(--color-bg-surface)] hover:bg-[var(--color-bg-hover)] transition-colors"
+                style={{ borderRight: '1px solid var(--color-border)' }}
+              >
+                <PanelLeftOpen className="w-3.5 h-3.5 text-[var(--color-text-secondary)] hover:text-[#C4622D] mb-3 transition-colors" />
+                <span style={{
+                  writingMode: 'vertical-rl',
+                  fontSize: 9.5,
+                  letterSpacing: '0.1em',
+                  textTransform: 'uppercase',
+                  color: '#C4622D',
+                  fontFamily: 'Inter, sans-serif',
+                  fontWeight: 600,
+                }}>
+                  Anomalies ({anomalies.length})
                 </span>
               </div>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <button
-                  type="button"
-                  onClick={toggleBottomPane}
-                  style={{
-                    border: '1px solid var(--color-border)',
-                    borderRadius: 3,
-                    background: 'var(--color-bg-raised)',
-                    padding: '2px 6px',
-                    fontSize: 9.5,
-                    fontFamily: 'Inter, sans-serif',
-                    color: 'var(--color-text-secondary)',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 4,
-                  }}
-                  title={isBottomCollapsed ? "Expand Timeline & Map Pane" : "Compress Pane to Maximize Graph"}
-                >
-                  {isBottomCollapsed ? <ChevronUp className="w-3 h-3 text-[#C4622D]" /> : <ChevronDown className="w-3 h-3 text-[var(--color-text-secondary)]" />}
-                  <span>{isBottomCollapsed ? 'Expand Pane' : 'Compress Pane'}</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Split content when not collapsed */}
-            {!isBottomCollapsed && (
-              <div className="flex flex-1 min-h-0 overflow-hidden">
-                <div className="flex-1 border-r relative overflow-hidden" style={{ borderColor: 'var(--color-border)' }}>
-                  <TimelineTable />
-                </div>
-                <div className="flex-1 relative overflow-hidden">
-                  <GeoMap />
-                </div>
-              </div>
+            ) : (
+              /* Full Anomaly Feed with all cards and actions */
+              <AnomalyFeed onCollapse={() => anomalyPanelRef.current?.collapse()} />
             )}
-          </div>
-        </div>
+          </Panel>
+
+          {/* Vertical Drag Handle (Anomaly Feed ↔ Main Workspace Canvas) */}
+          <ResizeHandle direction="vertical" id="handle-anomaly-feed" />
+
+          {/* Center & Right Workspace Panel */}
+          <Panel
+            id="panel-main-workspace"
+            minSize={100}
+            className="h-full flex flex-col min-w-0 relative overflow-hidden"
+          >
+            {/* Middle Vertical Group: Graph Canvas ↕ Bottom Section */}
+            <Group
+              id="case-analysis-workspace-vertical"
+              orientation="vertical"
+              className="w-full h-full"
+              defaultLayout={getPersistedLayout(verticalLayoutKey, { 'panel-graph-canvas': 62, 'panel-bottom-section': 38 })}
+              onLayoutChanged={handleVerticalLayoutChanged}
+            >
+              {/* Top Canvas: Network Graph (Collapsible to 32px header if compressed completely) */}
+              <Panel
+                id="panel-graph-canvas"
+                panelRef={graphPanelRef}
+                collapsible={true}
+                minSize={60}
+                collapsedSize="32px"
+                defaultSize="62%"
+                onResize={(size) => {
+                  setIsGraphCollapsed(size.inPixels <= 35);
+                }}
+                className="relative z-10 w-full h-full overflow-hidden"
+              >
+                {isGraphCollapsed ? (
+                  /* Minimized Graph Bar when compressed completely */
+                  <div 
+                    onClick={() => graphPanelRef.current?.expand()}
+                    title="Click to expand Network Graph"
+                    className="w-full h-[32px] flex items-center justify-between px-3 cursor-pointer bg-[var(--color-bg-surface)] hover:bg-[var(--color-bg-hover)] transition-colors border-b border-[var(--color-border)] select-none"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Network className="w-3.5 h-3.5 text-[#C4622D]" />
+                      <span className="text-[10.5px] font-semibold text-[#C4622D] uppercase tracking-wider">Network Graph</span>
+                      <span className="text-[9.5px] font-mono text-[var(--color-text-secondary)]">{entities.length} nodes · {edges.length} links</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-[10px] text-[var(--color-text-secondary)] font-medium">
+                      <ChevronDown className="w-3 h-3 text-[#C4622D]" />
+                      <span>Expand Graph</span>
+                    </div>
+                  </div>
+                ) : (
+                  <NetworkGraph />
+                )}
+              </Panel>
+
+              {/* Horizontal Drag Handle (Graph Canvas ↕ Bottom Pane) */}
+              <ResizeHandle direction="horizontal" id="handle-canvas-bottom" />
+
+              {/* Bottom Split Pane: Event Timeline & Geospatial Trajectory */}
+              <Panel
+                id="panel-bottom-section"
+                panelRef={bottomPanelRef}
+                collapsible={true}
+                minSize={60}
+                collapsedSize="32px"
+                defaultSize="38%"
+                onResize={(size) => {
+                  setIsBottomCollapsed(size.inPixels <= 35);
+                }}
+                className="flex flex-col z-20 w-full h-full overflow-hidden"
+                style={{ background: 'var(--color-bg-base)' }}
+              >
+                {/* Header Bar with Compress/Expand quick preset */}
+                <div style={{
+                  height: 32,
+                  background: 'var(--color-bg-surface)',
+                  borderBottom: isBottomCollapsed ? 'none' : '1px solid var(--color-border)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '0 12px',
+                  flexShrink: 0,
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <span className="data-label" style={{ fontSize: '0.62rem', color: '#C4622D', fontWeight: 600 }}>
+                      Event Timeline & Geospatial Trajectory
+                    </span>
+                    <span style={{ fontSize: 9.5, fontFamily: 'IBM Plex Mono, monospace', color: 'var(--color-text-secondary)' }}>
+                      {events.length} events · {entities.length} nodes
+                    </span>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <button
+                      type="button"
+                      onClick={toggleBottomPanel}
+                      style={{
+                        border: '1px solid var(--color-border)',
+                        borderRadius: 3,
+                        background: 'var(--color-bg-raised)',
+                        padding: '2px 6px',
+                        fontSize: 9.5,
+                        fontFamily: 'Inter, sans-serif',
+                        color: 'var(--color-text-secondary)',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 4,
+                      }}
+                      title={isBottomCollapsed ? "Expand Timeline & Map Pane" : "Compress Pane to Maximize Graph"}
+                    >
+                      {isBottomCollapsed ? (
+                        <>
+                          <ChevronUp className="w-3 h-3 text-[#C4622D]" />
+                          <span>Expand Pane</span>
+                        </>
+                      ) : (
+                        <>
+                          <ChevronDown className="w-3 h-3 text-[var(--color-text-secondary)]" />
+                          <span>Compress Pane</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Sub-panel content: Bottom Horizontal Group for Timeline & Map */}
+                {!isBottomCollapsed && (
+                  <div className="flex-1 min-h-0 w-full overflow-hidden">
+                    <Group
+                      id="case-analysis-bottom-horizontal"
+                      orientation="horizontal"
+                      className="w-full h-full"
+                      defaultLayout={getPersistedLayout(bottomLayoutKey, { 'panel-timeline-table': 50, 'panel-geo-map': 50 })}
+                      onLayoutChanged={handleBottomLayoutChanged}
+                    >
+                      {/* Left: Timeline Table (Collapsible with unconstrained expansion) */}
+                      <Panel
+                        id="panel-timeline-table"
+                        panelRef={timelinePanelRef}
+                        collapsible={true}
+                        minSize={50}
+                        collapsedSize="32px"
+                        defaultSize="50%"
+                        onResize={(size) => {
+                          setIsTimelineCollapsed(size.inPixels <= 35);
+                        }}
+                        className="h-full relative overflow-hidden"
+                      >
+                        {isTimelineCollapsed ? (
+                          <div
+                            onClick={() => timelinePanelRef.current?.expand()}
+                            title="Click to expand Event Timeline"
+                            className="w-full h-full flex flex-col items-center pt-3 cursor-pointer select-none bg-[var(--color-bg-surface)] hover:bg-[var(--color-bg-hover)] transition-colors"
+                            style={{ borderRight: '1px solid var(--color-border)' }}
+                          >
+                            <Table className="w-3.5 h-3.5 text-[var(--color-text-secondary)] hover:text-[#C4622D] mb-3 transition-colors" />
+                            <span style={{
+                              writingMode: 'vertical-rl',
+                              fontSize: 9.5,
+                              letterSpacing: '0.1em',
+                              textTransform: 'uppercase',
+                              color: '#C4622D',
+                              fontFamily: 'Inter, sans-serif',
+                              fontWeight: 600,
+                            }}>
+                              Timeline ({events.length})
+                            </span>
+                          </div>
+                        ) : (
+                          <TimelineTable />
+                        )}
+                      </Panel>
+
+                      {/* Vertical Drag Handle (Timeline ↔ Map) */}
+                      <ResizeHandle direction="vertical" id="handle-timeline-map" />
+
+                      {/* Right: Geospatial Trajectory Map (Collapsible with unconstrained expansion) */}
+                      <Panel
+                        id="panel-geo-map"
+                        panelRef={mapPanelRef}
+                        collapsible={true}
+                        minSize={50}
+                        collapsedSize="32px"
+                        defaultSize="50%"
+                        onResize={(size) => {
+                          setIsMapCollapsed(size.inPixels <= 35);
+                        }}
+                        className="h-full relative overflow-hidden"
+                      >
+                        {isMapCollapsed ? (
+                          <div
+                            onClick={() => mapPanelRef.current?.expand()}
+                            title="Click to expand Geospatial Map"
+                            className="w-full h-full flex flex-col items-center pt-3 cursor-pointer select-none bg-[var(--color-bg-surface)] hover:bg-[var(--color-bg-hover)] transition-colors"
+                            style={{ borderLeft: '1px solid var(--color-border)' }}
+                          >
+                            <MapPin className="w-3.5 h-3.5 text-[var(--color-text-secondary)] hover:text-[#C4622D] mb-3 transition-colors" />
+                            <span style={{
+                              writingMode: 'vertical-rl',
+                              fontSize: 9.5,
+                              letterSpacing: '0.1em',
+                              textTransform: 'uppercase',
+                              color: '#C4622D',
+                              fontFamily: 'Inter, sans-serif',
+                              fontWeight: 600,
+                            }}>
+                              Geospatial Map
+                            </span>
+                          </div>
+                        ) : (
+                          <GeoMap />
+                        )}
+                      </Panel>
+                    </Group>
+                  </div>
+                )}
+              </Panel>
+            </Group>
+          </Panel>
+        </Group>
 
         {/* Right Drawer - Entity Dossier */}
         {panelState.dossierOpen && (
@@ -369,9 +593,9 @@ export const CaseDetail: React.FC = () => {
             <EntityDossier />
           </div>
         )}
-
       </div>
     </div>
   );
 };
+
 export default CaseDetail;

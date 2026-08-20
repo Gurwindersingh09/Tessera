@@ -17,21 +17,34 @@ export const NetworkGraph: React.FC = () => {
   const isDark = theme === 'dark';
 
   useEffect(() => {
+    if (!containerRef.current) return;
+
     const updateDimensions = () => {
       if (containerRef.current) {
-        setDimensions({
-          width: containerRef.current.clientWidth,
-          height: containerRef.current.clientHeight
-        });
+        const width = containerRef.current.clientWidth;
+        const height = containerRef.current.clientHeight;
+        if (width > 0 && height > 0) {
+          setDimensions({ width, height });
+        }
       }
     };
-    
-    setTimeout(updateDimensions, 100);
-    window.addEventListener('resize', updateDimensions);
-    return () => window.removeEventListener('resize', updateDimensions);
+
+    updateDimensions();
+
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const { width, height } = entry.contentRect;
+        if (width > 0 && height > 0) {
+          setDimensions({ width: Math.floor(width), height: Math.floor(height) });
+        }
+      }
+    });
+
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
   }, []);
 
-  // Auto-fit graph to view on load
+  // Auto-fit graph to view on initial load
   useEffect(() => {
     if (dimensions.width > 0 && fgRef.current) {
       const timer = setTimeout(() => {
@@ -41,7 +54,7 @@ export const NetworkGraph: React.FC = () => {
       }, 350);
       return () => clearTimeout(timer);
     }
-  }, [dimensions, entities]);
+  }, [dimensions.width > 0 && dimensions.height > 0, entities]);
 
   const graphData = useMemo(() => ({
     nodes: entities.map(e => ({ ...e })),

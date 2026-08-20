@@ -40,6 +40,23 @@ const createEntityIcon = (type: string, isSelected: boolean, isDark: boolean) =>
   });
 };
 
+const MapResizeHandler = () => {
+  const map = useMap();
+  useEffect(() => {
+    const container = map.getContainer();
+    if (!container) return;
+
+    const observer = new ResizeObserver(() => {
+      map.invalidateSize();
+    });
+
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, [map]);
+
+  return null;
+};
+
 const MapController = ({ selectedEntityId, events }: { selectedEntityId: string | null, events: any[] }) => {
   const map = useMap();
 
@@ -121,6 +138,7 @@ export const GeoMap: React.FC = () => {
           url={tileLayerUrl}
         />
         
+        <MapResizeHandler />
         <MapController selectedEntityId={selectedEntityId} events={events} />
 
         {Object.entries(mapData.pathsByEntity).map(([entityId, coords]) => {

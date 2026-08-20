@@ -16,8 +16,20 @@ const slideInVariants = {
   }),
 };
 
-export const AnomalyFeed: React.FC = () => {
+interface AnomalyFeedProps {
+  onCollapse?: () => void;
+}
+
+export const AnomalyFeed: React.FC<AnomalyFeedProps> = ({ onCollapse }) => {
   const { anomalies, toggleSidebar } = useAnalyticsStore();
+
+  const handleCollapse = () => {
+    if (onCollapse) {
+      onCollapse();
+    } else {
+      toggleSidebar();
+    }
+  };
 
   return (
     <div className="h-full flex flex-col" style={{ background: 'var(--color-bg-surface)', color: 'var(--color-text-primary)' }}>
@@ -41,7 +53,7 @@ export const AnomalyFeed: React.FC = () => {
 
           <button
             type="button"
-            onClick={toggleSidebar}
+            onClick={handleCollapse}
             title="Compress Anomaly Feed"
             style={{
               border: 'none', background: 'transparent',
