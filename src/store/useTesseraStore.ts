@@ -12,7 +12,7 @@ interface FilterState {
 
 export interface TesseraState {
   cases: CaseItem[];
-  addCase: (newCase: Omit<CaseItem, 'id' | 'lastUpdated'>) => void;
+  addCase: (newCase: Omit<CaseItem, 'id' | 'lastUpdated'>) => CaseItem;
   updateCase: (id: string, updates: Partial<CaseItem>) => void;
   updateBulkCases: (ids: string[], updates: Partial<CaseItem>) => void;
   deleteCase: (id: string) => void;
@@ -42,17 +42,24 @@ export const useTesseraStore = create<TesseraState>()(
 
       cases: SEED_CASES,
 
-      addCase: (newCase) =>
-        set((state) => ({
-          cases: [
-            {
-              ...newCase,
-              id: `CASE-${String(state.cases.length + 42).padStart(4, '0')}`,
-              lastUpdated: new Date().toISOString(),
-            },
-            ...state.cases,
-          ],
-        })),
+      addCase: (newCase) => {
+        let created: CaseItem = {
+          ...newCase,
+          id: `CASE-${String(SEED_CASES.length + 42).padStart(4, '0')}`,
+          lastUpdated: new Date().toISOString(),
+        };
+        set((state) => {
+          created = {
+            ...newCase,
+            id: `CASE-${String(state.cases.length + 42).padStart(4, '0')}`,
+            lastUpdated: new Date().toISOString(),
+          };
+          return {
+            cases: [created, ...state.cases],
+          };
+        });
+        return created;
+      },
 
       updateCase: (id, updates) =>
         set((state) => ({

@@ -19,6 +19,7 @@ import {
   PanelRightOpen,
   FolderOpen
 } from 'lucide-react';
+import { CaseAnalysisLoader, CaseAnalysisStage } from '../components/CaseAnalysisLoader';
 
 const EASE_SHARP: [number, number, number, number] = [0.4, 0, 0.2, 1];
 
@@ -110,11 +111,21 @@ export const NewCasePage: React.FC = () => {
   const [isAddingCustom, setIsAddingCustom] = useState(false);
   const [manifestCollapsed, setManifestCollapsed] = useState(false);
 
+  // 3D Analysis Ingestion State
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisStage, setAnalysisStage] = useState<CaseAnalysisStage>('parsing');
+  const [analysisProgress, setAnalysisProgress] = useState(0);
+  const analysisTimersRef = useRef<number[]>([]);
+
   const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
   const batchFileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     pushNavHistory({ id: 'new-case', label: 'New Case', path: '/new-case', depth: 1 });
+    return () => {
+      // Clear timers on component unmount
+      analysisTimersRef.current.forEach(timerId => window.clearTimeout(timerId));
+    };
   }, []);
 
   const formatFileSize = (bytes: number): string => {
@@ -132,15 +143,15 @@ export const NewCasePage: React.FC = () => {
           fileName: file.name,
           fileSizeStr: formatFileSize(file.size),
           status: 'parsing',
-          progress: 10,
+          progress: 8,
         };
       }
       return s;
     }));
 
-    let progress = 10;
+    let progress = 8;
     const interval = setInterval(() => {
-      progress += Math.floor(Math.random() * 25) + 15;
+      progress += Math.floor(Math.random() * 10) + 8;
       if (progress >= 100) {
         progress = 100;
         clearInterval(interval);
@@ -168,7 +179,7 @@ export const NewCasePage: React.FC = () => {
           return s;
         }));
       }
-    }, 150);
+    }, 120);
   };
 
   const handleFileInputChange = (sourceId: string, e: React.ChangeEvent<HTMLInputElement>) => {
@@ -258,11 +269,57 @@ export const NewCasePage: React.FC = () => {
 
   const isFormValid = title.trim().length > 0 && uploadedSources.length > 0;
 
+  const runAnalysisPipeline = (targetCaseId: string) => {
+    setIsAnalyzing(true);
+    setAnalysisStage('parsing');
+    setAnalysisProgress(0);
+
+    // Clear any existing timers
+    analysisTimersRef.current.forEach(timerId => window.clearTimeout(timerId));
+    analysisTimersRef.current = [];
+
+    const startTime = Date.now();
+    const TOTAL_DURATION = 10500; // 10.5 seconds for complete deep analysis experience
+
+    const intervalId = window.setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      const progressRatio = Math.min(1, elapsed / TOTAL_DURATION);
+
+      // Smooth percentage 0 -> 100
+      const currentPct = Math.min(100, Math.round(progressRatio * 100));
+      setAnalysisProgress(currentPct);
+
+      // Determine stage based on progress
+      if (currentPct < 25) {
+        setAnalysisStage('parsing');
+      } else if (currentPct < 55) {
+        setAnalysisStage('resolving_entities');
+      } else if (currentPct < 82) {
+        setAnalysisStage('building_graph');
+      } else if (currentPct < 99) {
+        setAnalysisStage('detecting_anomalies');
+      } else {
+        setAnalysisStage('complete');
+      }
+
+      if (progressRatio >= 1) {
+        window.clearInterval(intervalId);
+        // Hold on complete state for 1.8s for celebration & smooth exit
+        const navTimer = window.setTimeout(() => {
+          navigate(`/case/${targetCaseId}`);
+        }, 1800);
+        analysisTimersRef.current.push(navTimer);
+      }
+    }, 40); // 25 updates per second for silky smooth progress bar
+
+    analysisTimersRef.current.push(intervalId);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isFormValid) return;
+    if (!isFormValid || isAnalyzing) return;
 
-    addCase({
+    const created = addCase({
       title: title.trim(),
       priority,
       investigator,
@@ -271,7 +328,7 @@ export const NewCasePage: React.FC = () => {
       anomalyCount: priority === 'critical' ? 12 : (priority === 'high' ? 6 : 2),
     });
 
-    navigate('/dashboard');
+    runAnalysisPipeline(created.id);
   };
 
   const renderIcon = (type: DataSourceItem['iconName']) => {
@@ -287,8 +344,20 @@ export const NewCasePage: React.FC = () => {
   return (
     <div 
       className="grain-texture" 
-      style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'var(--color-bg-base)', color: 'var(--color-text-primary)', height: '100vh', overflowY: 'auto' }}
+      style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'var(--color-bg-base)', color: 'var(--color-text-primary)', height: '100vh', overflowY: 'auto', position: 'relative' }}
     >
+      {/* 3D Case Analysis Full-Screen Loader */}
+      {isAnalyzing && (
+        <CaseAnalysisLoader
+          stage={analysisStage}
+          progress={analysisProgress}
+          caseTitle={title.trim() || 'Operation Investigation'}
+          priority={priority}
+          investigator={investigator}
+          totalRecords={totalUploadedRows || 1840}
+          totalEntities={totalExtractedEntities || 24}
+        />
+      )}
       {/* Header with quick collapse controls */}
       <motion.header
         initial={{ opacity: 0, y: -8 }}
@@ -398,27 +467,83 @@ export const NewCasePage: React.FC = () => {
                   <span className="data-label" style={{ color: '#C4622D', fontWeight: 600 }}>2. Ingest Forensic Data Sources *</span>
                 </div>
                 
-                {/* Batch multi-file input button */}
-                <label
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: 5,
-                    fontSize: 10.5, color: '#C4622D', background: 'var(--color-bg-raised)',
-                    border: '1px solid var(--color-border)', borderRadius: 4, padding: '3px 8px',
-                    cursor: 'pointer', fontFamily: 'Inter, sans-serif', fontWeight: 600,
-                  }}
-                  title="Select multiple files from your computer at once"
-                >
-                  <FolderOpen className="w-3.5 h-3.5 text-[#C4622D]" />
-                  <span>Browse System Files (Batch)</span>
-                  <input
-                    ref={batchFileInputRef}
-                    type="file"
-                    multiple
-                    accept=".csv,.xlsx,.xls,.json,.txt,.log,.pdf"
-                    onChange={handleBatchFileInputChange}
-                    style={{ display: 'none' }}
-                  />
-                </label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!title.trim()) {
+                        setTitle('Operation Obsidian Falcon');
+                      }
+                      setDataSources(prev => prev.map((s, idx) => {
+                        if (idx === 0) {
+                          return {
+                            ...s,
+                            fileName: 'telecom_cdr_sector7_tower_dump.csv',
+                            fileSizeStr: '4.8 MB',
+                            status: 'parsed',
+                            progress: 100,
+                            rowCount: 4820,
+                            entitiesExtracted: 38,
+                          };
+                        }
+                        if (idx === 1) {
+                          return {
+                            ...s,
+                            fileName: 'gateway_ipdr_session_routing.log',
+                            fileSizeStr: '8.2 MB',
+                            status: 'parsed',
+                            progress: 100,
+                            rowCount: 12400,
+                            entitiesExtracted: 64,
+                          };
+                        }
+                        if (idx === 2) {
+                          return {
+                            ...s,
+                            fileName: 'swift_rtgs_mule_transactions.xlsx',
+                            fileSizeStr: '2.1 MB',
+                            status: 'parsed',
+                            progress: 100,
+                            rowCount: 1850,
+                            entitiesExtracted: 29,
+                          };
+                        }
+                        return s;
+                      }));
+                    }}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 5,
+                      fontSize: 10.5, color: '#E8B896', background: 'rgba(196, 98, 45, 0.15)',
+                      border: '1px solid rgba(196, 98, 45, 0.4)', borderRadius: 4, padding: '3px 8px',
+                      cursor: 'pointer', fontFamily: 'Inter, sans-serif', fontWeight: 600,
+                    }}
+                    title="Populate realistic forensic data sources for instant demo testing"
+                  >
+                    <span>⚡ Load Demo Dossier</span>
+                  </button>
+
+                  {/* Batch multi-file input button */}
+                  <label
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 5,
+                      fontSize: 10.5, color: '#C4622D', background: 'var(--color-bg-raised)',
+                      border: '1px solid var(--color-border)', borderRadius: 4, padding: '3px 8px',
+                      cursor: 'pointer', fontFamily: 'Inter, sans-serif', fontWeight: 600,
+                    }}
+                    title="Select multiple files from your computer at once"
+                  >
+                    <FolderOpen className="w-3.5 h-3.5 text-[#C4622D]" />
+                    <span>Browse System Files</span>
+                    <input
+                      ref={batchFileInputRef}
+                      type="file"
+                      multiple
+                      accept=".csv,.xlsx,.xls,.json,.txt,.log,.pdf"
+                      onChange={handleBatchFileInputChange}
+                      style={{ display: 'none' }}
+                    />
+                  </label>
+                </div>
               </div>
 
               <p style={{ fontSize: 11, color: 'var(--color-text-secondary)', marginBottom: 16 }}>
